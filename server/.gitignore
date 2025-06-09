@@ -1,3 +1,16 @@
+# Dependencies
 node_modules
-generated/prisma
+
+# Environment variables
 .env
+.env.*
+
+# Build output
+dist
+build
+
+# Editor directories and files
+.vscode/*
+.DS_Store
+
+generated/prisma
