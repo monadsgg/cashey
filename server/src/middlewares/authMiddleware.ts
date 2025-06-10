@@ -9,9 +9,12 @@ export const verifyJWT = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
+): Promise<void> => {
   const token = req.headers?.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'No token provided' });
+  if (!token) {
+    res.status(401).json({ message: 'No token provided' });
+    return;
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
@@ -19,10 +22,12 @@ export const verifyJWT = async (
     };
 
     const user = await db.user.findUnique({ where: { id: decoded.id } });
-    if (!user)
-      return res.status(401).json({ message: 'Invalid token provided' });
+    if (!user) {
+      res.status(401).json({ message: 'Invalid token provided' });
+      return;
+    }
 
-    (req as any).userId = user.id;
+    res.locals.user = user.id;
     next();
   } catch (err) {
     res.status(401).json({ message: 'Invalid token provided' });
