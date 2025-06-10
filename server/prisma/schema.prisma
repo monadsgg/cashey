@@ -51,8 +51,8 @@ model Budget {
 
 model Category {
   id        Int          @id @default(autoincrement())
-  user      User         @relation(fields: [userId], references: [id])
-  userId    Int
+  user      User?         @relation(fields: [userId], references: [id])
+  userId    Int?
   name      String
   type      String       // Can be "income", "expense", "saving"
   budgets   Budget[]
