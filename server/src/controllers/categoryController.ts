@@ -60,7 +60,7 @@ export async function deleteCategory(
 
   try {
     await removeCategory(Number(id), userId);
-    res.status(200).json({ message: 'Category deleted' });
+    res.status(204).json();
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

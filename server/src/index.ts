@@ -11,6 +11,7 @@ app.use(express.json());
 
 app.use('/api/users', userRouter);
 app.use('/api/categories', verifyJWT, categoryRouter);
+app.use('/api/transactions', verifyJWT, transactionRouter);
 
 app.listen(config.port, () => {
   console.log(`APP running on port ${config.port}.`);
