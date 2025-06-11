@@ -23,7 +23,7 @@ model User {
   budgets     Budget[]
   categories  Category[]
   wallets     Wallet[]
-  savings     Savings[]
+  savingAccounts     SavingAccount[]
 }
 
 model Transaction {
@@ -67,10 +67,10 @@ model Wallet {
   type        String        // Can be "main", "savings"
   balance     Decimal       @db.Decimal(12, 2)
   transactions Transaction[]
-  savings     Savings[]
+  savingAccounts     SavingAccount[]
 }
 
-model Savings {
+model SavingAccount {
   id          Int      @id @default(autoincrement())
   wallet      Wallet   @relation(fields: [walletId], references: [id])
   walletId    Int
@@ -79,8 +79,8 @@ model Savings {
   name        String
   type        String    // Can be "personal", "investment"
   currentAmt  Decimal   @db.Decimal(12, 2)
-  targetAmt   Decimal   @db.Decimal(12, 2)
+  targetAmt   Decimal?   @db.Decimal(12, 2)
   accountType String?   
   owner       String?
-  contributionLimit String?
+  contributionLimit Decimal?  @db.Decimal(12, 2)
 }
