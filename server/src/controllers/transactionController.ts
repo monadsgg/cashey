@@ -4,6 +4,7 @@ import {
   editTransaction,
   getAllTransactions,
   removeTransaction,
+  transferFunds,
 } from '../services/transactionService';
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '../constants';
 
@@ -84,6 +85,27 @@ export async function deleteTransaction(
   try {
     await removeTransaction(Number(id), userId);
     res.status(204).json();
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export async function transferFundsTransaction(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const userId = res.locals.user;
+  const { fromWalletId, toWalletId, amount, description } = req.body;
+
+  try {
+    const transaction = await transferFunds(
+      userId,
+      fromWalletId,
+      toWalletId,
+      amount,
+      description,
+    );
+    res.status(201).json(transaction);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

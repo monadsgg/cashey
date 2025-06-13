@@ -3,11 +3,12 @@ import { InvestmentAccountType, SavingType, WalletType } from '../utils/enums';
 
 interface SavingAccountInput {
   name: string;
-  type: SavingType.PERSONAL | SavingType.INVESTMENT;
-  currentAmt: number;
+  type: WalletType.SAVINGS;
+  balance: number;
   targetAmt?: number;
   owner?: string;
-  accountType?:
+  accountType: SavingType.PERSONAL | SavingType.INVESTMENT;
+  investmentType?:
     | InvestmentAccountType.TFSA
     | InvestmentAccountType.RRSP
     | InvestmentAccountType.FHSA;
@@ -15,7 +16,12 @@ interface SavingAccountInput {
 }
 
 export async function getAllSavings(userId: number) {
-  const savingAccounts = await db.savingAccount.findMany({ where: { userId } });
+  const savingAccounts = await db.wallet.findMany({
+    where: { userId, type: WalletType.SAVINGS },
+    include: {
+      savingAccount: true,
+    },
+  });
   return savingAccounts;
 }
 
@@ -23,16 +29,38 @@ export async function addSavingAccount(
   data: SavingAccountInput,
   userId: number,
 ) {
-  const { name, type, currentAmt } = data;
+  const {
+    name,
+    balance,
+    type,
+    targetAmt,
+    owner,
+    accountType,
+    investmentType,
+    contributionLimit,
+  } = data;
 
-  if (!name || !type || !currentAmt) throw new Error('All fields are required');
+  if (!name || !balance) throw new Error('All fields are required');
 
-  const wallet = await db.wallet.create({
-    data: { userId, name, type: WalletType.SAVINGS, balance: currentAmt },
-  });
-
-  const newSavingAccount = await db.savingAccount.create({
-    data: { ...data, userId, walletId: wallet.id },
+  const newSavingAccount = await db.wallet.create({
+    data: {
+      userId,
+      name,
+      type,
+      balance,
+      savingAccount: {
+        create: {
+          targetAmt,
+          owner,
+          accountType,
+          investmentType,
+          contributionLimit,
+        },
+      },
+    },
+    include: {
+      savingAccount: true,
+    },
   });
 
   return newSavingAccount;
@@ -43,16 +71,41 @@ export async function editSavingAccountt(
   data: SavingAccountInput,
   userId: number,
 ) {
-  const { name, type, currentAmt } = data;
+  const {
+    name,
+    balance,
+    type,
+    targetAmt,
+    owner,
+    accountType,
+    investmentType,
+    contributionLimit,
+  } = data;
 
-  if (!name || !type || !currentAmt) throw new Error('All fields are required');
+  if (!name || !balance) throw new Error('All fields are required');
 
-  return db.savingAccount.update({
+  return db.wallet.update({
     where: { id, userId },
-    data: { ...data },
+    data: {
+      name,
+      balance,
+      type,
+      savingAccount: {
+        update: {
+          targetAmt,
+          owner,
+          accountType,
+          investmentType,
+          contributionLimit,
+        },
+      },
+    },
+    include: {
+      savingAccount: true,
+    },
   });
 }
 
 export async function removeSavingAccount(id: number, userId: number) {
-  return db.savingAccount.delete({ where: { id, userId } });
+  return db.wallet.delete({ where: { id, userId } });
 }
