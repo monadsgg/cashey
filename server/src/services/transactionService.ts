@@ -1,6 +1,12 @@
 import { Prisma } from '@prisma/client';
 import db from '../utils/db';
-import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '../constants';
+import {
+  DEFAULT_PAGE,
+  DEFAULT_PAGE_SIZE,
+  OUT_TRANSFER_CATEGORY_ID,
+  IN_TRANSFER_CATEGORY_ID,
+} from '../constants';
+import { CategoryType } from '../utils/enums';
 
 interface TransactionFilters {
   userId: number;
@@ -66,18 +72,43 @@ export async function addTransaction(
   if (!description || !categoryId || !amount || !date)
     throw new Error('All fields are required');
 
-  const newTransaction = await db.transaction.create({
-    data: {
-      description,
-      categoryId,
-      amount,
-      date: new Date(date),
-      userId,
-      walletId,
-    },
+  const wallet = await db.wallet.findUnique({
+    where: { id: walletId, userId },
+  });
+  if (!wallet) throw new Error('Wallet does not exist');
+
+  const category = await db.category.findUnique({ where: { id: categoryId } });
+  if (!category) throw new Error('Category does not exist');
+
+  const result = await db.$transaction(async (tx) => {
+    // 1) create a new transaction
+    const newTransaction = await tx.transaction.create({
+      data: {
+        description,
+        categoryId,
+        amount,
+        date: new Date(date),
+        userId,
+        walletId,
+      },
+    });
+
+    // 2) calculate new balance
+    const newBalance =
+      category.type === CategoryType.INCOME
+        ? Number(wallet.balance) + amount
+        : Number(wallet.balance) - amount;
+
+    // 3) update main wallet balance
+    await tx.wallet.update({
+      where: { id: walletId },
+      data: { balance: newBalance },
+    });
+
+    return newTransaction;
   });
 
-  return newTransaction;
+  return result;
 }
 
 export async function editTransaction(
@@ -99,4 +130,77 @@ export async function editTransaction(
 
 export async function removeTransaction(id: number, userId: number) {
   return db.transaction.delete({ where: { id, userId } });
+}
+
+export async function transferFunds(
+  userId: number,
+  fromWalletId: number,
+  toWalletId: number,
+  amount: number,
+  description: string,
+) {
+  if (fromWalletId === toWalletId) {
+    throw new Error('Cannot transfer to the same wallet');
+  }
+
+  if (amount <= 0) {
+    throw new Error('Amount must be greater than zero');
+  }
+
+  const [fromWallet, toWallet] = await Promise.all([
+    db.wallet.findUnique({ where: { id: fromWalletId } }),
+    db.wallet.findUnique({ where: { id: toWalletId } }),
+  ]);
+
+  if (!fromWallet || !toWallet) {
+    throw new Error('Wallet is not valid');
+  }
+
+  if (fromWallet.userId !== userId || toWallet.userId !== userId)
+    throw new Error('Unauthorized access to wallet');
+
+  if (Number(fromWallet.balance) < amount)
+    throw new Error('Insufficient funds');
+
+  const result = await db.$transaction(async (tx) => {
+    // 1) create outgoing transfer transaction
+    const outTranserTransaction = await tx.transaction.create({
+      data: {
+        description: description || `Transfer to ${toWallet.name}`,
+        categoryId: OUT_TRANSFER_CATEGORY_ID,
+        amount,
+        date: new Date(),
+        walletId: fromWalletId,
+        userId,
+      },
+    });
+
+    // 2) create incoming transfer transaction
+    await tx.transaction.create({
+      data: {
+        description: description || `Transfer from ${fromWallet.name}`,
+        categoryId: IN_TRANSFER_CATEGORY_ID,
+        amount,
+        date: new Date(),
+        walletId: toWalletId,
+        userId,
+      },
+    });
+
+    // 3) update fromWallet balance
+    await tx.wallet.update({
+      where: { id: fromWalletId },
+      data: { balance: Number(fromWallet.balance) - amount },
+    });
+
+    // 4) update toWallet balance
+    await tx.wallet.update({
+      where: { id: toWalletId },
+      data: { balance: Number(toWallet.balance) + amount },
+    });
+
+    return outTranserTransaction;
+  });
+
+  return result;
 }
