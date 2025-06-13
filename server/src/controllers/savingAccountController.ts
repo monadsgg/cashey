@@ -5,6 +5,7 @@ import {
   getAllSavings,
   removeSavingAccount,
 } from '../services/savingAccountService';
+import { WalletType } from '../utils/enums';
 
 export async function getSavingAccounts(
   req: Request,
@@ -27,11 +28,11 @@ export async function createSavingAccount(
   const userId = res.locals.user;
   const {
     name,
-    type,
-    currentAmt,
+    balance,
     targetAmt,
     accountType,
     owner,
+    investmentType,
     contributionLimit,
   } = req.body;
 
@@ -39,11 +40,12 @@ export async function createSavingAccount(
     const savingAccount = await addSavingAccount(
       {
         name,
-        type,
-        currentAmt,
+        type: WalletType.SAVINGS,
+        balance,
         targetAmt,
         owner,
         accountType,
+        investmentType,
         contributionLimit,
       },
       userId,
@@ -62,11 +64,11 @@ export async function updateSavingAccounts(
   const { id } = req.params;
   const {
     name,
-    type,
-    currentAmt,
+    balance,
     targetAmt,
     accountType,
     owner,
+    investmentType,
     contributionLimit,
   } = req.body;
 
@@ -75,11 +77,12 @@ export async function updateSavingAccounts(
       Number(id),
       {
         name,
-        type,
-        currentAmt,
+        type: WalletType.SAVINGS,
+        balance,
         targetAmt,
         owner,
         accountType,
+        investmentType,
         contributionLimit,
       },
       userId,
