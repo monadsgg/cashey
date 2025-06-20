@@ -35,7 +35,9 @@ export async function registerUser(
     },
   });
 
-  return { id: newUser.id, name, email };
+  const token = generateToken(newUser.id);
+
+  return { user: { id: newUser.id, name, email }, token };
 }
 
 export async function loginUser(email: string, password: string) {
