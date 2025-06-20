@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import userRouter from './routes/userRoutes';
 import transactionRouter from './routes/transactionRoutes';
 import categoryRouter from './routes/categoryRoutes';
@@ -9,6 +10,7 @@ import config from './config/config';
 import { verifyJWT } from './middlewares/authMiddleware';
 
 const app = express();
+app.use(cors());
 
 app.use(express.json());
 
