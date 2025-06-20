@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import Container from "@mui/material/Container";
 import Stack from "@mui/material/Stack";
 import SideBar from "../components/SideBar";
+import Box from "@mui/material/Box";
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -9,12 +9,18 @@ type AppLayoutProps = {
 
 function AppLayout({ children }: AppLayoutProps) {
   return (
-    <Container>
-      <Stack direction="row">
+    <Box
+      sx={{
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <Stack direction="row" sx={{ width: "100%", p: 6 }}>
         <SideBar />
-        <main>{children}</main>
+        <Box sx={{ width: "80%" }}>{children}</Box>
       </Stack>
-    </Container>
+    </Box>
   );
 }
 
