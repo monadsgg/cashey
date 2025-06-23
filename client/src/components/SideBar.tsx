@@ -13,6 +13,8 @@ import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import { logout } from "../utils/auth";
+import Typography from "@mui/material/Typography";
+import Paper from "@mui/material/Paper";
 
 const menu = [
   { text: "Dashboard", path: "/dashboard", icon: <DashboardIcon /> },
@@ -30,31 +32,62 @@ function SideBar() {
     navigate("/login");
   };
 
+  const getUserNameInitial = () => {
+    const user = localStorage.getItem("user");
+    if (!user) return "";
+
+    return JSON.parse(user).name.charAt(0).toUpperCase();
+  };
+
   return (
-    <Box>
-      <h2>Cashey</h2>
-      <List>
-        {menu.map((item) => (
-          <NavLink
-            to={item.path}
-            key={item.text}
-            style={({ isActive }) => ({
-              color: isActive ? "#FF8F0D" : "unset",
-              fontWeight: isActive ? 700 : "unset",
-            })}
-          >
-            <ListItem>
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText>{item.text}</ListItemText>
-            </ListItem>
-          </NavLink>
-        ))}
-      </List>
-      <Stack direction="row">
-        <Avatar>M</Avatar>
+    <Paper
+      elevation={2}
+      sx={{
+        width: "20%",
+        p: 4,
+        borderRadius: 2,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <Stack spacing={1}>
+        <Typography sx={{ textAlign: "center" }} variant="h3" color="primary">
+          Cashey.
+        </Typography>
+        <List>
+          {menu.map((item) => (
+            <NavLink
+              to={item.path}
+              key={item.text}
+              style={({ isActive }) => ({
+                color: isActive ? "#26CA99" : "unset",
+                textDecoration: "none",
+              })}
+            >
+              {({ isActive }) => (
+                <ListItem
+                  sx={{
+                    bgcolor: isActive ? "#F4F4F4" : "unset",
+                    borderRadius: 2,
+                  }}
+                >
+                  <ListItemIcon sx={{ color: isActive ? "#26CA99" : "unset" }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText>{item.text}</ListItemText>
+                </ListItem>
+              )}
+            </NavLink>
+          ))}
+        </List>
+      </Stack>
+
+      <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+        <Avatar>{getUserNameInitial()}</Avatar>
         <Button onClick={handleLogout}>Logout</Button>
       </Stack>
-    </Box>
+    </Paper>
   );
 }
 
