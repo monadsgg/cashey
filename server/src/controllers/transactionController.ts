@@ -33,7 +33,15 @@ export async function createTransaction(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const { description, categoryId, amount, date, walletId } = req.body;
+  const {
+    description,
+    categoryId,
+    amount,
+    date,
+    walletId,
+    tagName,
+    payeeName,
+  } = req.body;
   const userId = res.locals.user;
 
   try {
@@ -44,6 +52,8 @@ export async function createTransaction(
       date,
       userId,
       walletId,
+      tagName,
+      payeeName,
     );
 
     res.status(201).json(transaction);

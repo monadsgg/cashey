@@ -61,6 +61,28 @@ export async function getAllTransactions({
   };
 }
 
+async function findOrCreateTagByName(name: string, userId: number) {
+  const tagExists = await db.tag.findUnique({
+    where: { name_userId: { name, userId } },
+  });
+  if (tagExists) return tagExists.id;
+
+  const newTag = await db.tag.create({ data: { name, userId } });
+  return newTag.id;
+}
+
+async function findOrCreatePayeeByName(name: string, userId: number) {
+  const payeeExists = await db.payee.findUnique({
+    where: { name_userId: { name, userId } },
+  });
+  if (payeeExists) return payeeExists.id;
+
+  const newPayee = await db.payee.create({
+    data: { name, userId },
+  });
+  return newPayee.id;
+}
+
 export async function addTransaction(
   description: string,
   categoryId: number,
@@ -68,6 +90,8 @@ export async function addTransaction(
   date: string,
   userId: number,
   walletId: number,
+  tagName: string,
+  payeeName: string,
 ) {
   if (!description || !categoryId || !amount || !date)
     throw new Error('All fields are required');
@@ -81,6 +105,12 @@ export async function addTransaction(
   if (!category) throw new Error('Category does not exist');
 
   const result = await db.$transaction(async (tx) => {
+    // 0) Find/Create tag or payee
+    const tagId = tagName ? await findOrCreateTagByName(tagName, userId) : null;
+    const payeeId = payeeName
+      ? await findOrCreatePayeeByName(payeeName, userId)
+      : null;
+
     // 1) create a new transaction
     const newTransaction = await tx.transaction.create({
       data: {
@@ -90,6 +120,8 @@ export async function addTransaction(
         date: new Date(date),
         userId,
         walletId,
+        tagId: tagId ? tagId : undefined,
+        payeeId: payeeId ? payeeId : undefined,
       },
     });
 
