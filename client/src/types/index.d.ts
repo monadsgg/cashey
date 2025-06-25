@@ -2,7 +2,7 @@ type TransactionItem = {
   id?: number;
   category: Category;
   amount: number;
-  date: Date;
+  date: string;
   description: string;
   tag?: Tag;
   payee?: Payee;
