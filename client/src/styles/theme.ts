@@ -1,5 +1,6 @@
 // src/theme.ts
 import { createTheme } from "@mui/material/styles";
+import { fontSize } from "@mui/system";
 
 const theme = createTheme({
   palette: {
@@ -55,6 +56,15 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           marginLeft: 0,
+        },
+      },
+    },
+    MuiSvgIcon: {
+      styleOverrides: {
+        root: {
+          "&:hover": {
+            cursor: "pointer",
+          },
         },
       },
     },

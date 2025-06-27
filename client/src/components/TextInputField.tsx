@@ -2,11 +2,11 @@ import InputLabel from "@mui/material/InputLabel";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 
-type InputFieldProps = {
+type TextInputFieldProps = {
   label: string;
   value: string | number;
   name: string;
-  type: string;
+  type?: string;
   placeholder?: string;
   required?: boolean;
   error?: boolean;
@@ -14,19 +14,19 @@ type InputFieldProps = {
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-function InputField({
+function TextInputField({
   label,
   value,
   name,
-  type,
+  type = "text",
   placeholder,
   required,
   error,
   helperText,
   onChange,
-}: InputFieldProps) {
+}: TextInputFieldProps) {
   return (
-    <Stack>
+    <Stack sx={{ marginBottom: 2 }}>
       <InputLabel
         sx={{ fontSize: 15, textTransform: "uppercase", fontWeight: 600 }}
       >
@@ -49,4 +49,4 @@ function InputField({
   );
 }
 
-export default InputField;
+export default TextInputField;

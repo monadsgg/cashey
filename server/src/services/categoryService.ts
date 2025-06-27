@@ -4,6 +4,7 @@ import { CategoryType } from '../utils/enums';
 export async function getAllCategories(userId: number) {
   const categories = await db.category.findMany({
     where: { OR: [{ userId }, { userId: { equals: null } }] },
+    omit: { userId: true },
   });
 
   return categories;
@@ -27,6 +28,7 @@ export async function addCategory(
       type,
       userId,
     },
+    omit: { userId: true },
   });
 
   return newCategory;
@@ -43,7 +45,11 @@ export async function editCategory(
   if (!category || category.userId !== userId)
     throw new Error('Category not found or not allowed to edit');
 
-  return db.category.update({ where: { id }, data: { name, type } });
+  return db.category.update({
+    where: { id },
+    data: { name, type },
+    omit: { userId: true },
+  });
 }
 
 export async function removeCategory(id: number, userId: number) {

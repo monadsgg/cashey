@@ -46,6 +46,20 @@ export async function getAllTransactions({
       orderBy: { date: 'desc' },
       skip,
       take: pageSize,
+      include: {
+        category: {
+          omit: { userId: true },
+        },
+        tag: { omit: { userId: true } },
+        payee: { omit: { userId: true } },
+      },
+      omit: {
+        categoryId: true,
+        userId: true,
+        walletId: true,
+        tagId: true,
+        payeeId: true,
+      },
     }),
     db.transaction.count({ where }),
   ]);
@@ -123,6 +137,20 @@ export async function addTransaction(
         tagId: tagId ? tagId : undefined,
         payeeId: payeeId ? payeeId : undefined,
       },
+      include: {
+        category: {
+          omit: { userId: true },
+        },
+        tag: { omit: { userId: true } },
+        payee: { omit: { userId: true } },
+      },
+      omit: {
+        categoryId: true,
+        userId: true,
+        walletId: true,
+        tagId: true,
+        payeeId: true,
+      },
     });
 
     // 2) calculate new balance
@@ -157,6 +185,20 @@ export async function editTransaction(
   return db.transaction.update({
     where: { id, userId },
     data: { description, categoryId, amount, date: new Date(date) },
+    include: {
+      category: {
+        omit: { userId: true },
+      },
+      tag: { omit: { userId: true } },
+      payee: { omit: { userId: true } },
+    },
+    omit: {
+      categoryId: true,
+      userId: true,
+      walletId: true,
+      tagId: true,
+      payeeId: true,
+    },
   });
 }
 
