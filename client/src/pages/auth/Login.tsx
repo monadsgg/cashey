@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Stack from "@mui/material/Stack";
-import InputField from "../../components/InputField";
+import TextInputField from "../../components/TextInputField";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
@@ -93,7 +93,7 @@ function Login() {
               Welcome back!
             </Typography>
             <Stack spacing={2}>
-              <InputField
+              <TextInputField
                 label="email address"
                 name="email"
                 type="text"
@@ -102,7 +102,7 @@ function Login() {
                 helperText={error.email}
                 onChange={handleChange}
               />
-              <InputField
+              <TextInputField
                 label="password"
                 name="password"
                 type="password"

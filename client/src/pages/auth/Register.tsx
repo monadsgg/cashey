@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Stack from "@mui/material/Stack";
-import InputField from "../../components/InputField";
+import TextInputField from "../../components/TextInputField";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
@@ -100,7 +100,7 @@ function Register() {
               Welcome!
             </Typography>
             <Stack spacing={2}>
-              <InputField
+              <TextInputField
                 required
                 label="name"
                 name="name"
@@ -110,7 +110,7 @@ function Register() {
                 helperText={errors.name}
                 onChange={handleChange}
               />
-              <InputField
+              <TextInputField
                 required
                 label="email address"
                 name="email"
@@ -120,7 +120,7 @@ function Register() {
                 helperText={errors.email}
                 onChange={handleChange}
               />
-              <InputField
+              <TextInputField
                 required
                 label="password"
                 name="password"
