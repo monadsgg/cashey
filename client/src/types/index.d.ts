@@ -8,10 +8,29 @@ type TransactionItem = {
   payee?: Payee;
 };
 
+type TransactionCreatePayload = {
+  categoryId: number;
+  amount: number;
+  date: string;
+  description: string;
+  tagId?: number | null;
+  payeeId?: number | null;
+  walletId: number;
+};
+
+type TransactionUpdatePayload = TransactionCreatePayload & {
+  id: number;
+};
+
+type DateRange = {
+  startDate: string;
+  endDate: string;
+};
+
 type Category = {
   id?: number;
   name: string;
-  type: "expense" | "income";
+  type: string;
 };
 
 type Tag = {
@@ -24,7 +43,9 @@ type Payee = {
   name: string;
 };
 
-type DateRange = {
-  startDate: string;
-  endDate: string;
+type Wallet = {
+  id: number;
+  name: string;
+  type: string;
+  balance: number;
 };

@@ -12,3 +12,8 @@ export async function getAllTransactions(
   );
   return result.data;
 }
+
+export async function addTransaction(data: TransactionCreatePayload) {
+  const result = await api.post("/api/transactions", data);
+  return result.data;
+}

@@ -17,6 +17,8 @@ import {
   getCurrentMonth,
   getCurrentYear,
 } from "../../utils/dateUtils";
+import TransactionForm from "./TransactionForm";
+import Dialog from "@mui/material/Dialog";
 
 type Pagination = {
   page: number;
@@ -41,6 +43,7 @@ function Transaction() {
     month: format(new Date(), "MMMM"),
     year: format(new Date(), "yyyy"),
   });
+  const [openForm, setOpenForm] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,44 +83,62 @@ function Transaction() {
     });
   };
 
-  return (
-    <Box sx={{ height: "100%", p: 3, border: "1px solid red" }}>
-      <Stack direction="row" sx={{ alignItems: "center" }}>
-        <Tooltip title="Previous month">
-          <NavigateBeforeIcon onClick={goToPreviousMonth} />
-        </Tooltip>
-        <Typography variant="h2">
-          {currentTimeFrame.month} {currentTimeFrame.year}
-        </Typography>
-        <Tooltip title="Next month">
-          <NavigateNextIcon onClick={goToNextMonth} />
-        </Tooltip>
-      </Stack>
+  const handleOnAddTransaction = (item: TransactionItem) => {
+    console.log(item);
+    const newData = [item, ...data];
+    console.log(newData);
 
-      <Stack direction="row" spacing={2}>
-        <Stack sx={{ flexGrow: 1 }}>
-          <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-            <Stack direction="row">
-              <Button>Add Transaction</Button>
-              <Button>Import/Export</Button>
-            </Stack>
-            <Stack direction="row">
-              <Button>Search</Button>
-              <Button>Setting</Button>
-              <Button>Filter</Button>
-            </Stack>
-          </Stack>
-          <TransactionTable
-            transactions={data}
-            totalCount={pagination.total}
-            page={pagination.page}
-            pageSize={pagination.pageSize}
-            onPageChange={handlePageChange}
-            totalPages={pagination.totalPages}
-          />
+    setData(newData);
+  };
+
+  const handleOpenForm = () => {
+    setOpenForm(true);
+  };
+
+  const handleCloseForm = () => {
+    console.log("closed");
+    setOpenForm(false);
+  };
+
+  return (
+    <>
+      <Box sx={{ height: "100%", p: 3, border: "1px solid red" }}>
+        <Stack direction="row" sx={{ alignItems: "center" }}>
+          <Tooltip title="Previous month">
+            <NavigateBeforeIcon onClick={goToPreviousMonth} />
+          </Tooltip>
+          <Typography variant="h2">
+            {currentTimeFrame.month} {currentTimeFrame.year}
+          </Typography>
+          <Tooltip title="Next month">
+            <NavigateNextIcon onClick={goToNextMonth} />
+          </Tooltip>
         </Stack>
-        <Stack sx={{ width: 400, border: "1px solid #ccc", p: 2 }}>
-          <Typography>{currentTimeFrame.month} Summary</Typography>
+
+        <Stack direction="row" spacing={2}>
+          <Stack sx={{ flexGrow: 1 }}>
+            <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+              <Stack direction="row">
+                <Button onClick={handleOpenForm}>Add Transaction</Button>
+                <Button>Import/Export</Button>
+              </Stack>
+              <Stack direction="row">
+                <Button>Search</Button>
+                <Button>Setting</Button>
+                <Button>Filter</Button>
+              </Stack>
+            </Stack>
+            <TransactionTable
+              transactions={data}
+              totalCount={pagination.total}
+              page={pagination.page}
+              pageSize={pagination.pageSize}
+              onPageChange={handlePageChange}
+              totalPages={pagination.totalPages}
+            />
+          </Stack>
+          <Stack sx={{ width: 400, border: "1px solid #ccc", p: 2 }}>
+            {/* <Typography>{currentTimeFrame.month} Summary</Typography>
           <Stack>
             <Stack direction="row">
               <Typography>Income</Typography>
@@ -152,10 +173,36 @@ function Transaction() {
               </Stack>
               <Typography>Slider here</Typography>
             </Stack>
+          </Stack> */}
           </Stack>
         </Stack>
-      </Stack>
-    </Box>
+      </Box>
+      <Dialog
+        onClose={handleCloseForm}
+        open={openForm}
+        slotProps={{
+          paper: {
+            sx: {
+              position: "fixed",
+              top: 0,
+              right: 0,
+              height: "100vh",
+              width: "25vw",
+              m: 0,
+              borderRadius: 0,
+              maxHeight: "100%",
+              p: "40px",
+            },
+          },
+        }}
+      >
+        <TransactionForm
+          title="Add transaction"
+          onAddTransaction={handleOnAddTransaction}
+          onClose={handleCloseForm}
+        />
+      </Dialog>
+    </>
   );
 }
 
