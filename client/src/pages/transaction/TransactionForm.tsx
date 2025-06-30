@@ -9,10 +9,11 @@ import { type SelectChangeEvent } from "@mui/material/Select";
 import { getCategories } from "../../services/categories";
 import Button from "@mui/material/Button";
 import { getWallets } from "../../services/wallet";
-import { addTransaction } from "../../services/transactions";
+import { addTransaction, updateTransaction } from "../../services/transactions";
 import { formatDate } from "../../utils/dateUtils";
 
-type TransactionFormDataType = {
+export type TransactionFormDataType = {
+  id?: number;
   description: string;
   date: Date;
   categoryId: number;
@@ -26,25 +27,30 @@ interface TransactionFormProps {
   formData?: TransactionFormDataType;
   onClose: () => void;
   isLoading?: boolean;
-  isEditing?: boolean;
   onAddTransaction: (item: TransactionItem) => void;
+  onUpdateTransaction: (item: TransactionItem) => void;
+  selectedItem: TransactionFormDataType | null;
 }
 
 function TransactionForm({
   title,
   onClose,
   isLoading,
-  isEditing,
   onAddTransaction,
+  onUpdateTransaction,
+  selectedItem,
 }: TransactionFormProps) {
-  const [formData, setFormData] = useState<TransactionFormDataType>({
+  const initialFormData: TransactionFormDataType = {
     description: "",
     date: new Date(),
     categoryId: 2,
     amount: 0,
     payeeId: null,
     tagId: null,
-  });
+  };
+  const [formData, setFormData] = useState<TransactionFormDataType>(
+    selectedItem ?? initialFormData
+  );
   const [categories, setCategories] = useState<Category[]>([]);
   const [mainWalletId, setMainWalletId] = useState(0);
 
@@ -73,7 +79,8 @@ function TransactionForm({
   const handleSubmit = async () => {
     const { description, amount, date, categoryId, payeeId, tagId } = formData;
     const formattedDate = formatDate(date, "yyyy-MM-dd");
-    const result = await addTransaction({
+
+    const payloadData = {
       description,
       amount,
       categoryId,
@@ -81,17 +88,24 @@ function TransactionForm({
       tagId,
       date: formattedDate,
       walletId: mainWalletId,
-    });
+    };
 
-    setFormData({
-      ...formData,
-      description: "",
-      amount: 0,
-      payeeId: null,
-      tagId: null,
-    });
+    if (formData?.id) {
+      const result = await updateTransaction(formData.id, payloadData);
+      onUpdateTransaction(result);
+    } else {
+      const result = await addTransaction(payloadData);
 
-    onAddTransaction(result);
+      setFormData({
+        ...formData,
+        description: "",
+        amount: 0,
+        payeeId: null,
+        tagId: null,
+      });
+
+      onAddTransaction(result);
+    }
   };
 
   const handleDateChange = (value: Date) => {
@@ -107,6 +121,8 @@ function TransactionForm({
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+  const isDisabled = formData.description === "" || formData.amount <= 0;
 
   return (
     <Stack spacing={4} sx={{ height: "100%" }}>
@@ -147,15 +163,9 @@ function TransactionForm({
           color="primary"
           variant="contained"
           onClick={handleSubmit}
-          disabled={isLoading}
+          disabled={isDisabled}
         >
-          {!isLoading
-            ? !isEditing
-              ? "Add"
-              : "Save"
-            : !isEditing
-            ? "Adding"
-            : "Saving"}
+          {!selectedItem ? "Add " : "Save "}
           Transaction
         </Button>
       </Stack>

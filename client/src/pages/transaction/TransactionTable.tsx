@@ -20,6 +20,7 @@ type TransactionTableProps = {
   pageSize: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  onClickActionBtn: (item: TransactionItem) => void;
 };
 
 const StyledTableCell = styled(TableCell)(() => ({
@@ -39,6 +40,7 @@ function TransactionTable({
   page = 0,
   totalPages,
   onPageChange,
+  onClickActionBtn,
 }: TransactionTableProps) {
   // console.log("transactions", transactions);
   // console.log("totalCount", totalCount);
@@ -67,8 +69,8 @@ function TransactionTable({
     );
   };
 
-  const handleShowDialog = (item: TransactionItem) => {
-    console.log(item);
+  const handleClickActionBtn = (item: TransactionItem) => {
+    onClickActionBtn(item);
   };
 
   const renderTableBody = () => {
@@ -110,7 +112,7 @@ function TransactionTable({
                 />
               )}
             </StyledTableCell>
-            <StyledTableCell onClick={() => handleShowDialog(item)}>
+            <StyledTableCell onClick={() => handleClickActionBtn(item)}>
               <KeyboardArrowRightIcon sx={{ cursor: "pointer" }} />
             </StyledTableCell>
           </TableRow>

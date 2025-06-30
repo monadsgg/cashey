@@ -1,5 +1,5 @@
 type TransactionItem = {
-  id?: number;
+  id: number;
   category: Category;
   amount: number;
   date: string;
@@ -8,7 +8,7 @@ type TransactionItem = {
   payee?: Payee;
 };
 
-type TransactionCreatePayload = {
+type TransactionPayload = {
   categoryId: number;
   amount: number;
   date: string;
@@ -18,28 +18,24 @@ type TransactionCreatePayload = {
   walletId: number;
 };
 
-type TransactionUpdatePayload = TransactionCreatePayload & {
-  id: number;
-};
-
 type DateRange = {
   startDate: string;
   endDate: string;
 };
 
 type Category = {
-  id?: number;
+  id: number;
   name: string;
   type: string;
 };
 
 type Tag = {
-  id?: number;
+  id: number;
   name: string;
 };
 
 type Payee = {
-  id?: number;
+  id: number;
   name: string;
 };
 

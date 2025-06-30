@@ -13,7 +13,12 @@ export async function getAllTransactions(
   return result.data;
 }
 
-export async function addTransaction(data: TransactionCreatePayload) {
+export async function addTransaction(data: TransactionPayload) {
   const result = await api.post("/api/transactions", data);
+  return result.data;
+}
+
+export async function updateTransaction(id: number, data: TransactionPayload) {
+  const result = await api.put(`/api/transactions/${id}`, data);
   return result.data;
 }

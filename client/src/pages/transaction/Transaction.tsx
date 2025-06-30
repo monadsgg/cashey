@@ -16,8 +16,11 @@ import {
   getLastDayOfPrevMonth,
   getCurrentMonth,
   getCurrentYear,
+  getZonedDate,
 } from "../../utils/dateUtils";
-import TransactionForm from "./TransactionForm";
+import TransactionForm, {
+  type TransactionFormDataType,
+} from "./TransactionForm";
 import Dialog from "@mui/material/Dialog";
 
 type Pagination = {
@@ -44,6 +47,8 @@ function Transaction() {
     year: format(new Date(), "yyyy"),
   });
   const [openForm, setOpenForm] = useState(false);
+  const [selectedItem, setSelectedItem] =
+    useState<TransactionFormDataType | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,11 +89,16 @@ function Transaction() {
   };
 
   const handleOnAddTransaction = (item: TransactionItem) => {
-    console.log(item);
     const newData = [item, ...data];
-    console.log(newData);
-
     setData(newData);
+  };
+
+  const handleOnUpdateTransaction = (item: TransactionItem) => {
+    const index = data.findIndex((trx) => trx.id === item.id);
+    let newData = [...data];
+    newData[index] = item;
+    setData(newData);
+    handleCloseForm();
   };
 
   const handleOpenForm = () => {
@@ -96,8 +106,22 @@ function Transaction() {
   };
 
   const handleCloseForm = () => {
-    console.log("closed");
     setOpenForm(false);
+    setSelectedItem(null);
+  };
+
+  const handleOnClickActionBtn = (item: TransactionItem) => {
+    const { id, category, description, date, amount, tag, payee } = item;
+    handleOpenForm();
+    setSelectedItem({
+      id,
+      description,
+      date: getZonedDate(date),
+      amount,
+      categoryId: category.id,
+      tagId: tag?.id || null,
+      payeeId: payee?.id || null,
+    });
   };
 
   return (
@@ -135,6 +159,7 @@ function Transaction() {
               pageSize={pagination.pageSize}
               onPageChange={handlePageChange}
               totalPages={pagination.totalPages}
+              onClickActionBtn={handleOnClickActionBtn}
             />
           </Stack>
           <Stack sx={{ width: 400, border: "1px solid #ccc", p: 2 }}>
@@ -178,6 +203,7 @@ function Transaction() {
         </Stack>
       </Box>
       <Dialog
+        closeAfterTransition={false}
         onClose={handleCloseForm}
         open={openForm}
         slotProps={{
@@ -197,9 +223,11 @@ function Transaction() {
         }}
       >
         <TransactionForm
-          title="Add transaction"
+          title={`${selectedItem ? "Edit" : "Add"} transaction`}
           onAddTransaction={handleOnAddTransaction}
+          onUpdateTransaction={handleOnUpdateTransaction}
           onClose={handleCloseForm}
+          selectedItem={selectedItem}
         />
       </Dialog>
     </>
