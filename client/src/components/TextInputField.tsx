@@ -1,6 +1,6 @@
-import InputLabel from "@mui/material/InputLabel";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 
 type TextInputFieldProps = {
   label: string;
@@ -27,11 +27,7 @@ function TextInputField({
 }: TextInputFieldProps) {
   return (
     <Stack sx={{ marginBottom: 2 }}>
-      <InputLabel
-        sx={{ fontSize: 15, textTransform: "uppercase", fontWeight: 600 }}
-      >
-        {label}
-      </InputLabel>
+      <Typography variant="subtitle1">{label}</Typography>
       <TextField
         hiddenLabel
         variant="outlined"

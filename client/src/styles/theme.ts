@@ -44,6 +44,12 @@ const theme = createTheme({
       fontSize: "1rem",
       fontWeight: 600,
     },
+    subtitle1: {
+      fontSize: 15,
+      textTransform: "uppercase",
+      fontWeight: 600,
+      color: "#555555",
+    },
   },
   components: {
     MuiButton: {

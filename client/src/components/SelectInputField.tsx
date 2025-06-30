@@ -1,8 +1,8 @@
 import FormControl from "@mui/material/FormControl";
 import FormHelperText from "@mui/material/FormHelperText";
-import InputLabel from "@mui/material/InputLabel";
 import Select, { type SelectChangeEvent } from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
 interface SelectInputFieldProps {
   name: string;
@@ -25,11 +25,7 @@ function SelectInputField({
 }: SelectInputFieldProps) {
   return (
     <Stack sx={{ marginBottom: 2 }}>
-      <InputLabel
-        sx={{ fontSize: 15, textTransform: "uppercase", fontWeight: 600 }}
-      >
-        {label}
-      </InputLabel>
+      <Typography variant="subtitle1">{label}</Typography>
       <FormControl hiddenLabel fullWidth size="small">
         <Select
           variant="outlined"
