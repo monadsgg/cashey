@@ -9,8 +9,13 @@ import { type SelectChangeEvent } from "@mui/material/Select";
 import { getCategories } from "../../services/categories";
 import Button from "@mui/material/Button";
 import { getWallets } from "../../services/wallet";
-import { addTransaction, updateTransaction } from "../../services/transactions";
+import {
+  addTransaction,
+  deleteTransaction,
+  updateTransaction,
+} from "../../services/transactions";
 import { formatDate } from "../../utils/dateUtils";
+import Divider from "@mui/material/Divider";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -30,6 +35,7 @@ interface TransactionFormProps {
   onAddTransaction: (item: TransactionItem) => void;
   onUpdateTransaction: (item: TransactionItem) => void;
   selectedItem: TransactionFormDataType | null;
+  onDeleteTransaction: (id: number) => void;
 }
 
 function TransactionForm({
@@ -39,6 +45,7 @@ function TransactionForm({
   onAddTransaction,
   onUpdateTransaction,
   selectedItem,
+  onDeleteTransaction,
 }: TransactionFormProps) {
   const initialFormData: TransactionFormDataType = {
     description: "",
@@ -108,6 +115,11 @@ function TransactionForm({
     }
   };
 
+  const handleDeleteTransaction = async (id: number) => {
+    await deleteTransaction(id);
+    onDeleteTransaction(id);
+  };
+
   const handleDateChange = (value: Date) => {
     setFormData({ ...formData, date: value });
   };
@@ -155,9 +167,26 @@ function TransactionForm({
           onChange={handleFormDataChange}
         />
       </Stack>
+      {selectedItem && (
+        <Stack>
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={() => handleDeleteTransaction(selectedItem.id!)}
+          >
+            Delete transaction
+          </Button>
+        </Stack>
+      )}
+      <Divider />
       <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
-        <Button onClick={onClose} color="primary" disabled={isLoading}>
-          Cancel
+        <Button
+          variant="outlined"
+          onClick={onClose}
+          color="primary"
+          disabled={isLoading}
+        >
+          Close
         </Button>
         <Button
           color="primary"

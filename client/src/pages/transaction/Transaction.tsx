@@ -101,6 +101,12 @@ function Transaction() {
     handleCloseForm();
   };
 
+  const handleOnDeleteTransaction = (id: number) => {
+    const newData = data.filter((item) => item.id !== id);
+    setData(newData);
+    handleCloseForm();
+  };
+
   const handleOpenForm = () => {
     setOpenForm(true);
   };
@@ -226,6 +232,7 @@ function Transaction() {
           title={`${selectedItem ? "Edit" : "Add"} transaction`}
           onAddTransaction={handleOnAddTransaction}
           onUpdateTransaction={handleOnUpdateTransaction}
+          onDeleteTransaction={handleOnDeleteTransaction}
           onClose={handleCloseForm}
           selectedItem={selectedItem}
         />

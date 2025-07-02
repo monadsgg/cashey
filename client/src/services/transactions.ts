@@ -22,3 +22,7 @@ export async function updateTransaction(id: number, data: TransactionPayload) {
   const result = await api.put(`/api/transactions/${id}`, data);
   return result.data;
 }
+
+export async function deleteTransaction(id: number) {
+  return await api.delete(`/api/transactions/${id}`);
+}
