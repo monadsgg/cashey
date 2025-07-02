@@ -5,11 +5,12 @@ export async function getAllTransactions(
   pageSize: number = DEFAULT_PAGE_SIZE,
   page: number = DEFAULT_PAGE,
   start: string,
-  end: string
+  end: string,
+  query?: string
 ) {
-  const result = await api.get(
-    `/api/transactions?pageSize=${pageSize}&page=${page}&start=${start}&end=${end}`
-  );
+  const url = `/api/transactions?pageSize=${pageSize}&page=${page}&start=${start}&end=${end}`;
+  const urlWithQuery = `/api/transactions?pageSize=${pageSize}&page=${page}&start=${start}&end=${end}&query=${query}`;
+  const result = !query ? await api.get(url) : await api.get(urlWithQuery);
   return result.data;
 }
 

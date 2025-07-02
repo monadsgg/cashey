@@ -22,6 +22,7 @@ import TransactionForm, {
   type TransactionFormDataType,
 } from "./TransactionForm";
 import Dialog from "@mui/material/Dialog";
+import SearchInputField from "../../components/SearchInputField";
 
 type Pagination = {
   page: number;
@@ -49,6 +50,7 @@ function Transaction() {
   const [openForm, setOpenForm] = useState(false);
   const [selectedItem, setSelectedItem] =
     useState<TransactionFormDataType | null>(null);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,13 +58,14 @@ function Transaction() {
         pagination.pageSize,
         pagination.page,
         dateRange.startDate,
-        dateRange.endDate
+        dateRange.endDate,
+        searchValue
       );
       setData(data);
       setPagination(paginationData);
     };
     fetchData();
-  }, [pagination.page, dateRange.startDate, dateRange.endDate]);
+  }, [pagination.page, dateRange.startDate, dateRange.endDate, searchValue]);
 
   const handlePageChange = (page: number) => {
     setPagination({ ...pagination, page });
@@ -130,6 +133,10 @@ function Transaction() {
     });
   };
 
+  const handleOnSearch = (keyword: string) => {
+    setSearchValue(keyword);
+  };
+
   return (
     <>
       <Box sx={{ height: "100%", p: 3, border: "1px solid red" }}>
@@ -147,15 +154,20 @@ function Transaction() {
 
         <Stack direction="row" spacing={2}>
           <Stack sx={{ flexGrow: 1 }}>
-            <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+            <Stack
+              direction="row"
+              sx={{ p: "10px 0", justifyContent: "space-between" }}
+            >
               <Stack direction="row">
-                <Button onClick={handleOpenForm}>Add Transaction</Button>
-                <Button>Import/Export</Button>
+                <Button variant="outlined" onClick={handleOpenForm}>
+                  Add Transaction
+                </Button>
+                <Button variant="outlined">Import/Export</Button>
               </Stack>
               <Stack direction="row">
-                <Button>Search</Button>
-                <Button>Setting</Button>
-                <Button>Filter</Button>
+                <SearchInputField onChange={handleOnSearch} />
+                <Button variant="outlined">Setting</Button>
+                <Button variant="outlined">Filter</Button>
               </Stack>
             </Stack>
             <TransactionTable
