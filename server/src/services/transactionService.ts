@@ -178,13 +178,22 @@ export async function editTransaction(
   amount: number,
   date: string,
   userId: number,
+  tagId: number | null,
+  payeeId: number | null,
 ) {
   if (!description || !categoryId || !amount || !date)
     throw new Error('All fields are required');
 
   return db.transaction.update({
     where: { id, userId },
-    data: { description, categoryId, amount, date: new Date(date) },
+    data: {
+      description,
+      categoryId,
+      amount,
+      date: new Date(date),
+      tagId,
+      payeeId,
+    },
     include: {
       category: {
         omit: { userId: true },
