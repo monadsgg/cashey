@@ -23,6 +23,7 @@ import TransactionForm, {
 } from "./TransactionForm";
 import Dialog from "@mui/material/Dialog";
 import SearchInputField from "../../components/SearchInputField";
+import TransactionTableSettings from "./TransactionTableSettings";
 
 type Pagination = {
   page: number;
@@ -51,6 +52,10 @@ function Transaction() {
   const [selectedItem, setSelectedItem] =
     useState<TransactionFormDataType | null>(null);
   const [searchValue, setSearchValue] = useState("");
+  const [settings, setSettings] = useState<TransactionTableSettingsType>({
+    tag: false,
+    payee: false,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,6 +142,12 @@ function Transaction() {
     setSearchValue(keyword);
   };
 
+  const handleOnChangeTableSettings = (
+    settings: TransactionTableSettingsType
+  ) => {
+    setSettings(settings);
+  };
+
   return (
     <>
       <Box sx={{ height: "100%", p: 3, border: "1px solid red" }}>
@@ -164,10 +175,15 @@ function Transaction() {
                 </Button>
                 <Button variant="outlined">Import/Export</Button>
               </Stack>
-              <Stack direction="row">
+              <Stack direction="row" spacing={1}>
                 <SearchInputField onChange={handleOnSearch} />
-                <Button variant="outlined">Setting</Button>
-                <Button variant="outlined">Filter</Button>
+                <TransactionTableSettings
+                  settings={settings}
+                  onChange={handleOnChangeTableSettings}
+                />
+                <Button variant="outlined" size="large">
+                  Filter
+                </Button>
               </Stack>
             </Stack>
             <TransactionTable
@@ -178,6 +194,7 @@ function Transaction() {
               onPageChange={handlePageChange}
               totalPages={pagination.totalPages}
               onClickActionBtn={handleOnClickActionBtn}
+              settings={settings}
             />
           </Stack>
           <Stack sx={{ width: 400, border: "1px solid #ccc", p: 2 }}>

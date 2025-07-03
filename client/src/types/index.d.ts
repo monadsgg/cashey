@@ -23,6 +23,11 @@ type DateRange = {
   endDate: string;
 };
 
+type TransactionTableSettingsType = {
+  tag: boolean;
+  payee: boolean;
+};
+
 type Category = {
   id: number;
   name: string;

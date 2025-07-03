@@ -10,8 +10,6 @@ const Search = styled("div")(({ theme }) => ({
   "&:hover": {
     backgroundColor: alpha("#F3F3F5", 0.75),
   },
-  marginRight: theme.spacing(1),
-  marginLeft: 0,
   width: "100%",
 }));
 

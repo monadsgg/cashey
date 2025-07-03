@@ -21,6 +21,7 @@ type TransactionTableProps = {
   totalPages: number;
   onPageChange: (page: number) => void;
   onClickActionBtn: (item: TransactionItem) => void;
+  settings: TransactionTableSettingsType;
 };
 
 const StyledTableCell = styled(TableCell)(() => ({
@@ -41,6 +42,7 @@ function TransactionTable({
   totalPages,
   onPageChange,
   onClickActionBtn,
+  settings,
 }: TransactionTableProps) {
   // console.log("transactions", transactions);
   // console.log("totalCount", totalCount);
@@ -62,8 +64,8 @@ function TransactionTable({
         <StyledTableCell>Description</StyledTableCell>
         <StyledTableCell>Category</StyledTableCell>
         <StyledTableCell align="right">Amount</StyledTableCell>
-        <StyledTableCell>Payee</StyledTableCell>
-        <StyledTableCell>Tag</StyledTableCell>
+        {settings.payee && <StyledTableCell>Payee</StyledTableCell>}
+        {settings.tag && <StyledTableCell>Tag</StyledTableCell>}
         <StyledTableCell>Action</StyledTableCell>
       </>
     );
@@ -101,17 +103,24 @@ function TransactionTable({
               {getAmountSign(item.category.type)}
               {formatCurrency(item.amount)}
             </StyledTableCell>
-            <StyledTableCell>{item.payee && item.payee?.name}</StyledTableCell>
-            <StyledTableCell>
-              {item.tag && (
-                <Chip
-                  label={item.tag?.name}
-                  sx={{
-                    backgroundColor: "#8cdbc4",
-                  }}
-                />
-              )}
-            </StyledTableCell>
+            {settings.payee && (
+              <StyledTableCell>
+                {item.payee && item.payee?.name}
+              </StyledTableCell>
+            )}
+            {settings.tag && (
+              <StyledTableCell>
+                {item.tag && (
+                  <Chip
+                    label={item.tag?.name}
+                    sx={{
+                      backgroundColor: "#8cdbc4",
+                    }}
+                  />
+                )}
+              </StyledTableCell>
+            )}
+
             <StyledTableCell onClick={() => handleClickActionBtn(item)}>
               <KeyboardArrowRightIcon sx={{ cursor: "pointer" }} />
             </StyledTableCell>
