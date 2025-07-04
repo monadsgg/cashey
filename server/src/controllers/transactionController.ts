@@ -6,7 +6,6 @@ import {
   removeTransaction,
   transferFunds,
 } from '../services/transactionService';
-import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from '../constants';
 
 export async function getTransactions(
   req: Request,
@@ -18,8 +17,8 @@ export async function getTransactions(
     const transactions = await getAllTransactions({
       userId: res.locals.user,
       query: query as string,
-      page: Number(page) || DEFAULT_PAGE,
-      pageSize: Number(pageSize) || DEFAULT_PAGE_SIZE,
+      page: Number(page) || undefined,
+      pageSize: Number(pageSize) || undefined,
       start: start as string,
       end: end as string,
     });

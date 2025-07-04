@@ -1,8 +1,6 @@
 import { Prisma } from '@prisma/client';
 import db from '../utils/db';
 import {
-  DEFAULT_PAGE,
-  DEFAULT_PAGE_SIZE,
   OUT_TRANSFER_CATEGORY_ID,
   IN_TRANSFER_CATEGORY_ID,
 } from '../constants';
@@ -22,8 +20,8 @@ export async function getAllTransactions({
   query,
   start,
   end,
-  page = DEFAULT_PAGE,
-  pageSize = DEFAULT_PAGE_SIZE,
+  page,
+  pageSize,
 }: TransactionFilters) {
   const where: Prisma.TransactionWhereInput = { userId };
 
@@ -38,41 +36,60 @@ export async function getAllTransactions({
     where.date = { gte: new Date(start), lte: new Date(end) };
   }
 
-  const skip = (page - 1) * pageSize;
+  if (page && pageSize) {
+    const skip = (page - 1) * pageSize;
 
-  const [transactions, total] = await Promise.all([
-    db.transaction.findMany({
-      where,
-      orderBy: { date: 'desc' },
-      skip,
-      take: pageSize,
-      include: {
-        category: {
-          omit: { userId: true },
+    const [transactions, total] = await Promise.all([
+      db.transaction.findMany({
+        where,
+        orderBy: { date: 'desc' },
+        skip,
+        take: pageSize,
+        include: {
+          category: {
+            omit: { userId: true },
+          },
+          tag: { omit: { userId: true } },
+          payee: { omit: { userId: true } },
         },
-        tag: { omit: { userId: true } },
-        payee: { omit: { userId: true } },
-      },
-      omit: {
-        categoryId: true,
-        userId: true,
-        walletId: true,
-        tagId: true,
-        payeeId: true,
-      },
-    }),
-    db.transaction.count({ where }),
-  ]);
+        omit: {
+          categoryId: true,
+          userId: true,
+          walletId: true,
+          tagId: true,
+          payeeId: true,
+        },
+      }),
+      db.transaction.count({ where }),
+    ]);
 
-  return {
-    data: transactions,
-    pagination: {
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
+    return {
+      data: transactions,
+      pagination: {
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    };
+  }
+
+  return db.transaction.findMany({
+    where,
+    orderBy: { date: 'desc' },
+    include: {
+      category: {
+        omit: { userId: true },
+      },
     },
-  };
+    omit: {
+      categoryId: true,
+      userId: true,
+      walletId: true,
+      tagId: true,
+      payeeId: true,
+    },
+  });
 }
 
 async function findOrCreateTagByName(name: string, userId: number) {
