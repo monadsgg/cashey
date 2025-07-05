@@ -16,6 +16,7 @@ import {
 } from "../../services/transactions";
 import { formatDate } from "../../utils/dateUtils";
 import Divider from "@mui/material/Divider";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -32,20 +33,14 @@ interface TransactionFormProps {
   formData?: TransactionFormDataType;
   onClose: () => void;
   isLoading?: boolean;
-  onAddTransaction: (item: TransactionItem) => void;
-  onUpdateTransaction: (item: TransactionItem) => void;
   selectedItem: TransactionFormDataType | null;
-  onDeleteTransaction: (id: number) => void;
 }
 
 function TransactionForm({
   title,
   onClose,
   isLoading,
-  onAddTransaction,
-  onUpdateTransaction,
   selectedItem,
-  onDeleteTransaction,
 }: TransactionFormProps) {
   const initialFormData: TransactionFormDataType = {
     description: "",
@@ -60,6 +55,8 @@ function TransactionForm({
   );
   const [categories, setCategories] = useState<Category[]>([]);
   const [mainWalletId, setMainWalletId] = useState(0);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -83,6 +80,36 @@ function TransactionForm({
     fetchWallets();
   }, []);
 
+  const addMutation = useMutation({
+    mutationFn: addTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      onClose();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number;
+      payload: TransactionPayload;
+    }) => updateTransaction(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      onClose();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      onClose();
+    },
+  });
+
   const handleSubmit = async () => {
     const { description, amount, date, categoryId, payeeId, tagId } = formData;
     const formattedDate = formatDate(date, "yyyy-MM-dd");
@@ -98,10 +125,9 @@ function TransactionForm({
     };
 
     if (formData?.id) {
-      const result = await updateTransaction(formData.id, payloadData);
-      onUpdateTransaction(result);
+      updateMutation.mutate({ id: formData.id, payload: payloadData });
     } else {
-      const result = await addTransaction(payloadData);
+      addMutation.mutate(payloadData);
 
       setFormData({
         ...formData,
@@ -110,14 +136,11 @@ function TransactionForm({
         payeeId: null,
         tagId: null,
       });
-
-      onAddTransaction(result);
     }
   };
 
   const handleDeleteTransaction = async (id: number) => {
-    await deleteTransaction(id);
-    onDeleteTransaction(id);
+    deleteMutation.mutate(id);
   };
 
   const handleDateChange = (value: Date) => {

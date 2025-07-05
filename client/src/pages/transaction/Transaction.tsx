@@ -4,8 +4,11 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { format, startOfMonth, lastDayOfMonth } from "date-fns";
 import TransactionTable from "./TransactionTable";
-import { useEffect, useState } from "react";
-import { getAllTransactions } from "../../services/transactions";
+import { useMemo, useState } from "react";
+import {
+  getAllTransactions,
+  getTransactions,
+} from "../../services/transactions";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Tooltip from "@mui/material/Tooltip";
@@ -24,6 +27,8 @@ import TransactionForm, {
 import Dialog from "@mui/material/Dialog";
 import SearchInputField from "../../components/SearchInputField";
 import TransactionTableSettings from "./TransactionTableSettings";
+import TransactionSummary from "./TransactionSummary";
+import { useQuery } from "@tanstack/react-query";
 
 type Pagination = {
   page: number;
@@ -33,7 +38,6 @@ type Pagination = {
 };
 
 function Transaction() {
-  const [data, setData] = useState<TransactionItem[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
     pageSize: 10,
@@ -57,20 +61,55 @@ function Transaction() {
     payee: false,
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data, pagination: paginationData } = await getAllTransactions(
+  const currentMonth = useMemo(
+    () => currentTimeFrame.month,
+    [currentTimeFrame.month]
+  );
+
+  const paginatedQueryKey = useMemo(
+    () => [
+      "transaction",
+      pagination.page,
+      dateRange.startDate,
+      dateRange.endDate,
+      searchValue,
+    ],
+    [pagination.page, dateRange.startDate, dateRange.endDate, searchValue]
+  );
+
+  // query for paginated transactions
+  const { data: paginatedData } = useQuery({
+    queryKey: paginatedQueryKey,
+    queryFn: () =>
+      getTransactions(
         pagination.pageSize,
         pagination.page,
         dateRange.startDate,
         dateRange.endDate,
         searchValue
-      );
-      setData(data);
-      setPagination(paginationData);
-    };
-    fetchData();
-  }, [pagination.page, dateRange.startDate, dateRange.endDate, searchValue]);
+      ),
+  });
+
+  const allTransactionQueryKey = useMemo(
+    () => ["all-transactions", dateRange.startDate, dateRange.endDate],
+    [dateRange.startDate, dateRange.endDate]
+  );
+
+  // fetch all transactions for summary
+  const { data: allTransactions = [] } = useQuery({
+    queryKey: allTransactionQueryKey,
+    queryFn: () => getAllTransactions(dateRange.startDate, dateRange.endDate),
+  });
+
+  useMemo(() => {
+    if (paginatedData?.pagination) {
+      setPagination((prev) => ({
+        ...prev,
+        total: paginatedData.pagination.total,
+        totalPages: paginatedData.pagination.totalPages,
+      }));
+    }
+  }, [paginatedData]);
 
   const handlePageChange = (page: number) => {
     setPagination({ ...pagination, page });
@@ -94,25 +133,6 @@ function Transaction() {
       month: getCurrentMonth(startDate),
       year: getCurrentYear(startDate),
     });
-  };
-
-  const handleOnAddTransaction = (item: TransactionItem) => {
-    const newData = [item, ...data];
-    setData(newData);
-  };
-
-  const handleOnUpdateTransaction = (item: TransactionItem) => {
-    const index = data.findIndex((trx) => trx.id === item.id);
-    let newData = [...data];
-    newData[index] = item;
-    setData(newData);
-    handleCloseForm();
-  };
-
-  const handleOnDeleteTransaction = (id: number) => {
-    const newData = data.filter((item) => item.id !== id);
-    setData(newData);
-    handleCloseForm();
   };
 
   const handleOpenForm = () => {
@@ -148,6 +168,8 @@ function Transaction() {
     setSettings(settings);
   };
 
+  const transactionData = paginatedData?.data || [];
+
   return (
     <>
       <Box sx={{ height: "100%", p: 3, border: "1px solid red" }}>
@@ -173,7 +195,8 @@ function Transaction() {
                 <Button variant="outlined" onClick={handleOpenForm}>
                   Add Transaction
                 </Button>
-                <Button variant="outlined">Import/Export</Button>
+                {/* TO FOLLOW */}
+                {/* <Button variant="outlined">Import/Export</Button> */}
               </Stack>
               <Stack direction="row" spacing={1}>
                 <SearchInputField onChange={handleOnSearch} />
@@ -187,7 +210,7 @@ function Transaction() {
               </Stack>
             </Stack>
             <TransactionTable
-              transactions={data}
+              transactions={transactionData}
               totalCount={pagination.total}
               page={pagination.page}
               pageSize={pagination.pageSize}
@@ -197,44 +220,10 @@ function Transaction() {
               settings={settings}
             />
           </Stack>
-          <Stack sx={{ width: 400, border: "1px solid #ccc", p: 2 }}>
-            {/* <Typography>{currentTimeFrame.month} Summary</Typography>
-          <Stack>
-            <Stack direction="row">
-              <Typography>Income</Typography>
-              <Typography>$2500</Typography>
-            </Stack>
-            <Stack direction="row">
-              <Typography>Expense</Typography>
-              <Typography>-$1000</Typography>
-            </Stack>
-            <Stack direction="row">
-              <Typography>Savings</Typography>
-              <Typography>$1000</Typography>
-            </Stack>
-            <Stack direction="row">
-              <Typography>Remaining</Typography>
-              <Typography>$500</Typography>
-            </Stack>
-          </Stack>
-          <Stack>
-            <Typography>Expenses by Category</Typography>
-            <Stack>
-              <Stack direction="row">
-                <Typography>Rent</Typography>
-                <Typography>$600</Typography>
-              </Stack>
-              <Typography>Slider here</Typography>
-            </Stack>
-            <Stack>
-              <Stack direction="row">
-                <Typography>Rent</Typography>
-                <Typography>$600</Typography>
-              </Stack>
-              <Typography>Slider here</Typography>
-            </Stack>
-          </Stack> */}
-          </Stack>
+          <TransactionSummary
+            currentMonth={currentMonth}
+            transactions={allTransactions}
+          />
         </Stack>
       </Box>
       <Dialog
@@ -259,9 +248,6 @@ function Transaction() {
       >
         <TransactionForm
           title={`${selectedItem ? "Edit" : "Add"} transaction`}
-          onAddTransaction={handleOnAddTransaction}
-          onUpdateTransaction={handleOnUpdateTransaction}
-          onDeleteTransaction={handleOnDeleteTransaction}
           onClose={handleCloseForm}
           selectedItem={selectedItem}
         />
