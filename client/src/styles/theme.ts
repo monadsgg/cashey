@@ -1,6 +1,5 @@
 // src/theme.ts
 import { createTheme } from "@mui/material/styles";
-import { fontSize } from "@mui/system";
 
 const theme = createTheme({
   palette: {
