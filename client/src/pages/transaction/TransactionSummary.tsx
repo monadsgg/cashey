@@ -1,6 +1,6 @@
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { formatCurrency } from "../../utils/currencyUtils";
 
 interface TransactionSummaryProps {
@@ -74,7 +74,6 @@ function TransactionSummary({
   transactions,
 }: TransactionSummaryProps) {
   const { financialSummary, categoryExpense } = useMemo(() => {
-    console.log("memo summary");
     const summary = { income: 0, expense: 0, savings: 0 };
 
     const categoryMap = new Map<string, number>();
@@ -112,8 +111,6 @@ function TransactionSummary({
 
   const { income, expense, savings, remainingFunds } = financialSummary;
 
-  console.log("SUmmary render");
-
   return (
     <Stack
       spacing={3}
@@ -126,7 +123,7 @@ function TransactionSummary({
         <SummaryListItem title="Savings" amount={savings} />
         <SummaryListItem title="Remaining" amount={remainingFunds} />
       </Stack>
-      <Stack>
+      <Stack spacing={1}>
         {categoryExpense.length > 0 && (
           <>
             <SummaryTitle title="Expenses by Category" />
