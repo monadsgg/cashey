@@ -9,10 +9,17 @@ import { type SelectChangeEvent } from "@mui/material/Select";
 import { getCategories } from "../../services/categories";
 import Button from "@mui/material/Button";
 import { getWallets } from "../../services/wallet";
-import { addTransaction } from "../../services/transactions";
+import {
+  addTransaction,
+  deleteTransaction,
+  updateTransaction,
+} from "../../services/transactions";
 import { formatDate } from "../../utils/dateUtils";
+import Divider from "@mui/material/Divider";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-type TransactionFormDataType = {
+export type TransactionFormDataType = {
+  id?: number;
   description: string;
   date: Date;
   categoryId: number;
@@ -26,27 +33,30 @@ interface TransactionFormProps {
   formData?: TransactionFormDataType;
   onClose: () => void;
   isLoading?: boolean;
-  isEditing?: boolean;
-  onAddTransaction: (item: TransactionItem) => void;
+  selectedItem: TransactionFormDataType | null;
 }
 
 function TransactionForm({
   title,
   onClose,
   isLoading,
-  isEditing,
-  onAddTransaction,
+  selectedItem,
 }: TransactionFormProps) {
-  const [formData, setFormData] = useState<TransactionFormDataType>({
+  const initialFormData: TransactionFormDataType = {
     description: "",
     date: new Date(),
     categoryId: 2,
     amount: 0,
     payeeId: null,
     tagId: null,
-  });
+  };
+  const [formData, setFormData] = useState<TransactionFormDataType>(
+    selectedItem ?? initialFormData
+  );
   const [categories, setCategories] = useState<Category[]>([]);
   const [mainWalletId, setMainWalletId] = useState(0);
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -70,10 +80,41 @@ function TransactionForm({
     fetchWallets();
   }, []);
 
+  const addMutation = useMutation({
+    mutationFn: addTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      onClose();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number;
+      payload: TransactionPayload;
+    }) => updateTransaction(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      onClose();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      onClose();
+    },
+  });
+
   const handleSubmit = async () => {
     const { description, amount, date, categoryId, payeeId, tagId } = formData;
     const formattedDate = formatDate(date, "yyyy-MM-dd");
-    const result = await addTransaction({
+
+    const payloadData = {
       description,
       amount,
       categoryId,
@@ -81,17 +122,25 @@ function TransactionForm({
       tagId,
       date: formattedDate,
       walletId: mainWalletId,
-    });
+    };
 
-    setFormData({
-      ...formData,
-      description: "",
-      amount: 0,
-      payeeId: null,
-      tagId: null,
-    });
+    if (formData?.id) {
+      updateMutation.mutate({ id: formData.id, payload: payloadData });
+    } else {
+      addMutation.mutate(payloadData);
 
-    onAddTransaction(result);
+      setFormData({
+        ...formData,
+        description: "",
+        amount: 0,
+        payeeId: null,
+        tagId: null,
+      });
+    }
+  };
+
+  const handleDeleteTransaction = async (id: number) => {
+    deleteMutation.mutate(id);
   };
 
   const handleDateChange = (value: Date) => {
@@ -107,6 +156,8 @@ function TransactionForm({
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+  const isDisabled = formData.description === "" || formData.amount <= 0;
 
   return (
     <Stack spacing={4} sx={{ height: "100%" }}>
@@ -139,23 +190,34 @@ function TransactionForm({
           onChange={handleFormDataChange}
         />
       </Stack>
+      {selectedItem && (
+        <Stack>
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={() => handleDeleteTransaction(selectedItem.id!)}
+          >
+            Delete transaction
+          </Button>
+        </Stack>
+      )}
+      <Divider />
       <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
-        <Button onClick={onClose} color="primary" disabled={isLoading}>
-          Cancel
+        <Button
+          variant="outlined"
+          onClick={onClose}
+          color="primary"
+          disabled={isLoading}
+        >
+          Close
         </Button>
         <Button
           color="primary"
           variant="contained"
           onClick={handleSubmit}
-          disabled={isLoading}
+          disabled={isDisabled}
         >
-          {!isLoading
-            ? !isEditing
-              ? "Add"
-              : "Save"
-            : !isEditing
-            ? "Adding"
-            : "Saving"}
+          {!selectedItem ? "Add " : "Save "}
           Transaction
         </Button>
       </Stack>

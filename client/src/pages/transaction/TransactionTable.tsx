@@ -12,6 +12,8 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import { transferCategory } from "../app/appConstants";
 
 type TransactionTableProps = {
   transactions: TransactionItem[];
@@ -20,6 +22,8 @@ type TransactionTableProps = {
   pageSize: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  onClickActionBtn: (item: TransactionItem) => void;
+  settings: TransactionTableSettingsType;
 };
 
 const StyledTableCell = styled(TableCell)(() => ({
@@ -39,6 +43,8 @@ function TransactionTable({
   page = 0,
   totalPages,
   onPageChange,
+  onClickActionBtn,
+  settings,
 }: TransactionTableProps) {
   // console.log("transactions", transactions);
   // console.log("totalCount", totalCount);
@@ -60,15 +66,15 @@ function TransactionTable({
         <StyledTableCell>Description</StyledTableCell>
         <StyledTableCell>Category</StyledTableCell>
         <StyledTableCell align="right">Amount</StyledTableCell>
-        <StyledTableCell>Payee</StyledTableCell>
-        <StyledTableCell>Tag</StyledTableCell>
+        {settings.payee && <StyledTableCell>Payee</StyledTableCell>}
+        {settings.tag && <StyledTableCell>Tag</StyledTableCell>}
         <StyledTableCell>Action</StyledTableCell>
       </>
     );
   };
 
-  const handleShowDialog = (item: TransactionItem) => {
-    console.log(item);
+  const handleClickActionBtn = (item: TransactionItem) => {
+    onClickActionBtn(item);
   };
 
   const renderTableBody = () => {
@@ -99,19 +105,32 @@ function TransactionTable({
               {getAmountSign(item.category.type)}
               {formatCurrency(item.amount)}
             </StyledTableCell>
-            <StyledTableCell>{item.payee && item.payee?.name}</StyledTableCell>
+            {settings.payee && (
+              <StyledTableCell>
+                {item.payee && item.payee?.name}
+              </StyledTableCell>
+            )}
+            {settings.tag && (
+              <StyledTableCell>
+                {item.tag && (
+                  <Chip
+                    label={item.tag?.name}
+                    sx={{
+                      backgroundColor: "#8cdbc4",
+                    }}
+                  />
+                )}
+              </StyledTableCell>
+            )}
             <StyledTableCell>
-              {item.tag && (
-                <Chip
-                  label={item.tag?.name}
-                  sx={{
-                    backgroundColor: "#8cdbc4",
-                  }}
-                />
-              )}
-            </StyledTableCell>
-            <StyledTableCell onClick={() => handleShowDialog(item)}>
-              <KeyboardArrowRightIcon sx={{ cursor: "pointer" }} />
+              <IconButton
+                disabled={
+                  item.category.id === transferCategory.OUTGOING_TRANSFER
+                }
+                onClick={() => handleClickActionBtn(item)}
+              >
+                <KeyboardArrowRightIcon />
+              </IconButton>
             </StyledTableCell>
           </TableRow>
         ))}

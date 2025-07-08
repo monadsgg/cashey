@@ -1,7 +1,7 @@
 import { addMonths, endOfMonth, startOfMonth, subMonths } from "date-fns";
 import { toZonedTime, format } from "date-fns-tz";
 
-const getZonedDate = (date: string | Date) => {
+export const getZonedDate = (date: string | Date) => {
   return toZonedTime(date, "UTC");
 };
 

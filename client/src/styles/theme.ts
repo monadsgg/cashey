@@ -1,6 +1,5 @@
 // src/theme.ts
 import { createTheme } from "@mui/material/styles";
-import { fontSize } from "@mui/system";
 
 const theme = createTheme({
   palette: {
@@ -43,6 +42,12 @@ const theme = createTheme({
     button: {
       fontSize: "1rem",
       fontWeight: 600,
+    },
+    subtitle1: {
+      fontSize: 15,
+      textTransform: "uppercase",
+      fontWeight: 600,
+      color: "#555555",
     },
   },
   components: {
