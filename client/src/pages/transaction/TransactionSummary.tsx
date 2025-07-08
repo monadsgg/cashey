@@ -2,6 +2,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useMemo } from "react";
 import { formatCurrency } from "../../utils/currencyUtils";
+import { transferCategory } from "../app/appConstants";
 
 interface TransactionSummaryProps {
   currentMonth: string;
@@ -83,9 +84,14 @@ function TransactionSummary({
       const { category } = transaction;
       const amount = Number(transaction.amount);
 
-      if (category.type === "income") summary.income += amount;
+      if (
+        category.type === "income" &&
+        category.id !== transferCategory.INCOMING_TRANSFER
+      )
+        summary.income += amount;
       if (category.type === "expense") {
-        if (category.id === 15) summary.savings += amount;
+        if (category.id === transferCategory.OUTGOING_TRANSFER)
+          summary.savings += amount;
         else summary.expense += amount;
 
         // build category breakdown for all expenses

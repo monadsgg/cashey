@@ -24,11 +24,13 @@ import {
 import TransactionForm, {
   type TransactionFormDataType,
 } from "./TransactionForm";
-import Dialog from "@mui/material/Dialog";
 import SearchInputField from "../../components/SearchInputField";
 import TransactionTableSettings from "./TransactionTableSettings";
 import TransactionSummary from "./TransactionSummary";
 import { useQuery } from "@tanstack/react-query";
+import TransferMoneyButton from "../../components/TransferMoneyButton";
+import FormDialog from "../../components/FormDialog";
+import { transferCategory } from "../app/appConstants";
 
 type Pagination = {
   page: number;
@@ -168,7 +170,13 @@ function Transaction() {
     setSettings(settings);
   };
 
-  const transactionData = paginatedData?.data || [];
+  // const handleOnClickTransferBtn = () => {};
+
+  const transactionData =
+    paginatedData?.data.filter(
+      (item: TransactionItem) =>
+        item.category.id !== transferCategory.INCOMING_TRANSFER
+    ) || [];
 
   return (
     <>
@@ -220,38 +228,22 @@ function Transaction() {
               settings={settings}
             />
           </Stack>
-          <TransactionSummary
-            currentMonth={currentMonth}
-            transactions={allTransactions}
-          />
+          <Stack direction="column" spacing={1}>
+            <TransferMoneyButton />
+            <TransactionSummary
+              currentMonth={currentMonth}
+              transactions={allTransactions}
+            />
+          </Stack>
         </Stack>
       </Box>
-      <Dialog
-        closeAfterTransition={false}
-        onClose={handleCloseForm}
-        open={openForm}
-        slotProps={{
-          paper: {
-            sx: {
-              position: "fixed",
-              top: 0,
-              right: 0,
-              height: "100vh",
-              width: "25vw",
-              m: 0,
-              borderRadius: 0,
-              maxHeight: "100%",
-              p: "40px",
-            },
-          },
-        }}
-      >
+      <FormDialog onClose={handleCloseForm} open={openForm}>
         <TransactionForm
           title={`${selectedItem ? "Edit" : "Add"} transaction`}
           onClose={handleCloseForm}
           selectedItem={selectedItem}
         />
-      </Dialog>
+      </FormDialog>
     </>
   );
 }
