@@ -7,14 +7,16 @@ import Typography from "@mui/material/Typography";
 interface DatePickerFieldProps {
   value: Date;
   onChange: (newValue: Date) => void;
+  disabled?: boolean;
 }
 
-function DatePickerField({ value, onChange }: DatePickerFieldProps) {
+function DatePickerField({ value, onChange, disabled }: DatePickerFieldProps) {
   return (
     <Stack sx={{ marginBottom: 2 }}>
       <Typography variant="subtitle1">Date</Typography>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DesktopDatePicker
+          disabled={disabled}
           value={value}
           onChange={(newValue) => {
             if (newValue !== null) onChange(newValue);
