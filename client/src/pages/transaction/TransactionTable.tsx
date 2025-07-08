@@ -12,6 +12,8 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import { transferCategory } from "../app/appConstants";
 
 type TransactionTableProps = {
   transactions: TransactionItem[];
@@ -120,9 +122,15 @@ function TransactionTable({
                 )}
               </StyledTableCell>
             )}
-
-            <StyledTableCell onClick={() => handleClickActionBtn(item)}>
-              <KeyboardArrowRightIcon sx={{ cursor: "pointer" }} />
+            <StyledTableCell>
+              <IconButton
+                disabled={
+                  item.category.id === transferCategory.OUTGOING_TRANSFER
+                }
+                onClick={() => handleClickActionBtn(item)}
+              >
+                <KeyboardArrowRightIcon />
+              </IconButton>
             </StyledTableCell>
           </TableRow>
         ))}
