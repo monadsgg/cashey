@@ -18,6 +18,14 @@ type TransactionPayload = {
   walletId: number;
 };
 
+type TransferPayload = {
+  date: string;
+  fromWalletId: number;
+  toWalletId: number;
+  amount: number;
+  description: string;
+};
+
 type DateRange = {
   startDate: string;
   endDate: string;

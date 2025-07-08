@@ -32,3 +32,8 @@ export async function updateTransaction(id: number, data: TransactionPayload) {
 export async function deleteTransaction(id: number) {
   return await api.delete(`/api/transactions/${id}`);
 }
+
+export async function transferFunds(data: TransferPayload) {
+  const result = await api.post("/api/transactions/transfer", data);
+  return result.data;
+}
