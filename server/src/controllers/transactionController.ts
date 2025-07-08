@@ -106,13 +106,14 @@ export async function transferFundsTransaction(
   res: Response,
 ): Promise<void> {
   const userId = res.locals.user;
-  const { fromWalletId, toWalletId, amount, description } = req.body;
+  const { fromWalletId, toWalletId, date, amount, description } = req.body;
 
   try {
     const transaction = await transferFunds(
       userId,
       fromWalletId,
       toWalletId,
+      date,
       amount,
       description,
     );

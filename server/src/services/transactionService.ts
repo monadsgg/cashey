@@ -236,6 +236,7 @@ export async function transferFunds(
   userId: number,
   fromWalletId: number,
   toWalletId: number,
+  date: string,
   amount: number,
   description: string,
 ) {
@@ -251,6 +252,8 @@ export async function transferFunds(
     db.wallet.findUnique({ where: { id: fromWalletId } }),
     db.wallet.findUnique({ where: { id: toWalletId } }),
   ]);
+
+  console.log(fromWallet, toWallet);
 
   if (!fromWallet || !toWallet) {
     throw new Error('Wallet is not valid');
@@ -269,7 +272,7 @@ export async function transferFunds(
         description: description || `Transfer to ${toWallet.name}`,
         categoryId: OUT_TRANSFER_CATEGORY_ID,
         amount,
-        date: new Date(),
+        date: new Date(date),
         walletId: fromWalletId,
         userId,
       },
@@ -281,7 +284,7 @@ export async function transferFunds(
         description: description || `Transfer from ${fromWallet.name}`,
         categoryId: IN_TRANSFER_CATEGORY_ID,
         amount,
-        date: new Date(),
+        date: new Date(date),
         walletId: toWalletId,
         userId,
       },
