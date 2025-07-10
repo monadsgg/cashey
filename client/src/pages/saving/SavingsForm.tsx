@@ -10,33 +10,66 @@ import MenuItem from "@mui/material/MenuItem";
 import {
   INVESTMENT_SAVING_TYPE,
   INVESTMENT_TYPE,
+  InvestmentType,
   PERSONAL_SAVING_TYPE,
 } from "../../constants";
 import Alert from "@mui/material/Alert";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addSavings } from "../../services/savings";
+import {
+  addSavings,
+  deleteSavings,
+  updateSavings,
+} from "../../services/savings";
 
 interface SavingsFormProps {
   onClose: () => void;
+  selectedAccount: SavingFormDataType | null;
 }
 
-function SavingsForm({ onClose }: SavingsFormProps) {
-  const initialFormData: SavingAccountPayload = {
+export type SavingFormDataType = SavingAccountPayload & {
+  id?: number;
+};
+
+function SavingsForm({ onClose, selectedAccount }: SavingsFormProps) {
+  const initialFormData: SavingFormDataType = {
     name: "",
     balance: 0,
     owner: "",
     targetAmt: 0,
     accountType: PERSONAL_SAVING_TYPE,
-    investmentType: "TFSA",
+    investmentType: InvestmentType.TFSA,
     contributionLimit: null,
   };
-  const [formData, setFormData] =
-    useState<SavingAccountPayload>(initialFormData);
+  const [formData, setFormData] = useState<SavingFormDataType>(
+    selectedAccount ?? initialFormData
+  );
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
 
   const addMutation = useMutation({
     mutationFn: addSavings,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["savings"] });
+      onClose();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: number;
+      payload: SavingAccountPayload;
+    }) => updateSavings(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["savings"] });
+      onClose();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteSavings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["savings"] });
       onClose();
@@ -59,7 +92,7 @@ function SavingsForm({ onClose }: SavingsFormProps) {
       return;
     }
 
-    addMutation.mutate({
+    const payload = {
       name,
       balance,
       owner,
@@ -67,7 +100,24 @@ function SavingsForm({ onClose }: SavingsFormProps) {
       accountType,
       investmentType,
       contributionLimit: contributionLimit || null,
-    });
+    };
+
+    if (formData.id) {
+      updateMutation.mutate({ id: formData.id, payload: payload });
+    } else {
+      addMutation.mutate(payload);
+      setFormData({
+        ...formData,
+        name: "",
+        balance: 0,
+        owner: "",
+        targetAmt: 0,
+      });
+    }
+  };
+
+  const handleDeleteAccount = (id: number) => {
+    deleteMutation.mutate(id);
   };
 
   const handleFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +132,9 @@ function SavingsForm({ onClose }: SavingsFormProps) {
 
   return (
     <Stack spacing={4} sx={{ height: "100%" }}>
-      <Typography variant="h3">Add saving account</Typography>
+      <Typography variant="h3">
+        {selectedAccount ? "Edit" : "Add"} saving account
+      </Typography>
       <Stack>
         <TextInputField
           label="Name"
@@ -122,7 +174,7 @@ function SavingsForm({ onClose }: SavingsFormProps) {
             <SelectInputField
               label="Investment Type"
               name="investmentType"
-              value={formData.investmentType}
+              value={formData.investmentType ?? undefined}
               onChange={handleFormSelectChange}
             >
               {Object.entries(INVESTMENT_TYPE).map(([key, value]) => {
@@ -137,7 +189,7 @@ function SavingsForm({ onClose }: SavingsFormProps) {
             <TextInputField
               label="Contribution Limit"
               name="contributionLimit"
-              value={formData.contributionLimit || ""}
+              value={formData.contributionLimit ?? null}
               onChange={handleFormDataChange}
             />
           </>
@@ -148,19 +200,36 @@ function SavingsForm({ onClose }: SavingsFormProps) {
           <Alert severity="error">{error}</Alert>
         </Stack>
       )}
+      {selectedAccount && (
+        <Stack spacing={1}>
+          <Button color="primary" variant="outlined" onClick={handleSubmit}>
+            Save changes
+          </Button>
+          <Button
+            color="secondary"
+            variant="outlined"
+            onClick={() => handleDeleteAccount(selectedAccount.id!)}
+          >
+            Delete this account
+          </Button>
+        </Stack>
+      )}
       <Divider />
       <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
         <Button variant="outlined" onClick={onClose} color="primary">
           Close
         </Button>
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={!!error}
-        >
-          Add
-        </Button>
+        {!selectedAccount && (
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={!!error}
+          >
+            Add
+            {/* {selectedAccount ? "Edit" : "Add"} */}
+          </Button>
+        )}
       </Stack>
     </Stack>
   );

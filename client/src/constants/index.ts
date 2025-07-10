@@ -11,3 +11,9 @@ export const INVESTMENT_TYPE = {
   RRSP: "Registered Retirement Savings Plan (RRSP)",
   FHSA: "First Home Savings Account (FHSA)",
 };
+
+export const InvestmentType = {
+  TFSA: "TFSA",
+  RRSP: "RRSP",
+  FHSA: "FHSA",
+};

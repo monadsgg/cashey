@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 
 type TextInputFieldProps = {
   label: string;
-  value: string | number;
+  value: string | number | null;
   name: string;
   type?: string;
   placeholder?: string;

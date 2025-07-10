@@ -17,6 +17,7 @@ interface SavingsCardProps {
   remainingAmt: number;
   contributionLimit?: number;
   percentage: number;
+  onClick: () => void;
 }
 
 const SavingsCard = ({
@@ -28,6 +29,7 @@ const SavingsCard = ({
   remainingAmt,
   contributionLimit,
   percentage,
+  onClick,
 }: SavingsCardProps) => {
   let alertSeverity: "success" | "error" | "info";
   let alertMessage: string;
@@ -44,7 +46,7 @@ const SavingsCard = ({
   }
 
   return (
-    <Card>
+    <Card onClick={onClick} sx={{ cursor: "pointer" }}>
       <Stack p={2} spacing={2}>
         <Stack
           direction="row"

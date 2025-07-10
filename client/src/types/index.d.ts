@@ -82,6 +82,6 @@ type SavingAccountPayload = {
   owner: string;
   targetAmt: number;
   accountType: string;
-  investmentType?: string;
+  investmentType?: string | null;
   contributionLimit?: number | null;
 };
