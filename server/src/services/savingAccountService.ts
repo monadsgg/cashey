@@ -21,6 +21,9 @@ export async function getAllSavings(userId: number) {
     include: {
       savingAccount: true,
     },
+    omit: {
+      userId: true,
+    },
   });
   return savingAccounts;
 }
