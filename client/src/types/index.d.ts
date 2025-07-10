@@ -58,3 +58,30 @@ type Wallet = {
   type: string;
   balance: number;
 };
+
+type SavingAccount = {
+  id: number;
+  name: string;
+  balance: number;
+  type: string;
+  savingAccount: SavingAccountDetails;
+};
+
+type SavingAccountDetails = {
+  walletId: number;
+  accountType: string;
+  owner: string;
+  targetAmt: number;
+  investmentType?: string;
+  contributionLimit?: number;
+};
+
+type SavingAccountPayload = {
+  name: string;
+  balance: number;
+  owner: string;
+  targetAmt: number;
+  accountType: string;
+  investmentType?: string;
+  contributionLimit?: number | null;
+};
