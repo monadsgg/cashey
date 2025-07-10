@@ -52,7 +52,7 @@ function TransactionTable({
   // console.log("page", page);
 
   const handleChangePage = (
-    event: React.ChangeEvent<unknown>,
+    _event: React.ChangeEvent<unknown>,
     newPage: number
   ) => {
     console.log("handleChangePage table", newPage);

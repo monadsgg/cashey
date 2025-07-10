@@ -227,7 +227,6 @@ function SavingsForm({ onClose, selectedAccount }: SavingsFormProps) {
             disabled={!!error}
           >
             Add
-            {/* {selectedAccount ? "Edit" : "Add"} */}
           </Button>
         )}
       </Stack>
