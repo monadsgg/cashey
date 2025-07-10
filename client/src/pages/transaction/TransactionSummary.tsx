@@ -1,21 +1,15 @@
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import { useMemo } from "react";
-import { formatCurrency } from "../../utils/currencyUtils";
 import { transferCategory } from "../app/appConstants";
+import SummaryListItem, {
+  type SummaryListItemProps,
+} from "../../components/SummaryListItem";
+import SummaryTitle from "../../components/SummaryTitle";
+import SummaryContainer from "../../components/SummaryContainer";
 
 interface TransactionSummaryProps {
   currentMonth: string;
   transactions: TransactionItem[];
-}
-
-interface SummaryListItemProps {
-  title: string;
-  amount: number;
-}
-
-interface SummaryTitleProps {
-  title: string;
 }
 
 interface SummaryExpenseCategoryItem extends SummaryListItemProps {
@@ -33,30 +27,6 @@ type CategoryExpenseType = {
   category: string;
   amount: number;
 };
-
-function SummaryListItem({ title, amount }: SummaryListItemProps) {
-  return (
-    <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-      <Typography color="secondary" sx={{ fontWeight: 500, fontSize: "18px" }}>
-        {title}
-      </Typography>
-      <Typography sx={{ fontSize: "18px" }}>
-        {formatCurrency(amount)}
-      </Typography>
-    </Stack>
-  );
-}
-
-function SummaryTitle({ title }: SummaryTitleProps) {
-  return (
-    <Typography
-      variant="subtitle1"
-      sx={{ textTransform: "uppercase", textAlign: "center" }}
-    >
-      {title}
-    </Typography>
-  );
-}
 
 function SummaryExpenseCategoryItem({
   title,
@@ -118,10 +88,7 @@ function TransactionSummary({
   const { income, expense, savings, remainingFunds } = financialSummary;
 
   return (
-    <Stack
-      spacing={3}
-      sx={{ width: 400, border: "1px solid #ccc", p: 4, borderRadius: 4 }}
-    >
+    <SummaryContainer>
       <SummaryTitle title={`${currentMonth} Summary`} />
       <Stack>
         <SummaryListItem title="Income" amount={income} />
@@ -143,7 +110,7 @@ function TransactionSummary({
           </>
         )}
       </Stack>
-    </Stack>
+    </SummaryContainer>
   );
 }
 

@@ -10,6 +10,7 @@ import Button from "@mui/material/Button";
 import { useSavings } from "../../hooks/useSavings";
 import FormDialog from "../../components/FormDialog";
 import SavingsForm, { type SavingFormDataType } from "./SavingsForm";
+import SavingsSummary from "./SavingsSummary";
 
 function SavingAccount() {
   const [tab, setTab] = useState(0);
@@ -62,15 +63,20 @@ function SavingAccount() {
     <>
       <Stack
         direction="row"
-        spacing={1}
-        sx={{ height: "100%", p: "0 20px", border: "1px solid red" }}
+        spacing={2}
+        sx={{
+          height: "100%",
+          p: "0",
+          paddingLeft: "20px",
+          border: "1px solid red",
+        }}
       >
         <Paper
           elevation={1}
           sx={{
             padding: 4,
             height: "100%",
-            width: "60%",
+            width: "70%",
           }}
         >
           <Stack direction={"row"}>
@@ -150,8 +156,8 @@ function SavingAccount() {
             </TabPanel>
           </Box>
         </Paper>
-        <Stack>
-          <h3>Summary here</h3>
+        <Stack spacing={1}>
+          <SavingsSummary />
           <h3>Transactions here</h3>
         </Stack>
       </Stack>
