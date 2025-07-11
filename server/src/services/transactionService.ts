@@ -42,7 +42,7 @@ export async function getAllTransactions({
     const [transactions, total] = await Promise.all([
       db.transaction.findMany({
         where,
-        orderBy: { date: 'desc' },
+        orderBy: [{ date: 'desc' }, { id: 'desc' }],
         skip,
         take: pageSize,
         include: {
@@ -76,7 +76,7 @@ export async function getAllTransactions({
 
   return db.transaction.findMany({
     where,
-    orderBy: { date: 'desc' },
+    orderBy: [{ date: 'desc' }, { id: 'desc' }],
     include: {
       category: {
         omit: { userId: true },
@@ -170,11 +170,14 @@ export async function addTransaction(
       },
     });
 
+    let balance = Number(wallet.balance);
+    let parsedAmount = Number(amount);
+
     // 2) calculate new balance
     const newBalance =
       category.type === CategoryType.INCOME
-        ? Number(wallet.balance) + amount
-        : Number(wallet.balance) - amount;
+        ? balance + parsedAmount
+        : balance - parsedAmount;
 
     // 3) update main wallet balance
     await tx.wallet.update({
@@ -201,35 +204,98 @@ export async function editTransaction(
   if (!description || !categoryId || !amount || !date)
     throw new Error('All fields are required');
 
-  return db.transaction.update({
-    where: { id, userId },
-    data: {
-      description,
-      categoryId,
-      amount,
-      date: new Date(date),
-      tagId,
-      payeeId,
-    },
-    include: {
-      category: {
-        omit: { userId: true },
+  const result = await db.$transaction(async (tx) => {
+    // 1) Get the old transaction (with category)
+    const oldTransaction = await tx.transaction.findUniqueOrThrow({
+      where: { id },
+      include: { category: true },
+    });
+
+    const wallet = await tx.wallet.findUniqueOrThrow({
+      where: { id: oldTransaction.walletId },
+    });
+
+    // 2) Get new category type to check if changed
+    const newCategory = await tx.category.findUniqueOrThrow({
+      where: { id: categoryId },
+    });
+
+    let balance = Number(wallet.balance);
+
+    // 3) Check if amount has changed
+    const oldAmount = Number(oldTransaction.amount);
+    const newAmount = Number(amount);
+
+    if (
+      oldAmount !== newAmount ||
+      oldTransaction.category.type !== newCategory.type
+    ) {
+      // Reverse old effect
+      if (oldTransaction.category.type === CategoryType.INCOME) {
+        balance -= oldAmount;
+      } else {
+        balance += oldAmount;
+      }
+
+      // Apply new effect
+      if (newCategory.type === CategoryType.INCOME) {
+        balance += newAmount;
+      } else {
+        balance -= newAmount;
+      }
+
+      // 4) Update wallet balance
+      await tx.wallet.update({
+        where: { id: oldTransaction.walletId },
+        data: { balance },
+      });
+    }
+
+    // 5) Update transaction
+    const updatedTransaction = await tx.transaction.update({
+      where: { id },
+      data: {
+        description,
+        categoryId,
+        amount,
+        date: new Date(date),
+        tagId,
+        payeeId,
       },
-      tag: { omit: { userId: true } },
-      payee: { omit: { userId: true } },
-    },
-    omit: {
-      categoryId: true,
-      userId: true,
-      walletId: true,
-      tagId: true,
-      payeeId: true,
-    },
+      include: {
+        category: {
+          omit: { userId: true },
+        },
+        tag: { omit: { userId: true } },
+        payee: { omit: { userId: true } },
+      },
+      omit: {
+        categoryId: true,
+        userId: true,
+        walletId: true,
+        tagId: true,
+        payeeId: true,
+      },
+    });
+
+    return updatedTransaction;
   });
+
+  return result;
 }
 
 export async function removeTransaction(id: number, userId: number) {
-  return db.transaction.delete({ where: { id, userId } });
+  const transaction = await db.transaction.findUnique({
+    where: { id, userId },
+  });
+
+  await db.$transaction([
+    db.transaction.delete({ where: { id, userId } }),
+    db.wallet.update({
+      where: { id: transaction?.walletId },
+      data: { balance: { decrement: transaction?.amount } },
+    }),
+  ]);
 }
 
 export async function transferFunds(
@@ -252,8 +318,6 @@ export async function transferFunds(
     db.wallet.findUnique({ where: { id: fromWalletId } }),
     db.wallet.findUnique({ where: { id: toWalletId } }),
   ]);
-
-  console.log(fromWallet, toWallet);
 
   if (!fromWallet || !toWallet) {
     throw new Error('Wallet is not valid');
