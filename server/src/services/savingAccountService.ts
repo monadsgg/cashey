@@ -112,3 +112,20 @@ export async function editSavingAccountt(
 export async function removeSavingAccount(id: number, userId: number) {
   return db.wallet.delete({ where: { id, userId } });
 }
+
+export async function getAllSavingsTransactions(userId: number) {
+  return db.transaction.findMany({
+    where: { userId, wallet: { type: WalletType.SAVINGS } },
+    include: {
+      wallet: true,
+      category: true,
+    },
+    omit: {
+      userId: true,
+      categoryId: true,
+      tagId: true,
+      payeeId: true,
+    },
+    orderBy: { date: 'desc' },
+  });
+}
