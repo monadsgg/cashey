@@ -11,6 +11,7 @@ import { useSavings } from "../../hooks/useSavings";
 import FormDialog from "../../components/FormDialog";
 import SavingsForm, { type SavingFormDataType } from "./SavingsForm";
 import SavingsSummary from "./SavingsSummary";
+import SavingsTransactions from "./SavingsTransactions";
 
 function SavingAccount() {
   const [tab, setTab] = useState(0);
@@ -158,7 +159,7 @@ function SavingAccount() {
         </Paper>
         <Stack spacing={1}>
           <SavingsSummary />
-          <h3>Transactions here</h3>
+          <SavingsTransactions />
         </Stack>
       </Stack>
       <FormDialog open={open} onClose={handleClose}>
