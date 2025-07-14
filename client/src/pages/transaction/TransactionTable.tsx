@@ -7,7 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { formatDate } from "../../utils/dateUtils";
-import { formatCurrency } from "../../utils/currencyUtils";
+import { formatCurrency, getAmountSign } from "../../utils/currencyUtils";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
@@ -86,11 +86,6 @@ function TransactionTable({
           </TableCell>
         </TableRow>
       );
-
-    const getAmountSign = (type: string) => {
-      if (type === "income") return "+";
-      else return "-";
-    };
 
     return (
       <>

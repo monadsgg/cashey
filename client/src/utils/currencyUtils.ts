@@ -1,3 +1,5 @@
+import { CategoryType } from "../constants";
+
 export function formatCurrency(
   amount: number,
   currency: string = "CAD",
@@ -8,4 +10,9 @@ export function formatCurrency(
     currency,
     minimumFractionDigits: 2,
   }).format(amount);
+}
+
+export function getAmountSign(type: string) {
+  if (type === CategoryType.INCOME) return "+";
+  else return "-";
 }
