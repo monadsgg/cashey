@@ -5,6 +5,13 @@ export async function getSavings() {
   return result.data;
 }
 
+export async function getSavingsTransactions(start: string, end: string) {
+  const result = await api.get(
+    `api/savings/transactions?start=${start}&end=${end}`
+  );
+  return result.data;
+}
+
 export async function addSavings(data: SavingAccountPayload) {
   const result = await api.post("/api/savings", data);
   return result.data;

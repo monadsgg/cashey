@@ -56,6 +56,7 @@ function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
       queryClient.invalidateQueries({ queryKey: ["transaction"] });
       queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
       queryClient.refetchQueries({ queryKey: ["savings"] });
+      queryClient.refetchQueries({ queryKey: ["savings-transactions"] });
       onClose();
     },
   });

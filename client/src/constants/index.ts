@@ -17,3 +17,15 @@ export const InvestmentType = {
   RRSP: "RRSP",
   FHSA: "FHSA",
 };
+
+export const SavingTransactionType = {
+  ALL: "all",
+  DEPOSIT: "deposit",
+  WITHDRAWAL: "withdrawal",
+};
+
+// category
+export const CategoryType = {
+  INCOME: "income",
+  EXPENSE: "expense",
+};
