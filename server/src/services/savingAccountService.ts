@@ -135,6 +135,6 @@ export async function getAllSavingsTransactions(
       payeeId: true,
       walletId: true,
     },
-    orderBy: { date: 'desc' },
+    orderBy: [{ date: 'desc' }, { id: 'desc' }],
   });
 }

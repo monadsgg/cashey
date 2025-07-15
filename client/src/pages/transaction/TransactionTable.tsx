@@ -149,7 +149,7 @@ function TransactionTable({
 
   return (
     <Paper>
-      <TableContainer sx={{ height: "70vh" }}>
+      <TableContainer sx={{ height: "72vh" }}>
         <Table>
           <TableHead>
             <TableRow>{renderTableHeader()}</TableRow>
