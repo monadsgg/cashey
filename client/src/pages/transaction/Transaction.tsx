@@ -172,11 +172,7 @@ function Transaction() {
 
   // const handleOnClickTransferBtn = () => {};
 
-  const transactionData =
-    paginatedData?.data.filter(
-      (item: TransactionItem) =>
-        item.category.id !== transferCategory.INCOMING_TRANSFER
-    ) || [];
+  const transactionData = paginatedData?.data || [];
 
   return (
     <>
@@ -229,7 +225,7 @@ function Transaction() {
             />
           </Stack>
           <Stack direction="column" spacing={1}>
-            <TransferMoneyButton />
+            <TransferMoneyButton label="Save money" />
             <TransactionSummary
               currentMonth={currentMonth}
               transactions={allTransactions}

@@ -3,6 +3,7 @@ import {
   addSavingAccount,
   editSavingAccountt,
   getAllSavings,
+  getAllSavingsTransactions,
   removeSavingAccount,
 } from '../services/savingAccountService';
 import { WalletType } from '../utils/enums';
@@ -18,6 +19,25 @@ export async function getSavingAccounts(
     res.status(200).json(savings);
   } catch (error: any) {
     res.status(500).json({ message: 'Failed to fetch savings' });
+  }
+}
+
+export async function getSavingsTransactions(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const { start, end } = req.query;
+  const userId = res.locals.user;
+
+  try {
+    const savings = await getAllSavingsTransactions(
+      userId,
+      start as string,
+      end as string,
+    );
+    res.status(200).json(savings);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Failed to fetch savings transactions' });
   }
 }
 

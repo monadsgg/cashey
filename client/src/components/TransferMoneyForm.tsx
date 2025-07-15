@@ -16,24 +16,25 @@ import { transferFunds } from "../services/transactions";
 
 interface TransferMoneyFormProps {
   onClose: () => void;
+  isSavings?: boolean;
 }
 
 type TransferMoneyFormData = {
   description: string;
   date: Date;
   amount: number;
-  from: number | null;
-  to: number | null;
+  fromWalletId: number | null;
+  toWalletId: number | null;
 };
 
-function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
+function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
   const { mainWalletId, savingsWallet, isLoading } = useWallets();
   const initialFormData: TransferMoneyFormData = {
     description: "",
     date: new Date(),
     amount: 0,
-    from: null,
-    to: null,
+    fromWalletId: null,
+    toWalletId: null,
   };
   const [formData, setFormData] =
     useState<TransferMoneyFormData>(initialFormData);
@@ -44,8 +45,8 @@ function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
     if (!isLoading && mainWalletId) {
       setFormData({
         ...formData,
-        from: mainWalletId,
-        to: savingsWallet[0].id ?? null,
+        fromWalletId: isSavings ? savingsWallet[0].id : mainWalletId,
+        toWalletId: savingsWallet[0].id ?? null,
       });
     }
   }, [isLoading]);
@@ -53,31 +54,29 @@ function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
   const addMutation = useMutation({
     mutationFn: transferFunds,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["transaction"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["all-transactions"],
-      });
+      queryClient.refetchQueries({ queryKey: ["transaction"] });
+      queryClient.refetchQueries({ queryKey: ["all-transactions"] });
+      queryClient.refetchQueries({ queryKey: ["savings"] });
+      queryClient.refetchQueries({ queryKey: ["savings-transactions"] });
       onClose();
     },
   });
 
   const handleSubmit = () => {
-    const { description, date, amount, from, to } = formData;
+    const { description, date, amount, fromWalletId, toWalletId } = formData;
     const formattedDate = formatDate(date, "yyyy-MM-dd");
 
-    if (!amount || !from || !to) {
+    if (!amount || !fromWalletId || !toWalletId) {
       setError("Amount, from/to account is required");
       return;
     }
 
     const payloadData = {
       description,
-      amount,
+      amount: Number(amount),
       date: formattedDate,
-      fromWalletId: from,
-      toWalletId: to,
+      fromWalletId,
+      toWalletId,
     };
 
     addMutation.mutate(payloadData);
@@ -119,24 +118,33 @@ function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
 
         {!isLoading && (
           <>
-            {formData.from && (
+            {formData.fromWalletId && (
               <SelectInputField
                 label="From Account"
                 name="fromWalletId"
-                value={formData.from?.toString()}
+                value={formData.fromWalletId?.toString()}
                 onChange={handleFormSelectChange}
               >
-                <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+                {!isSavings && (
+                  <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+                )}
+                {isSavings &&
+                  savingsWallet.map((item) => {
+                    return <MenuItem value={item.id}>{item.name}</MenuItem>;
+                  })}
               </SelectInputField>
             )}
 
-            {savingsWallet.length > 0 && formData.to && (
+            {savingsWallet.length > 0 && formData.toWalletId && (
               <SelectInputField
                 label="To Account"
                 name="toWalletId"
-                value={formData.to.toString()}
+                value={formData.toWalletId?.toString()}
                 onChange={handleFormSelectChange}
               >
+                {isSavings && (
+                  <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+                )}
                 {savingsWallet.map((item) => {
                   return <MenuItem value={item.id}>{item.name}</MenuItem>;
                 })}

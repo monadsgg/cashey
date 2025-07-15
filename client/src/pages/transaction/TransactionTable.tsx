@@ -7,7 +7,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { formatDate } from "../../utils/dateUtils";
-import { formatCurrency } from "../../utils/currencyUtils";
+import { formatCurrency, getAmountSign } from "../../utils/currencyUtils";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
@@ -52,7 +52,7 @@ function TransactionTable({
   // console.log("page", page);
 
   const handleChangePage = (
-    event: React.ChangeEvent<unknown>,
+    _event: React.ChangeEvent<unknown>,
     newPage: number
   ) => {
     console.log("handleChangePage table", newPage);
@@ -86,11 +86,6 @@ function TransactionTable({
           </TableCell>
         </TableRow>
       );
-
-    const getAmountSign = (type: string) => {
-      if (type === "income") return "+";
-      else return "-";
-    };
 
     return (
       <>
@@ -154,7 +149,7 @@ function TransactionTable({
 
   return (
     <Paper>
-      <TableContainer sx={{ height: "70vh" }}>
+      <TableContainer sx={{ height: "72vh" }}>
         <Table>
           <TableHead>
             <TableRow>{renderTableHeader()}</TableRow>

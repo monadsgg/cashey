@@ -21,6 +21,9 @@ export async function getAllSavings(userId: number) {
     include: {
       savingAccount: true,
     },
+    omit: {
+      userId: true,
+    },
   });
   return savingAccounts;
 }
@@ -108,4 +111,30 @@ export async function editSavingAccountt(
 
 export async function removeSavingAccount(id: number, userId: number) {
   return db.wallet.delete({ where: { id, userId } });
+}
+
+export async function getAllSavingsTransactions(
+  userId: number,
+  start: string,
+  end: string,
+) {
+  return db.transaction.findMany({
+    where: {
+      userId,
+      wallet: { type: WalletType.SAVINGS },
+      date: { gte: new Date(start), lte: new Date(end) },
+    },
+    include: {
+      wallet: { omit: { userId: true, type: true, balance: true } },
+      category: { omit: { userId: true } },
+    },
+    omit: {
+      userId: true,
+      categoryId: true,
+      tagId: true,
+      payeeId: true,
+      walletId: true,
+    },
+    orderBy: [{ date: 'desc' }, { id: 'desc' }],
+  });
 }
