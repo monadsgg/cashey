@@ -4,7 +4,7 @@ import {
   OUT_TRANSFER_CATEGORY_ID,
   IN_TRANSFER_CATEGORY_ID,
 } from '../constants';
-import { CategoryType } from '../utils/enums';
+import { CategoryType, WalletType } from '../utils/enums';
 
 interface TransactionFilters {
   userId: number;
@@ -41,7 +41,7 @@ export async function getAllTransactions({
 
     const [transactions, total] = await Promise.all([
       db.transaction.findMany({
-        where,
+        where: { ...where, wallet: { type: WalletType.MAIN } },
         orderBy: [{ date: 'desc' }, { id: 'desc' }],
         skip,
         take: pageSize,
@@ -60,7 +60,9 @@ export async function getAllTransactions({
           payeeId: true,
         },
       }),
-      db.transaction.count({ where }),
+      db.transaction.count({
+        where: { ...where, wallet: { type: WalletType.MAIN } },
+      }),
     ]);
 
     return {
@@ -75,12 +77,13 @@ export async function getAllTransactions({
   }
 
   return db.transaction.findMany({
-    where,
+    where: { ...where, wallet: { type: WalletType.MAIN } },
     orderBy: [{ date: 'desc' }, { id: 'desc' }],
     include: {
       category: {
         omit: { userId: true },
       },
+      wallet: true,
     },
     omit: {
       categoryId: true,
