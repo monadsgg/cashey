@@ -12,6 +12,7 @@ import FormDialog from "../../components/FormDialog";
 import SavingsForm, { type SavingFormDataType } from "./SavingsForm";
 import SavingsSummary from "./SavingsSummary";
 import SavingsTransactions from "./SavingsTransactions";
+import TransferMoneyButton from "../../components/TransferMoneyButton";
 
 function SavingAccount() {
   const [tab, setTab] = useState(0);
@@ -69,7 +70,7 @@ function SavingAccount() {
           height: "100%",
           p: "0",
           paddingLeft: "20px",
-          border: "1px solid red",
+          // border: "1px solid red",
         }}
       >
         <Paper
@@ -160,6 +161,7 @@ function SavingAccount() {
         <Stack spacing={1}>
           <SavingsSummary />
           <SavingsTransactions />
+          <TransferMoneyButton label="Transfer funds" isSavings />
         </Stack>
       </Stack>
       <FormDialog open={open} onClose={handleClose}>

@@ -24,7 +24,7 @@ type SavingTransaction = {
 };
 
 const ScrollableContainer = styled("div")(() => ({
-  height: "45vh",
+  height: "40vh",
   overflowY: "hidden",
   [`&:hover`]: {
     overflowY: "auto",

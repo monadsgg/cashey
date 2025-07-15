@@ -5,7 +5,12 @@ import Stack from "@mui/material/Stack";
 import FormDialog from "./FormDialog";
 import TransferMoneyForm from "./TransferMoneyForm";
 
-function TransferMoneyButton() {
+interface TransferMoneyButtonProps {
+  label: string;
+  isSavings?: boolean;
+}
+
+function TransferMoneyButton({ label, isSavings }: TransferMoneyButtonProps) {
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
@@ -32,11 +37,11 @@ function TransferMoneyButton() {
           startIcon={<PaidIcon fontSize="large" />}
           onClick={handleClick}
         >
-          Save Money
+          {label}
         </Button>
       </Stack>
       <FormDialog open={open} onClose={handleClose}>
-        <TransferMoneyForm onClose={handleClose} />
+        <TransferMoneyForm onClose={handleClose} isSavings={isSavings} />
       </FormDialog>
     </>
   );

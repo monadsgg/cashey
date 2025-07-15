@@ -16,6 +16,7 @@ import { transferFunds } from "../services/transactions";
 
 interface TransferMoneyFormProps {
   onClose: () => void;
+  isSavings?: boolean;
 }
 
 type TransferMoneyFormData = {
@@ -26,7 +27,7 @@ type TransferMoneyFormData = {
   toWalletId: number | null;
 };
 
-function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
+function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
   const { mainWalletId, savingsWallet, isLoading } = useWallets();
   const initialFormData: TransferMoneyFormData = {
     description: "",
@@ -44,7 +45,7 @@ function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
     if (!isLoading && mainWalletId) {
       setFormData({
         ...formData,
-        fromWalletId: mainWalletId,
+        fromWalletId: isSavings ? savingsWallet[0].id : mainWalletId,
         toWalletId: savingsWallet[0].id ?? null,
       });
     }
@@ -53,8 +54,8 @@ function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
   const addMutation = useMutation({
     mutationFn: transferFunds,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transaction"] });
-      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      queryClient.refetchQueries({ queryKey: ["transaction"] });
+      queryClient.refetchQueries({ queryKey: ["all-transactions"] });
       queryClient.refetchQueries({ queryKey: ["savings"] });
       queryClient.refetchQueries({ queryKey: ["savings-transactions"] });
       onClose();
@@ -124,7 +125,13 @@ function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
                 value={formData.fromWalletId?.toString()}
                 onChange={handleFormSelectChange}
               >
-                <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+                {!isSavings && (
+                  <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+                )}
+                {isSavings &&
+                  savingsWallet.map((item) => {
+                    return <MenuItem value={item.id}>{item.name}</MenuItem>;
+                  })}
               </SelectInputField>
             )}
 
@@ -135,6 +142,9 @@ function TransferMoneyForm({ onClose }: TransferMoneyFormProps) {
                 value={formData.toWalletId?.toString()}
                 onChange={handleFormSelectChange}
               >
+                {isSavings && (
+                  <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+                )}
                 {savingsWallet.map((item) => {
                   return <MenuItem value={item.id}>{item.name}</MenuItem>;
                 })}
