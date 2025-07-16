@@ -148,8 +148,15 @@ function TransactionTable({
   };
 
   return (
-    <Paper>
-      <TableContainer sx={{ height: "72vh" }}>
+    <Paper
+      sx={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+      }}
+    >
+      <TableContainer>
         <Table>
           <TableHead>
             <TableRow>{renderTableHeader()}</TableRow>

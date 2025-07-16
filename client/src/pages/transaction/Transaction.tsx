@@ -30,7 +30,6 @@ import TransactionSummary from "./TransactionSummary";
 import { useQuery } from "@tanstack/react-query";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
 import FormDialog from "../../components/FormDialog";
-import { transferCategory } from "../app/appConstants";
 
 type Pagination = {
   page: number;
@@ -176,7 +175,15 @@ function Transaction() {
 
   return (
     <>
-      <Box sx={{ height: "100%", p: 3, border: "1px solid red" }}>
+      <Box
+        sx={(theme) => ({
+          pr: 3,
+          pl: 3,
+          display: "flex",
+          flexDirection: "column",
+          height: `calc(100vh - ${theme.spacing(6)} * 2)`,
+        })}
+      >
         <Stack direction="row" sx={{ alignItems: "center" }}>
           <Tooltip title="Previous month">
             <NavigateBeforeIcon onClick={goToPreviousMonth} />
@@ -189,11 +196,14 @@ function Transaction() {
           </Tooltip>
         </Stack>
 
-        <Stack direction="row" spacing={2}>
-          <Stack sx={{ flexGrow: 1 }}>
+        <Stack direction="row" spacing={2} flexGrow={1}>
+          <Stack sx={{ display: "flex", flex: 1 }}>
             <Stack
               direction="row"
-              sx={{ p: "10px 0", justifyContent: "space-between" }}
+              sx={{
+                p: "10px 0",
+                justifyContent: "space-between",
+              }}
             >
               <Stack direction="row">
                 <Button variant="outlined" onClick={handleOpenForm}>
