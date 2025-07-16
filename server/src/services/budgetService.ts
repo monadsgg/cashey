@@ -5,7 +5,11 @@ export async function getAllBudgets(
   month: number,
   year: number,
 ) {
-  const budgets = await db.budget.findMany({ where: { userId, month, year } });
+  const budgets = await db.budget.findMany({
+    where: { userId, month, year },
+    include: { category: { omit: { userId: true } } },
+    omit: { categoryId: true, userId: true },
+  });
   return budgets;
 }
 
