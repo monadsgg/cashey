@@ -1,3 +1,5 @@
+import { SvgIconProps } from "@mui/material/SvgIcon";
+
 type TransactionItem = {
   id: number;
   category: Category;
@@ -85,3 +87,5 @@ type SavingAccountPayload = {
   investmentType?: string | null;
   contributionLimit?: number | null;
 };
+
+type IconType = React.ComponentType<SvgIconProps>;
