@@ -5,12 +5,17 @@ import { formatCurrency } from "../utils/currencyUtils";
 export interface SummaryListItemProps {
   title: string;
   amount: number;
+  textColor?: string;
 }
 
-function SummaryListItem({ title, amount }: SummaryListItemProps) {
+function SummaryListItem({
+  title,
+  amount,
+  textColor = "secondary",
+}: SummaryListItemProps) {
   return (
     <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-      <Typography color="secondary" sx={{ fontWeight: 500, fontSize: "18px" }}>
+      <Typography color={textColor} sx={{ fontWeight: 500, fontSize: "18px" }}>
         {title}
       </Typography>
       <Typography sx={{ fontSize: "18px" }}>
