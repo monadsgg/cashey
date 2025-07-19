@@ -9,6 +9,15 @@ import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import SavingsIcon from "@mui/icons-material/Savings";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import StatCard from "./StatCard";
+import Paper from "@mui/material/Paper";
+import CategorySpendingChart from "./CategorySpendingChart";
+import { useBudgets } from "../../hooks/useBudgets";
+import SpendingByCategoryList, {
+  type CategoryExpenseItem,
+} from "./SpendingByCategoryList";
+import type { BudgetItem } from "../../types";
+import { useEffect } from "react";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const mockAccountsOverview = [
   {
@@ -41,7 +50,40 @@ const mockAccountsOverview = [
   },
 ];
 
+const thisMonthCategoryMockData = [
+  { id: 1, name: "Groceries", amount: 650, percentage: 33.0, color: "#3b82f6" },
+  { id: 2, name: "Utilities", amount: 380, percentage: 19.3, color: "#8b5cf6" },
+  {
+    id: 3,
+    name: "Dining Out",
+    amount: 320,
+    percentage: 16.2,
+    color: "#ef4444",
+  },
+  {
+    id: 4,
+    name: "Transportation",
+    amount: 280,
+    percentage: 14.2,
+    color: "#10b981",
+  },
+  {
+    id: 5,
+    name: "Entertainment",
+    amount: 245,
+    percentage: 12.4,
+    color: "#f59e0b",
+  },
+  { id: 6, name: "Healthcare", amount: 95, percentage: 4.8, color: "#ec4899" },
+];
+
 function Dashboard() {
+  const month = 7;
+  const year = 2025;
+  const { budgets, isLoading } = useBudgets(month, year);
+
+  console.log("budgets", budgets);
+
   const goToPreviousMonth = () => {};
   const goToNextMonth = () => {};
   return (
@@ -93,6 +135,7 @@ function Dashboard() {
       >
         {mockAccountsOverview.map((acc) => (
           <StatCard
+            key={acc.title}
             title={acc.title}
             color={acc.color}
             Icon={acc.icon}
@@ -101,6 +144,48 @@ function Dashboard() {
           />
         ))}
       </Box>
+
+      <Paper elevation={16} sx={{ border: "1px solid red", p: 4 }}>
+        <Typography sx={{ textAlign: "center", fontWeight: 600 }}>
+          Spending By Category
+        </Typography>
+        <Typography sx={{ textAlign: "center", opacity: 0.6 }}>
+          This month's expense breakdown
+        </Typography>
+        {isLoading && <CircularProgress />}
+        {!isLoading && (
+          <Stack
+            direction="row"
+            spacing={6}
+            sx={{ p: 6, justifyContent: "space-between" }}
+          >
+            <SpendingByCategoryList
+              data={budgets.map((b: BudgetItem) => ({
+                id: b.id,
+                name: b.category.name,
+                amountLimit: b.amountLimit,
+                amountSpent: b.amountSpent,
+              }))}
+            />
+            <Stack
+              flexDirection="row"
+              sx={{
+                width: "30%",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <CategorySpendingChart
+                data={thisMonthCategoryMockData.map((d) => ({
+                  name: d.name,
+                  amount: d.amount,
+                  color: d.color,
+                }))}
+              />
+            </Stack>
+          </Stack>
+        )}
+      </Paper>
     </Stack>
   );
 }
