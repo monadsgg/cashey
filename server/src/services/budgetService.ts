@@ -10,7 +10,50 @@ export async function getAllBudgets(
     include: { category: { omit: { userId: true } } },
     omit: { categoryId: true, userId: true },
   });
-  return budgets;
+
+  let startDate;
+  let endDate;
+  if (month && year) {
+    startDate = new Date(year, month - 1, 1);
+    endDate = new Date(year, month, 0);
+  }
+  if (year) {
+    startDate = new Date(year, 0, 1);
+    endDate = new Date(year, 11, 31);
+  }
+
+  const categoryIds = [...new Set(budgets.map((b) => b.category.id))];
+  const transactions = await db.transaction.groupBy({
+    by: ['categoryId'],
+    where: {
+      userId,
+      categoryId: { in: categoryIds },
+      date: {
+        gte: startDate,
+        lte: endDate,
+      },
+    },
+    _sum: {
+      amount: true,
+    },
+  });
+
+  // console.log(transactions);
+
+  const categorySpentMap = Object.fromEntries(
+    transactions.map((t) => [t.categoryId, t._sum.amount || 0]),
+  );
+
+  // console.log(categorySpentMap);
+
+  const finalBudgets = budgets.map((budget) => {
+    const amountSpent = Number(categorySpentMap[budget.category.id]) || 0;
+    const amountLeft = budget.amountLimit - amountSpent;
+
+    return { ...budget, amountSpent, amountLeft };
+  });
+
+  return finalBudgets;
 }
 
 export async function addBudget(
