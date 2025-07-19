@@ -1,19 +1,15 @@
 import Stack from "@mui/material/Stack";
 import { useMemo } from "react";
 import { transferCategory } from "../app/appConstants";
-import SummaryListItem, {
-  type SummaryListItemProps,
-} from "../../components/SummaryListItem";
+import SummaryListItem from "../../components/SummaryListItem";
 import SummaryTitle from "../../components/SummaryTitle";
 import SummaryContainer from "../../components/SummaryContainer";
+import SummaryExpenseCategoryItem from "../../components/SummaryExpenseCategoryItem";
+import type { TransactionItem } from "../../types";
 
 interface TransactionSummaryProps {
   currentMonth: string;
   transactions: TransactionItem[];
-}
-
-interface SummaryExpenseCategoryItem extends SummaryListItemProps {
-  isInBudget?: boolean;
 }
 
 type FinancialSummary = {
@@ -27,18 +23,6 @@ type CategoryExpenseType = {
   category: string;
   amount: number;
 };
-
-function SummaryExpenseCategoryItem({
-  title,
-  amount,
-}: SummaryExpenseCategoryItem) {
-  return (
-    <Stack>
-      <SummaryListItem title={title} amount={amount} />
-      {/* TODO: Add progress bar here if the category is in budget */}
-    </Stack>
-  );
-}
 
 function TransactionSummary({
   currentMonth,
