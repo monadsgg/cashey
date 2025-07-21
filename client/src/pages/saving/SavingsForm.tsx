@@ -50,6 +50,7 @@ function SavingsForm({ onClose, selectedAccount }: SavingsFormProps) {
     mutationFn: addSavings,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["savings"] });
+      queryClient.refetchQueries({ queryKey: ["wallets"] });
       onClose();
     },
   });
