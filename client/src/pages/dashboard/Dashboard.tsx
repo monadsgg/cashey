@@ -145,7 +145,7 @@ function Dashboard() {
         ))}
       </Box>
 
-      <Paper elevation={16} sx={{ border: "1px solid red", p: 4 }}>
+      <Paper elevation={16} sx={{ p: 4 }}>
         <Typography sx={{ textAlign: "center", fontWeight: 600 }}>
           Spending By Category
         </Typography>
@@ -165,6 +165,7 @@ function Dashboard() {
                 name: b.category.name,
                 amountLimit: b.amountLimit,
                 amountSpent: b.amountSpent,
+                dotColor: b.category.color,
               }))}
             />
             <Stack
@@ -176,10 +177,10 @@ function Dashboard() {
               }}
             >
               <CategorySpendingChart
-                data={thisMonthCategoryMockData.map((d) => ({
-                  name: d.name,
-                  amount: d.amount,
-                  color: d.color,
+                data={budgets.map((b: BudgetItem) => ({
+                  name: b.category.name,
+                  amount: b.amountSpent,
+                  color: b.category.color,
                 }))}
               />
             </Stack>

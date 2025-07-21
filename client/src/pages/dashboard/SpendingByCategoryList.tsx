@@ -6,6 +6,7 @@ export type CategoryExpenseItem = {
   name: string;
   amountLimit: number;
   amountSpent: number;
+  dotColor?: string;
 };
 
 interface SpendingByCategoryListProps {
@@ -28,6 +29,7 @@ function SpendingByCategoryList({ data }: SpendingByCategoryListProps) {
             amount={item.amountSpent}
             percentage={percentage}
             isInBudget
+            dotColor={item.dotColor}
           />
         );
       })}
