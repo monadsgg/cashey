@@ -46,7 +46,7 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
       setFormData({
         ...formData,
         fromWalletId: isSavings ? savingsWallet[0].id : mainWalletId,
-        toWalletId: savingsWallet[0].id ?? null,
+        toWalletId: savingsWallet[0]?.id ?? null,
       });
     }
   }, [isLoading]);
