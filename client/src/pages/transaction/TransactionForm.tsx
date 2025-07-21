@@ -84,6 +84,7 @@ function TransactionForm({
     mutationFn: addTransaction,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
       onClose();
     },
   });
