@@ -65,6 +65,7 @@ model Category {
   userId    Int?
   name      String
   type      String       // Can be "income", "expense", "saving"
+  color     String
   budgets   Budget[]
   transactions Transaction[]
 }
