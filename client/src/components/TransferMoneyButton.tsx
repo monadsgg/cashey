@@ -6,16 +6,15 @@ import FormDialog from "./FormDialog";
 import TransferMoneyForm from "./TransferMoneyForm";
 import { useWallets } from "../hooks/useWallets";
 import CircularProgress from "@mui/material/CircularProgress";
-import Tooltip from "@mui/material/Tooltip";
 
 interface TransferMoneyButtonProps {
   label: string;
-  isSavings?: boolean;
+  isAccounts?: boolean;
 }
 
-function TransferMoneyButton({ label, isSavings }: TransferMoneyButtonProps) {
+function TransferMoneyButton({ label, isAccounts }: TransferMoneyButtonProps) {
   const [open, setOpen] = useState(false);
-  const { savingsWallet, isLoading } = useWallets();
+  const { accountWallets, isLoading } = useWallets();
 
   const handleClose = () => {
     setOpen(false);
@@ -27,7 +26,7 @@ function TransferMoneyButton({ label, isSavings }: TransferMoneyButtonProps) {
 
   if (isLoading) return <CircularProgress />;
 
-  const disabled = savingsWallet.length === 0;
+  const disabled = accountWallets.length === 0;
 
   return (
     <>
@@ -50,7 +49,7 @@ function TransferMoneyButton({ label, isSavings }: TransferMoneyButtonProps) {
         </Button>
       </Stack>
       <FormDialog open={open} onClose={handleClose}>
-        <TransferMoneyForm onClose={handleClose} isSavings={isSavings} />
+        <TransferMoneyForm onClose={handleClose} isAccounts={isAccounts} />
       </FormDialog>
     </>
   );

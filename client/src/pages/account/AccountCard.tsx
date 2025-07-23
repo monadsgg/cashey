@@ -5,10 +5,10 @@ import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
 import FaceIcon from "@mui/icons-material/Face";
 import ProgressBar from "../../components/ProgressBar";
-import { INVESTMENT_SAVING_TYPE } from "../../constants";
+import { WalletType } from "../../constants";
 import { formatCurrency } from "../../utils/currencyUtils";
 
-interface SavingsCardProps {
+interface AccountCardProps {
   title: string;
   chipLabel: string;
   accountType?: string;
@@ -20,7 +20,7 @@ interface SavingsCardProps {
   onClick: () => void;
 }
 
-const SavingsCard = ({
+const AccountCard = ({
   title,
   chipLabel,
   accountType,
@@ -30,9 +30,9 @@ const SavingsCard = ({
   contributionLimit,
   percentage,
   onClick,
-}: SavingsCardProps) => {
-  let alertSeverity: "success" | "error" | "info";
-  let alertMessage: string;
+}: AccountCardProps) => {
+  let alertSeverity: "success" | "error" | undefined;
+  let alertMessage: string | undefined;
 
   if (percentage >= 100) {
     alertSeverity = "success";
@@ -40,9 +40,6 @@ const SavingsCard = ({
   } else if (percentage >= 80) {
     alertSeverity = "error";
     alertMessage = "Only a little left to reach your goal!";
-  } else {
-    alertSeverity = "info";
-    alertMessage = "You still have room to contribute!";
   }
 
   return (
@@ -74,7 +71,7 @@ const SavingsCard = ({
               Current: {formatCurrency(currentAmt)}
             </Typography>
             <Typography variant="subtitle2">
-              {accountType === INVESTMENT_SAVING_TYPE &&
+              {accountType === WalletType.INVESTMENT &&
               contributionLimit &&
               targetAmt
                 ? `Contribution Limit: ${formatCurrency(contributionLimit)}`
@@ -90,7 +87,7 @@ const SavingsCard = ({
             alignItems="center"
           >
             <Typography variant="subtitle2">
-              {accountType === INVESTMENT_SAVING_TYPE &&
+              {accountType === WalletType.INVESTMENT &&
               contributionLimit &&
               targetAmt
                 ? `${percentage}% complete of annual limit ($${targetAmt})`
@@ -101,7 +98,7 @@ const SavingsCard = ({
             </Typography>
           </Stack>
         </Stack>
-        {accountType === INVESTMENT_SAVING_TYPE && (
+        {accountType === WalletType.INVESTMENT && percentage >= 80 && (
           <Alert
             severity={alertSeverity}
             variant="outlined"
@@ -115,4 +112,4 @@ const SavingsCard = ({
   );
 };
 
-export default SavingsCard;
+export default AccountCard;

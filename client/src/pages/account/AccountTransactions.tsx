@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
-import { useSavingsTransactions } from "../../hooks/useSavingsTransactions";
+import { useAccountTransactions } from "../../hooks/useAccountTransactions";
 import Stack from "@mui/material/Stack";
 import SummaryContainer from "../../components/SummaryContainer";
 import SummaryTitle from "../../components/SummaryTitle";
 import Chip from "@mui/material/Chip";
-import { SavingTransactionType, transferCategory } from "../../constants";
+import { AccountTransactionType, transferCategory } from "../../constants";
 import groupBy from "lodash/groupBy";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
@@ -13,15 +13,7 @@ import { format, lastDayOfMonth, startOfMonth } from "date-fns";
 import styled from "@mui/system/styled";
 import Box from "@mui/material/Box";
 import type { DateRange } from "../transaction/Transaction";
-
-type SavingTransaction = {
-  id: number;
-  amount: number;
-  date: Date;
-  description: string;
-  wallet: { id: number; name: string };
-  category: Category;
-};
+import type { Category } from "../../services/categories";
 
 const ScrollableContainer = styled("div")(() => ({
   height: "40vh",
@@ -37,6 +29,15 @@ interface TransactionTabsProps {
   onClick: () => void;
 }
 
+interface AccountTransaction {
+  id: number;
+  amount: number;
+  date: Date;
+  description: string;
+  wallet: { id: number; name: string };
+  category: Category;
+}
+
 function TransactionTabs({ label, isActive, onClick }: TransactionTabsProps) {
   return (
     <Chip
@@ -48,23 +49,23 @@ function TransactionTabs({ label, isActive, onClick }: TransactionTabsProps) {
   );
 }
 
-function SavingsTransactions() {
+function AccountTransactions() {
   const dateRange: DateRange = {
     startDate: format(startOfMonth(new Date()), "yyyy-MM-dd"),
     endDate: format(lastDayOfMonth(new Date()), "yyyy-MM-dd"),
   };
 
-  const { transactions, isLoading } = useSavingsTransactions(dateRange);
+  const { transactions, isLoading } = useAccountTransactions(dateRange);
   const [transactionType, setTransactionType] = useState(
-    SavingTransactionType.ALL
+    AccountTransactionType.ALL
   );
 
   const filteredData = useMemo(() => {
-    return transactions.filter((t: SavingTransaction) => {
-      if (transactionType === SavingTransactionType.DEPOSIT) {
+    return transactions.filter((t: AccountTransaction) => {
+      if (transactionType === AccountTransactionType.DEPOSIT) {
         return t.category.id === transferCategory.INCOMING_TRANSFER;
       }
-      if (transactionType === SavingTransactionType.WITHDRAWAL) {
+      if (transactionType === AccountTransactionType.WITHDRAWAL) {
         return t.category.id === transferCategory.OUTGOING_TRANSFER;
       }
       return true;
@@ -88,18 +89,18 @@ function SavingsTransactions() {
       <Stack direction={"row"} spacing={2}>
         <TransactionTabs
           label="All"
-          isActive={transactionType === SavingTransactionType.ALL}
-          onClick={() => handleTabClick(SavingTransactionType.ALL)}
+          isActive={transactionType === AccountTransactionType.ALL}
+          onClick={() => handleTabClick(AccountTransactionType.ALL)}
         />
         <TransactionTabs
           label="Deposit"
-          isActive={transactionType === SavingTransactionType.DEPOSIT}
-          onClick={() => handleTabClick(SavingTransactionType.DEPOSIT)}
+          isActive={transactionType === AccountTransactionType.DEPOSIT}
+          onClick={() => handleTabClick(AccountTransactionType.DEPOSIT)}
         />
         <TransactionTabs
           label="Withdrawal"
-          isActive={transactionType === SavingTransactionType.WITHDRAWAL}
-          onClick={() => handleTabClick(SavingTransactionType.WITHDRAWAL)}
+          isActive={transactionType === AccountTransactionType.WITHDRAWAL}
+          onClick={() => handleTabClick(AccountTransactionType.WITHDRAWAL)}
         />
       </Stack>
       <ScrollableContainer>
@@ -121,7 +122,7 @@ function SavingsTransactions() {
                 <Typography color="secondary" variant="subtitle1">
                   {date}
                 </Typography>
-                {items.map((t: SavingTransaction) => (
+                {items.map((t: AccountTransaction) => (
                   <Box
                     key={t.id}
                     sx={(theme) => ({
@@ -155,4 +156,4 @@ function SavingsTransactions() {
   );
 }
 
-export default SavingsTransactions;
+export default AccountTransactions;

@@ -18,7 +18,7 @@ import ErrorMessage from "./ErrorMessage";
 
 interface TransferMoneyFormProps {
   onClose: () => void;
-  isSavings?: boolean;
+  isAccounts?: boolean;
 }
 
 type TransferMoneyFormData = {
@@ -29,8 +29,8 @@ type TransferMoneyFormData = {
   toWalletId: number | null;
 };
 
-function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
-  const { mainWalletId, savingsWallet, isLoading, error } = useWallets();
+function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
+  const { mainWalletId, accountWallets, isLoading, error } = useWallets();
   const initialFormData: TransferMoneyFormData = {
     description: "",
     date: new Date(),
@@ -41,26 +41,26 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
   const [formData, setFormData] =
     useState<TransferMoneyFormData>(initialFormData);
   const [errorForm, setErrorForm] = useState("");
-  const [savingsWalletList, setSavingsWalletList] = useState(savingsWallet);
+  const [accountWalletsList, setaccountWalletsList] = useState(accountWallets);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isLoading) {
       setFormData((prev) => ({
         ...prev,
-        fromWalletId: isSavings ? savingsWallet[0].id : mainWalletId,
-        toWalletId: isSavings ? mainWalletId : savingsWallet[0].id,
+        fromWalletId: isAccounts ? accountWallets[0].id : mainWalletId,
+        toWalletId: isAccounts ? mainWalletId : accountWallets[0].id,
       }));
-      setSavingsWalletList(savingsWallet);
+      setaccountWalletsList(accountWallets);
     }
   }, [isLoading, mainWalletId]);
 
   useEffect(() => {
-    if (isSavings) {
-      const newSavings = savingsWallet.filter(
+    if (isAccounts) {
+      const newAccounts = accountWallets.filter(
         (s) => s.id !== formData.fromWalletId
       );
-      setSavingsWalletList(newSavings);
+      setaccountWalletsList(newAccounts);
     }
   }, [formData.fromWalletId]);
 
@@ -69,8 +69,8 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["transaction"] });
       queryClient.refetchQueries({ queryKey: ["all-transactions"] });
-      queryClient.refetchQueries({ queryKey: ["savings"] });
-      queryClient.refetchQueries({ queryKey: ["savings-transactions"] });
+      queryClient.refetchQueries({ queryKey: ["accounts"] });
+      queryClient.refetchQueries({ queryKey: ["accounts-transactions"] });
       onClose();
     },
   });
@@ -114,7 +114,7 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
   if (!mainWalletId) return <ErrorMessage message="Main wallet is not found" />;
 
   const isDisabled =
-    savingsWallet?.length === 0 ||
+    accountWallets?.length === 0 ||
     formData.amount === 0 ||
     !!error ||
     addMutation.isPending;
@@ -142,25 +142,27 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
             value={formData.fromWalletId?.toString()}
             onChange={handleFormSelectChange}
           >
-            {!isSavings && (
+            {!isAccounts && (
               <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
             )}
-            {isSavings &&
-              savingsWallet.map((item) => {
+            {isAccounts &&
+              accountWallets.map((item) => {
                 return <MenuItem value={item.id}>{item.name}</MenuItem>;
               })}
           </SelectInputField>
         )}
 
-        {savingsWallet.length > 0 && formData.toWalletId && (
+        {accountWallets.length > 0 && formData.toWalletId && (
           <SelectInputField
             label="To Account"
             name="toWalletId"
             value={formData.toWalletId?.toString()}
             onChange={handleFormSelectChange}
           >
-            {isSavings && <MenuItem value={mainWalletId}>Main Wallet</MenuItem>}
-            {savingsWalletList.map((item) => {
+            {isAccounts && (
+              <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+            )}
+            {accountWalletsList.map((item) => {
               return <MenuItem value={item.id}>{item.name}</MenuItem>;
             })}
           </SelectInputField>
@@ -174,11 +176,11 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
         />
       </Stack>
 
-      {savingsWallet.length === 0 && (
+      {accountWallets.length === 0 && (
         <Stack>
           <Alert severity="error">
-            You need to add at least one savings account before you can transfer
-            any funds.
+            You need to add at least one account before you can transfer any
+            funds.
           </Alert>
         </Stack>
       )}

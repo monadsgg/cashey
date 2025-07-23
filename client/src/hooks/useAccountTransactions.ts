@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { getSavingsTransactions } from "../services/savings";
+import { getAccountsTransactions } from "../services/accounts";
 import type { DateRange } from "../pages/transaction/Transaction";
 
-export const useSavingsTransactions = (dateRange: DateRange) => {
+export const useAccountTransactions = (dateRange: DateRange) => {
   const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ["savings-transactions"],
+    queryKey: ["accounts-transactions"],
     queryFn: () =>
-      getSavingsTransactions(dateRange.startDate, dateRange.endDate),
+      getAccountsTransactions(dateRange.startDate, dateRange.endDate),
   });
 
   return { transactions, isLoading };

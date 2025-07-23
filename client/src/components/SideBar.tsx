@@ -1,5 +1,4 @@
 import { NavLink, useNavigate } from "react-router";
-import Box from "@mui/material/Box";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import SavingsIcon from "@mui/icons-material/Savings";
@@ -19,7 +18,7 @@ import Paper from "@mui/material/Paper";
 const menu = [
   { text: "Dashboard", path: "/dashboard", icon: <DashboardIcon /> },
   { text: "Transaction", path: "/transactions", icon: <ReceiptIcon /> },
-  { text: "Savings", path: "/savings", icon: <SavingsIcon /> },
+  { text: "Accounts", path: "/accounts", icon: <SavingsIcon /> },
   { text: "Budget", path: "/budget", icon: <AccountBalanceWalletIcon /> },
   { text: "Categories", path: "/categories", icon: <CategoryIcon /> },
 ];

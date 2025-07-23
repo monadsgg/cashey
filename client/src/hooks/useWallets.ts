@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getWallets, type Wallet } from "../services/wallet";
 import { useMemo } from "react";
+import { WalletType } from "../constants";
 
 export const useWallets = () => {
   const {
@@ -13,19 +14,24 @@ export const useWallets = () => {
   });
 
   const mainWallet = useMemo(
-    () => wallets.find((item: Wallet) => item.type === "main"),
+    () => wallets.find((item: Wallet) => item.type === WalletType.MAIN),
     [wallets]
   );
 
-  const savingsWallet: Wallet[] = useMemo(
-    () => wallets.filter((item: Wallet) => item.type === "savings"),
+  const accountWallets: Wallet[] = useMemo(
+    () =>
+      wallets.filter(
+        (item: Wallet) =>
+          item.type === WalletType.SAVINGS ||
+          item.type === WalletType.INVESTMENT
+      ),
     [wallets]
   );
 
   return {
     wallets,
     mainWalletId: mainWallet?.id ?? null,
-    savingsWallet,
+    accountWallets,
     isLoading,
     error,
   };
