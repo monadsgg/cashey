@@ -4,8 +4,7 @@ import Stack from "@mui/material/Stack";
 import SummaryContainer from "../../components/SummaryContainer";
 import SummaryTitle from "../../components/SummaryTitle";
 import Chip from "@mui/material/Chip";
-import { SavingTransactionType } from "../../constants";
-import { transferCategory } from "../app/appConstants";
+import { SavingTransactionType, transferCategory } from "../../constants";
 import groupBy from "lodash/groupBy";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
@@ -13,6 +12,7 @@ import { getAmountSign } from "../../utils/currencyUtils";
 import { format, lastDayOfMonth, startOfMonth } from "date-fns";
 import styled from "@mui/system/styled";
 import Box from "@mui/material/Box";
+import type { DateRange } from "../transaction/Transaction";
 
 type SavingTransaction = {
   id: number;

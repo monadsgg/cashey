@@ -13,9 +13,11 @@ import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
-import { transferCategory } from "../app/appConstants";
+import type { TransactionTableSettingsType } from "./TransactionTableSettings";
+import type { TransactionItem } from "../../hooks/useAllTransactions";
+import { transferCategory } from "../../constants";
 
-type TransactionTableProps = {
+interface TransactionTableProps {
   transactions: TransactionItem[];
   totalCount: number;
   page: number;
@@ -24,7 +26,7 @@ type TransactionTableProps = {
   onPageChange: (page: number) => void;
   onClickActionBtn: (item: TransactionItem) => void;
   settings: TransactionTableSettingsType;
-};
+}
 
 const StyledTableCell = styled(TableCell)(() => ({
   [`&.${tableCellClasses.head}`]: {

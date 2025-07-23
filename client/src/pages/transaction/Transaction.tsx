@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import {
   getAllTransactions,
   getTransactions,
+  type TransactionItem,
 } from "../../services/transactions";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
@@ -25,7 +26,9 @@ import TransactionForm, {
   type TransactionFormDataType,
 } from "./TransactionForm";
 import SearchInputField from "../../components/SearchInputField";
-import TransactionTableSettings from "./TransactionTableSettings";
+import TransactionTableSettings, {
+  type TransactionTableSettingsType,
+} from "./TransactionTableSettings";
 import TransactionSummary from "./TransactionSummary";
 import { useQuery } from "@tanstack/react-query";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
@@ -36,6 +39,11 @@ type Pagination = {
   pageSize: number;
   total: number;
   totalPages: number;
+};
+
+export type DateRange = {
+  startDate: string;
+  endDate: string;
 };
 
 function Transaction() {
