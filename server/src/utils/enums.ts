@@ -1,6 +1,7 @@
 export enum WalletType {
   MAIN = 'main',
   SAVINGS = 'savings',
+  INVESTMENT = 'investment',
 }
 
 export enum CategoryType {
