@@ -1,9 +1,16 @@
 import db from '../utils/db';
 import { CategoryType } from '../utils/enums';
+import {
+  OUT_TRANSFER_CATEGORY_ID,
+  IN_TRANSFER_CATEGORY_ID,
+} from '../constants';
 
 export async function getAllCategories(userId: number) {
   const categories = await db.category.findMany({
-    where: { OR: [{ userId }, { userId: { equals: null } }] },
+    where: {
+      OR: [{ userId }, { userId: { equals: null } }],
+      NOT: [{ id: OUT_TRANSFER_CATEGORY_ID }, { id: IN_TRANSFER_CATEGORY_ID }],
+    },
     omit: { userId: true },
   });
 
@@ -14,6 +21,7 @@ export async function addCategory(
   name: string,
   type: CategoryType.INCOME | CategoryType.EXPENSE,
   userId: number,
+  color: string,
 ) {
   if (!name || !type) throw new Error('All fields are required');
 
@@ -27,6 +35,7 @@ export async function addCategory(
       name,
       type,
       userId,
+      color,
     },
     omit: { userId: true },
   });
@@ -39,6 +48,7 @@ export async function editCategory(
   name: string,
   type: CategoryType.INCOME | CategoryType.EXPENSE,
   userId: number,
+  color: string,
 ) {
   const category = await db.category.findUnique({ where: { id } });
 
@@ -47,7 +57,7 @@ export async function editCategory(
 
   return db.category.update({
     where: { id },
-    data: { name, type },
+    data: { name, type, color },
     omit: { userId: true },
   });
 }

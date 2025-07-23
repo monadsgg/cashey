@@ -25,10 +25,10 @@ export async function createCategory(
   res: Response,
 ): Promise<void> {
   const userId = res.locals.user;
-  const { name, type } = req.body;
+  const { name, type, color } = req.body;
 
   try {
-    const category = await addCategory(name, type, userId);
+    const category = await addCategory(name, type, userId, color);
     res.status(201).json(category);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -41,10 +41,10 @@ export async function updateCategory(
 ): Promise<void> {
   const userId = res.locals.user;
   const { id } = req.params;
-  const { name, type } = req.body;
+  const { name, type, color } = req.body;
 
   try {
-    const category = await editCategory(Number(id), name, type, userId);
+    const category = await editCategory(Number(id), name, type, userId, color);
     res.status(200).json(category);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
