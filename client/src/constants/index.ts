@@ -29,3 +29,8 @@ export const CategoryType = {
   INCOME: "income",
   EXPENSE: "expense",
 };
+
+export const transferCategory = {
+  INCOMING_TRANSFER: 2,
+  OUTGOING_TRANSFER: 14,
+};
