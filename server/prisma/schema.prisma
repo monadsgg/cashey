@@ -78,15 +78,14 @@ model Wallet {
   type        String        // Can be "main", "savings"
   balance     Decimal       @db.Decimal(12, 2)
   transactions Transaction[]
-  savingAccount  SavingAccount?  
+  account  Account?  
 }
 
-model SavingAccount {
+model Account {
   walletId    Int      @id
   wallet      Wallet   @relation(fields: [walletId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   targetAmt   Decimal?   @db.Decimal(12, 2)
   owner       String?
-  accountType String    // Can be "personal", "investment"
   investmentType String?   
   contributionLimit Decimal?  @db.Decimal(12, 2)
 }
