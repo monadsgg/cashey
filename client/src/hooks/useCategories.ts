@@ -1,12 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getCategories } from "../services/categories";
-
-export type Category = {
-  id: number;
-  name: string;
-  type: string;
-  color: string;
-};
+import { getCategories, type Category } from "../services/categories";
 
 export const useCategories = () => {
   const { data: categories = [], isLoading } = useQuery<Category[]>({
