@@ -1,28 +1,24 @@
 import { Request, Response } from 'express';
 import {
-  addSavingAccount,
-  editSavingAccountt,
-  getAllSavings,
-  getAllSavingsTransactions,
-  removeSavingAccount,
-} from '../services/savingAccountService';
-import { WalletType } from '../utils/enums';
+  addAccount,
+  editAccount,
+  getAllAccounts,
+  getAllAccountsTransactions,
+  removeAccount,
+} from '../services/accountService';
 
-export async function getSavingAccounts(
-  req: Request,
-  res: Response,
-): Promise<void> {
+export async function getAccounts(req: Request, res: Response): Promise<void> {
   const userId = res.locals.user;
 
   try {
-    const savings = await getAllSavings(userId);
-    res.status(200).json(savings);
+    const accounts = await getAllAccounts(userId);
+    res.status(200).json(accounts);
   } catch (error: any) {
-    res.status(500).json({ message: 'Failed to fetch savings' });
+    res.status(500).json({ message: 'Failed to fetch accounts' });
   }
 }
 
-export async function getSavingsTransactions(
+export async function getAccountsTransactions(
   req: Request,
   res: Response,
 ): Promise<void> {
@@ -30,18 +26,18 @@ export async function getSavingsTransactions(
   const userId = res.locals.user;
 
   try {
-    const savings = await getAllSavingsTransactions(
+    const accounts = await getAllAccountsTransactions(
       userId,
       start as string,
       end as string,
     );
-    res.status(200).json(savings);
+    res.status(200).json(accounts);
   } catch (error: any) {
-    res.status(500).json({ message: 'Failed to fetch savings transactions' });
+    res.status(500).json({ message: 'Failed to fetch accounts transactions' });
   }
 }
 
-export async function createSavingAccount(
+export async function createAccount(
   req: Request,
   res: Response,
 ): Promise<void> {
@@ -57,10 +53,9 @@ export async function createSavingAccount(
   } = req.body;
 
   try {
-    const savingAccount = await addSavingAccount(
+    const account = await addAccount(
       {
         name,
-        type: WalletType.SAVINGS,
         balance,
         targetAmt,
         owner,
@@ -70,13 +65,13 @@ export async function createSavingAccount(
       },
       userId,
     );
-    res.status(201).json(savingAccount);
+    res.status(201).json(account);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 }
 
-export async function updateSavingAccounts(
+export async function updateAccount(
   req: Request,
   res: Response,
 ): Promise<void> {
@@ -93,11 +88,10 @@ export async function updateSavingAccounts(
   } = req.body;
 
   try {
-    const savingAccount = await editSavingAccountt(
+    const account = await editAccount(
       Number(id),
       {
         name,
-        type: WalletType.SAVINGS,
         balance,
         targetAmt,
         owner,
@@ -107,13 +101,13 @@ export async function updateSavingAccounts(
       },
       userId,
     );
-    res.status(200).json(savingAccount);
+    res.status(200).json(account);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
 }
 
-export async function deleteSavingAccounts(
+export async function deleteAccount(
   req: Request,
   res: Response,
 ): Promise<void> {
@@ -121,7 +115,7 @@ export async function deleteSavingAccounts(
   const userId = res.locals.user;
 
   try {
-    await removeSavingAccount(Number(id), userId);
+    await removeAccount(Number(id), userId);
     res.status(204).json();
   } catch (error: any) {
     res.status(500).json({ message: error.message });

@@ -1,13 +1,12 @@
 import db from '../utils/db';
-import { InvestmentAccountType, SavingType, WalletType } from '../utils/enums';
+import { InvestmentAccountType, WalletType } from '../utils/enums';
 
-interface SavingAccountInput {
+interface accountInput {
   name: string;
-  type: WalletType.SAVINGS;
+  accountType: WalletType.SAVINGS | WalletType.INVESTMENT;
   balance: number;
   targetAmt?: number;
   owner?: string;
-  accountType: SavingType.PERSONAL | SavingType.INVESTMENT;
   investmentType?:
     | InvestmentAccountType.TFSA
     | InvestmentAccountType.RRSP
@@ -15,27 +14,26 @@ interface SavingAccountInput {
   contributionLimit?: number;
 }
 
-export async function getAllSavings(userId: number) {
-  const savingAccounts = await db.wallet.findMany({
-    where: { userId, type: WalletType.SAVINGS },
+export async function getAllAccounts(userId: number) {
+  const accounts = await db.wallet.findMany({
+    where: {
+      userId,
+      OR: [{ type: WalletType.SAVINGS }, { type: WalletType.INVESTMENT }],
+    },
     include: {
-      savingAccount: true,
+      account: true,
     },
     omit: {
       userId: true,
     },
   });
-  return savingAccounts;
+  return accounts;
 }
 
-export async function addSavingAccount(
-  data: SavingAccountInput,
-  userId: number,
-) {
+export async function addAccount(data: accountInput, userId: number) {
   const {
     name,
     balance,
-    type,
     targetAmt,
     owner,
     accountType,
@@ -45,39 +43,37 @@ export async function addSavingAccount(
 
   if (!name || !balance) throw new Error('All fields are required');
 
-  const newSavingAccount = await db.wallet.create({
+  const newAccount = await db.wallet.create({
     data: {
       userId,
       name,
-      type,
+      type: accountType,
       balance,
-      savingAccount: {
+      account: {
         create: {
           targetAmt,
           owner,
-          accountType,
           investmentType,
           contributionLimit,
         },
       },
     },
     include: {
-      savingAccount: true,
+      account: true,
     },
   });
 
-  return newSavingAccount;
+  return newAccount;
 }
 
-export async function editSavingAccountt(
+export async function editAccount(
   id: number,
-  data: SavingAccountInput,
+  data: accountInput,
   userId: number,
 ) {
   const {
     name,
     balance,
-    type,
     targetAmt,
     owner,
     accountType,
@@ -92,28 +88,27 @@ export async function editSavingAccountt(
     data: {
       name,
       balance,
-      type,
-      savingAccount: {
+      type: accountType,
+      account: {
         update: {
           targetAmt,
           owner,
-          accountType,
           investmentType,
           contributionLimit,
         },
       },
     },
     include: {
-      savingAccount: true,
+      account: true,
     },
   });
 }
 
-export async function removeSavingAccount(id: number, userId: number) {
+export async function removeAccount(id: number, userId: number) {
   return db.wallet.delete({ where: { id, userId } });
 }
 
-export async function getAllSavingsTransactions(
+export async function getAllAccountsTransactions(
   userId: number,
   start: string,
   end: string,
@@ -121,7 +116,9 @@ export async function getAllSavingsTransactions(
   return db.transaction.findMany({
     where: {
       userId,
-      wallet: { type: WalletType.SAVINGS },
+      wallet: {
+        OR: [{ type: WalletType.SAVINGS }, { type: WalletType.INVESTMENT }],
+      },
       date: { gte: new Date(start), lte: new Date(end) },
     },
     include: {

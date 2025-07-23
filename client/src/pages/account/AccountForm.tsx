@@ -7,71 +7,63 @@ import TextInputField from "../../components/TextInputField";
 import SelectInputField from "../../components/SelectInputField";
 import { type SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import {
-  INVESTMENT_SAVING_TYPE,
-  INVESTMENT_TYPE,
-  InvestmentType,
-  PERSONAL_SAVING_TYPE,
-} from "../../constants";
+import { INVESTMENT_TYPE, InvestmentType, WalletType } from "../../constants";
 import Alert from "@mui/material/Alert";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  addSavings,
-  deleteSavings,
-  updateSavings,
-} from "../../services/savings";
+  addAccount,
+  deleteAccount,
+  updateAccount,
+  type AccountPayload,
+} from "../../services/accounts";
 
-interface SavingsFormProps {
+interface AccountFormProps {
   onClose: () => void;
-  selectedAccount: SavingFormDataType | null;
+  selectedAccount?: AccountFormDataType | null;
 }
 
-export type SavingFormDataType = SavingAccountPayload & {
+export type AccountFormDataType = AccountPayload & {
   id?: number;
 };
 
-function SavingsForm({ onClose, selectedAccount }: SavingsFormProps) {
-  const initialFormData: SavingFormDataType = {
+function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
+  const initialFormData: AccountFormDataType = {
     name: "",
     balance: 0,
     owner: "",
     targetAmt: 0,
-    accountType: PERSONAL_SAVING_TYPE,
+    accountType: WalletType.SAVINGS,
     investmentType: InvestmentType.TFSA,
     contributionLimit: null,
   };
-  const [formData, setFormData] = useState<SavingFormDataType>(
+  const [formData, setFormData] = useState<AccountFormDataType>(
     selectedAccount ?? initialFormData
   );
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
 
   const addMutation = useMutation({
-    mutationFn: addSavings,
+    mutationFn: addAccount,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["savings"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.refetchQueries({ queryKey: ["wallets"] });
       onClose();
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: number;
-      payload: SavingAccountPayload;
-    }) => updateSavings(id, payload),
+    mutationFn: ({ id, payload }: { id: number; payload: AccountPayload }) =>
+      updateAccount(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["savings"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
       onClose();
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: deleteSavings,
+    mutationFn: deleteAccount,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["savings"] });
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
       onClose();
     },
   });
@@ -98,7 +90,8 @@ function SavingsForm({ onClose, selectedAccount }: SavingsFormProps) {
       owner,
       targetAmt,
       accountType,
-      investmentType,
+      investmentType:
+        accountType === WalletType.SAVINGS ? null : investmentType,
       contributionLimit: contributionLimit || null,
     };
 
@@ -133,7 +126,7 @@ function SavingsForm({ onClose, selectedAccount }: SavingsFormProps) {
   return (
     <Stack spacing={4} sx={{ height: "100%" }}>
       <Typography variant="h3">
-        {selectedAccount ? "Edit" : "Add"} saving account
+        {selectedAccount ? "Edit" : "Add"} account
       </Typography>
       <Stack>
         <TextInputField
@@ -166,10 +159,10 @@ function SavingsForm({ onClose, selectedAccount }: SavingsFormProps) {
           value={formData.accountType}
           onChange={handleFormSelectChange}
         >
-          <MenuItem value={PERSONAL_SAVING_TYPE}>Personal</MenuItem>;
-          <MenuItem value={INVESTMENT_SAVING_TYPE}>Investment</MenuItem>;
+          <MenuItem value={WalletType.SAVINGS}>Personal Savings</MenuItem>;
+          <MenuItem value={WalletType.INVESTMENT}>Investment</MenuItem>;
         </SelectInputField>
-        {formData.accountType === INVESTMENT_SAVING_TYPE && (
+        {formData.accountType === WalletType.INVESTMENT && (
           <>
             <SelectInputField
               label="Investment Type"
@@ -178,7 +171,6 @@ function SavingsForm({ onClose, selectedAccount }: SavingsFormProps) {
               onChange={handleFormSelectChange}
             >
               {Object.entries(INVESTMENT_TYPE).map(([key, value]) => {
-                console.log({ key, value });
                 return (
                   <MenuItem key={key} value={key}>
                     {value}
@@ -234,4 +226,4 @@ function SavingsForm({ onClose, selectedAccount }: SavingsFormProps) {
   );
 }
 
-export default SavingsForm;
+export default AccountForm;

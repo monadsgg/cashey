@@ -1,37 +1,37 @@
 import { useMemo } from "react";
-import { useSavings } from "../../hooks/useSavings";
+import { useAccounts } from "../../hooks/useAccounts";
 import Stack from "@mui/material/Stack";
 import SummaryTitle from "../../components/SummaryTitle";
 import SummaryListItem from "../../components/SummaryListItem";
 import Divider from "@mui/material/Divider";
 import SummaryContainer from "../../components/SummaryContainer";
 
-function SavingsSummary() {
-  const { savings, personalAccounts, investmentAccounts } = useSavings();
+function AccountSummary() {
+  const { accounts, personalAccounts, investmentAccounts } = useAccounts();
 
-  const savingsSummary = useMemo(() => {
-    const savings = { personal: 0, investments: 0, total: 0 };
+  const accountSummary = useMemo(() => {
+    const accountStat = { personal: 0, investments: 0, total: 0 };
 
     personalAccounts.forEach(
-      (acc) => (savings.personal += Number(acc.balance))
+      (acc) => (accountStat.personal += Number(acc.balance))
     );
     investmentAccounts.forEach(
-      (acc) => (savings.investments += Number(acc.balance))
+      (acc) => (accountStat.investments += Number(acc.balance))
     );
 
-    const totalSavings = {
-      ...savings,
-      total: savings.investments + savings.personal,
+    const finalAccountStat = {
+      ...accountStat,
+      total: accountStat.investments + accountStat.personal,
     };
 
-    return totalSavings;
-  }, [savings]);
+    return finalAccountStat;
+  }, [accounts]);
 
-  const { personal, investments, total } = savingsSummary;
+  const { personal, investments, total } = accountSummary;
 
   return (
     <SummaryContainer>
-      <SummaryTitle title="Savings Summary" />
+      <SummaryTitle title="Accounts Summary" />
       <Stack spacing={1}>
         <SummaryListItem title="Personal" amount={personal} />
         <SummaryListItem title="Investments" amount={investments} />
@@ -42,4 +42,4 @@ function SavingsSummary() {
   );
 }
 
-export default SavingsSummary;
+export default AccountSummary;

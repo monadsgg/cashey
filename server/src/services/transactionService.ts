@@ -83,7 +83,6 @@ export async function getAllTransactions({
       category: {
         omit: { userId: true },
       },
-      wallet: true,
     },
     omit: {
       categoryId: true,
@@ -342,6 +341,11 @@ export async function transferFunds(
         date: new Date(date),
         walletId: fromWalletId,
         userId,
+      },
+      omit: {
+        userId: true,
+        tagId: true,
+        payeeId: true,
       },
     });
 

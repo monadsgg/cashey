@@ -5,21 +5,22 @@ import TabPanel from "../../components/TabPanel";
 import Stack from "@mui/material/Stack";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
-import SavingsCard from "./SavingsCard";
+import AccountCard from "./AccountCard";
 import Button from "@mui/material/Button";
-import { useSavings } from "../../hooks/useSavings";
+import { useAccounts } from "../../hooks/useAccounts";
 import FormDialog from "../../components/FormDialog";
-import SavingsForm, { type SavingFormDataType } from "./SavingsForm";
-import SavingsSummary from "./SavingsSummary";
-import SavingsTransactions from "./SavingsTransactions";
+import AccountForm, { type AccountFormDataType } from "./AccountForm";
+import AccountSummary from "./AccountSummary";
+import AccountTransactions from "./AccountTransactions";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
+import type { AccountItem } from "../../services/accounts";
 
-function SavingAccount() {
+function Account() {
   const [tab, setTab] = useState(0);
-  const { personalAccounts, investmentAccounts } = useSavings();
+  const { personalAccounts, investmentAccounts } = useAccounts();
   const [open, setOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] =
-    useState<SavingFormDataType | null>(null);
+    useState<AccountFormDataType | null>(null);
 
   const handleChange = (_e: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
@@ -34,19 +35,14 @@ function SavingAccount() {
     setOpen(true);
   };
 
-  const handleOnClickCard = (acc: SavingAccount) => {
+  const handleOnClickCard = (acc: AccountItem) => {
     console.log(acc);
     const {
       id,
       name,
       balance,
-      savingAccount: {
-        owner,
-        targetAmt,
-        accountType,
-        investmentType,
-        contributionLimit,
-      },
+      type,
+      account: { owner, targetAmt, investmentType, contributionLimit },
     } = acc;
     setOpen(true);
     setSelectedAccount({
@@ -55,7 +51,7 @@ function SavingAccount() {
       balance,
       owner,
       targetAmt,
-      accountType,
+      accountType: type,
       investmentType: investmentType ?? null,
       contributionLimit: contributionLimit ?? null,
     });
@@ -88,11 +84,11 @@ function SavingAccount() {
               indicatorColor="primary"
               sx={{ flexGrow: 1 }}
             >
-              <Tab label="Personal" />
+              <Tab label="Personal Savings" />
               <Tab label="Investment" />
             </Tabs>
             <Button variant="outlined" onClick={handleClickBtn}>
-              Add Savings
+              Add Accounts
             </Button>
           </Stack>
           <Box mt={2}>
@@ -102,13 +98,13 @@ function SavingAccount() {
                   const {
                     name,
                     balance,
-                    savingAccount: { owner, targetAmt },
+                    account: { owner, targetAmt },
                   } = acc;
                   const percentage = Math.ceil((balance / targetAmt) * 100);
                   const remaining = targetAmt - balance;
 
                   return (
-                    <SavingsCard
+                    <AccountCard
                       key={acc.id}
                       title={name}
                       chipLabel={owner}
@@ -128,23 +124,19 @@ function SavingAccount() {
                   const {
                     name,
                     balance,
-                    savingAccount: {
-                      owner,
-                      targetAmt,
-                      contributionLimit,
-                      accountType,
-                    },
+                    type,
+                    account: { owner, targetAmt, contributionLimit },
                   } = acc;
 
                   const percentage = Math.ceil((balance / targetAmt) * 100);
                   const remaining = targetAmt - balance;
 
                   return (
-                    <SavingsCard
+                    <AccountCard
                       key={acc.id}
                       title={name}
                       chipLabel={owner}
-                      accountType={accountType}
+                      accountType={type}
                       currentAmt={balance}
                       targetAmt={targetAmt}
                       remainingAmt={remaining}
@@ -159,16 +151,16 @@ function SavingAccount() {
           </Box>
         </Paper>
         <Stack spacing={1}>
-          <SavingsSummary />
-          <SavingsTransactions />
-          <TransferMoneyButton label="Transfer funds" isSavings />
+          <AccountSummary />
+          <AccountTransactions />
+          <TransferMoneyButton label="Transfer funds" isAccounts />
         </Stack>
       </Stack>
       <FormDialog open={open} onClose={handleClose}>
-        <SavingsForm onClose={handleClose} selectedAccount={selectedAccount} />
+        <AccountForm onClose={handleClose} selectedAccount={selectedAccount} />
       </FormDialog>
     </>
   );
 }
 
-export default SavingAccount;
+export default Account;

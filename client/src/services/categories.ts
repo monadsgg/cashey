@@ -1,6 +1,13 @@
 import api from "./api";
 
-export async function getCategories() {
-  const result = await api.get("/api/categories");
+export type Category = {
+  id: number;
+  name: string;
+  type: string;
+  color: string;
+};
+
+export async function getCategories(): Promise<Category[]> {
+  const result = await api.get<Category[]>("/api/categories");
   return result.data;
 }

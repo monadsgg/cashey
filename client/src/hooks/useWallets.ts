@@ -1,22 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
-import { getWallets } from "../services/wallet";
+import { getWallets, type Wallet } from "../services/wallet";
+import { useMemo } from "react";
+import { WalletType } from "../constants";
 
 export const useWallets = () => {
-  const { data: wallets = [], isLoading } = useQuery<Wallet[]>({
+  const {
+    data: wallets = [],
+    isLoading,
+    error,
+  } = useQuery<Wallet[]>({
     queryKey: ["wallets"],
     queryFn: getWallets,
   });
 
-  const mainWallet = wallets.find((item: Wallet) => item.type === "main");
+  const mainWallet = useMemo(
+    () => wallets.find((item: Wallet) => item.type === WalletType.MAIN),
+    [wallets]
+  );
 
-  const savingsWallet = wallets.filter((item) => item.type === "savings");
-
-  if (!isLoading && !mainWallet) throw new Error("Main wallet not found");
+  const accountWallets: Wallet[] = useMemo(
+    () =>
+      wallets.filter(
+        (item: Wallet) =>
+          item.type === WalletType.SAVINGS ||
+          item.type === WalletType.INVESTMENT
+      ),
+    [wallets]
+  );
 
   return {
     wallets,
-    mainWalletId: mainWallet?.id,
-    savingsWallet,
+    mainWalletId: mainWallet?.id ?? null,
+    accountWallets,
     isLoading,
+    error,
   };
 };

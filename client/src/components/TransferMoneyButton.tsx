@@ -4,14 +4,17 @@ import PaidIcon from "@mui/icons-material/Paid";
 import Stack from "@mui/material/Stack";
 import FormDialog from "./FormDialog";
 import TransferMoneyForm from "./TransferMoneyForm";
+import { useWallets } from "../hooks/useWallets";
+import CircularProgress from "@mui/material/CircularProgress";
 
 interface TransferMoneyButtonProps {
   label: string;
-  isSavings?: boolean;
+  isAccounts?: boolean;
 }
 
-function TransferMoneyButton({ label, isSavings }: TransferMoneyButtonProps) {
+function TransferMoneyButton({ label, isAccounts }: TransferMoneyButtonProps) {
   const [open, setOpen] = useState(false);
+  const { accountWallets, isLoading } = useWallets();
 
   const handleClose = () => {
     setOpen(false);
@@ -20,6 +23,10 @@ function TransferMoneyButton({ label, isSavings }: TransferMoneyButtonProps) {
   const handleClick = () => {
     setOpen(true);
   };
+
+  if (isLoading) return <CircularProgress />;
+
+  const disabled = accountWallets.length === 0;
 
   return (
     <>
@@ -36,12 +43,13 @@ function TransferMoneyButton({ label, isSavings }: TransferMoneyButtonProps) {
           size="large"
           startIcon={<PaidIcon fontSize="large" />}
           onClick={handleClick}
+          disabled={disabled}
         >
           {label}
         </Button>
       </Stack>
       <FormDialog open={open} onClose={handleClose}>
-        <TransferMoneyForm onClose={handleClose} isSavings={isSavings} />
+        <TransferMoneyForm onClose={handleClose} isAccounts={isAccounts} />
       </FormDialog>
     </>
   );

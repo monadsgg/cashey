@@ -2,9 +2,12 @@
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_PAGE_SIZE = 15;
 
-// savings
-export const PERSONAL_SAVING_TYPE = "personal";
-export const INVESTMENT_SAVING_TYPE = "investment";
+// wallet
+export const WalletType = {
+  MAIN: "main",
+  SAVINGS: "savings",
+  INVESTMENT: "investment",
+};
 
 export const INVESTMENT_TYPE = {
   TFSA: "Tax-Free Savings Account (TFSA)",
@@ -18,7 +21,7 @@ export const InvestmentType = {
   FHSA: "FHSA",
 };
 
-export const SavingTransactionType = {
+export const AccountTransactionType = {
   ALL: "all",
   DEPOSIT: "deposit",
   WITHDRAWAL: "withdrawal",
@@ -28,4 +31,9 @@ export const SavingTransactionType = {
 export const CategoryType = {
   INCOME: "income",
   EXPENSE: "expense",
+};
+
+export const transferCategory = {
+  INCOMING_TRANSFER: 2,
+  OUTGOING_TRANSFER: 14,
 };

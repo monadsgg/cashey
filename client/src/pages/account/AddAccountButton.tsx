@@ -1,9 +1,9 @@
 import { useState } from "react";
 import Button from "@mui/material/Button";
 import FormDialog from "../../components/FormDialog";
-import SavingsForm from "./SavingsForm";
+import AccountForm from "./AccountForm";
 
-function AddSavingButton() {
+function AddAccountButton() {
   const [open, setOpen] = useState(false);
   const handleClose = () => {
     setOpen(false);
@@ -15,13 +15,13 @@ function AddSavingButton() {
   return (
     <>
       <Button variant="outlined" onClick={handleClick}>
-        Add Savings
+        Add Accounts
       </Button>
       <FormDialog open={open} onClose={handleClose}>
-        <SavingsForm onClose={handleClose} />
+        <AccountForm onClose={handleClose} />
       </FormDialog>
     </>
   );
 }
 
-export default AddSavingButton;
+export default AddAccountButton;

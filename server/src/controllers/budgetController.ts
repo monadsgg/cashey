@@ -8,10 +8,10 @@ import {
 
 export async function getBudgets(req: Request, res: Response): Promise<void> {
   const userId = res.locals.user;
-  const { month, year } = req.body;
+  const { month, year } = req.query;
 
   try {
-    const budgets = await getAllBudgets(userId, month, year);
+    const budgets = await getAllBudgets(userId, Number(month), Number(year));
     res.status(200).json(budgets);
   } catch (error: any) {
     res.status(500).json({ message: 'Failed to fetch budgets' });

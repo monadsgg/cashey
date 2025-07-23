@@ -13,10 +13,12 @@ import Alert from "@mui/material/Alert";
 import { formatDate } from "../utils/dateUtils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { transferFunds } from "../services/transactions";
+import CircularProgress from "@mui/material/CircularProgress";
+import ErrorMessage from "./ErrorMessage";
 
 interface TransferMoneyFormProps {
   onClose: () => void;
-  isSavings?: boolean;
+  isAccounts?: boolean;
 }
 
 type TransferMoneyFormData = {
@@ -27,8 +29,8 @@ type TransferMoneyFormData = {
   toWalletId: number | null;
 };
 
-function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
-  const { mainWalletId, savingsWallet, isLoading } = useWallets();
+function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
+  const { mainWalletId, accountWallets, isLoading, error } = useWallets();
   const initialFormData: TransferMoneyFormData = {
     description: "",
     date: new Date(),
@@ -38,26 +40,37 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
   };
   const [formData, setFormData] =
     useState<TransferMoneyFormData>(initialFormData);
-  const [error, setError] = useState("");
+  const [errorForm, setErrorForm] = useState("");
+  const [accountWalletsList, setaccountWalletsList] = useState(accountWallets);
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!isLoading && mainWalletId) {
-      setFormData({
-        ...formData,
-        fromWalletId: isSavings ? savingsWallet[0].id : mainWalletId,
-        toWalletId: savingsWallet[0].id ?? null,
-      });
+    if (!isLoading) {
+      setFormData((prev) => ({
+        ...prev,
+        fromWalletId: isAccounts ? accountWallets[0].id : mainWalletId,
+        toWalletId: isAccounts ? mainWalletId : accountWallets[0].id,
+      }));
+      setaccountWalletsList(accountWallets);
     }
-  }, [isLoading]);
+  }, [isLoading, mainWalletId]);
+
+  useEffect(() => {
+    if (isAccounts) {
+      const newAccounts = accountWallets.filter(
+        (s) => s.id !== formData.fromWalletId
+      );
+      setaccountWalletsList(newAccounts);
+    }
+  }, [formData.fromWalletId]);
 
   const addMutation = useMutation({
     mutationFn: transferFunds,
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ["transaction"] });
       queryClient.refetchQueries({ queryKey: ["all-transactions"] });
-      queryClient.refetchQueries({ queryKey: ["savings"] });
-      queryClient.refetchQueries({ queryKey: ["savings-transactions"] });
+      queryClient.refetchQueries({ queryKey: ["accounts"] });
+      queryClient.refetchQueries({ queryKey: ["accounts-transactions"] });
       onClose();
     },
   });
@@ -67,7 +80,7 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
     const formattedDate = formatDate(date, "yyyy-MM-dd");
 
     if (!amount || !fromWalletId || !toWalletId) {
-      setError("Amount, from/to account is required");
+      setErrorForm("Amount, from/to account is required");
       return;
     }
 
@@ -89,7 +102,7 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
   const handleFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setError("");
+    setErrorForm("");
   };
 
   const handleFormSelectChange = (e: SelectChangeEvent) => {
@@ -97,8 +110,14 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
     setFormData({ ...formData, [name]: value });
   };
 
+  if (isLoading) return <CircularProgress />;
+  if (!mainWalletId) return <ErrorMessage message="Main wallet is not found" />;
+
   const isDisabled =
-    savingsWallet.length === 0 || formData.amount === 0 || !!error;
+    accountWallets?.length === 0 ||
+    formData.amount === 0 ||
+    !!error ||
+    addMutation.isPending;
 
   return (
     <Stack spacing={4} sx={{ height: "100%" }}>
@@ -116,42 +135,39 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
           onChange={handleFormDataChange}
         />
 
-        {!isLoading && (
-          <>
-            {formData.fromWalletId && (
-              <SelectInputField
-                label="From Account"
-                name="fromWalletId"
-                value={formData.fromWalletId?.toString()}
-                onChange={handleFormSelectChange}
-              >
-                {!isSavings && (
-                  <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
-                )}
-                {isSavings &&
-                  savingsWallet.map((item) => {
-                    return <MenuItem value={item.id}>{item.name}</MenuItem>;
-                  })}
-              </SelectInputField>
+        {formData.fromWalletId && (
+          <SelectInputField
+            label="From Account"
+            name="fromWalletId"
+            value={formData.fromWalletId?.toString()}
+            onChange={handleFormSelectChange}
+          >
+            {!isAccounts && (
+              <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
             )}
-
-            {savingsWallet.length > 0 && formData.toWalletId && (
-              <SelectInputField
-                label="To Account"
-                name="toWalletId"
-                value={formData.toWalletId?.toString()}
-                onChange={handleFormSelectChange}
-              >
-                {isSavings && (
-                  <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
-                )}
-                {savingsWallet.map((item) => {
-                  return <MenuItem value={item.id}>{item.name}</MenuItem>;
-                })}
-              </SelectInputField>
-            )}
-          </>
+            {isAccounts &&
+              accountWallets.map((item) => {
+                return <MenuItem value={item.id}>{item.name}</MenuItem>;
+              })}
+          </SelectInputField>
         )}
+
+        {accountWallets.length > 0 && formData.toWalletId && (
+          <SelectInputField
+            label="To Account"
+            name="toWalletId"
+            value={formData.toWalletId?.toString()}
+            onChange={handleFormSelectChange}
+          >
+            {isAccounts && (
+              <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+            )}
+            {accountWalletsList.map((item) => {
+              return <MenuItem value={item.id}>{item.name}</MenuItem>;
+            })}
+          </SelectInputField>
+        )}
+
         <TextInputField
           label="Amount"
           name="amount"
@@ -159,20 +175,24 @@ function TransferMoneyForm({ onClose, isSavings }: TransferMoneyFormProps) {
           onChange={handleFormDataChange}
         />
       </Stack>
-      {savingsWallet.length === 0 && (
+
+      {accountWallets.length === 0 && (
         <Stack>
           <Alert severity="error">
-            You need to add at least one savings account before you can transfer
-            any funds.
+            You need to add at least one account before you can transfer any
+            funds.
           </Alert>
         </Stack>
       )}
+
       {error && (
         <Stack>
-          <Alert severity="error">{error}</Alert>
+          <Alert severity="error">{errorForm}</Alert>
         </Stack>
       )}
+
       <Divider />
+
       <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
         <Button
           variant="outlined"
