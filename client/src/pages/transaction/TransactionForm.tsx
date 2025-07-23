@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import DatePickerField from "../../components/DatePickerField";
@@ -6,17 +6,19 @@ import TextInputField from "../../components/TextInputField";
 import SelectInputField from "../../components/SelectInputField";
 import MenuItem from "@mui/material/MenuItem";
 import { type SelectChangeEvent } from "@mui/material/Select";
-import { getCategories } from "../../services/categories";
 import Button from "@mui/material/Button";
-import { getWallets } from "../../services/wallet";
 import {
   addTransaction,
   deleteTransaction,
   updateTransaction,
+  type TransactionPayload,
 } from "../../services/transactions";
 import { formatDate } from "../../utils/dateUtils";
 import Divider from "@mui/material/Divider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useWallets } from "../../hooks/useWallets";
+import ErrorMessage from "../../components/ErrorMessage";
+import { useCategories } from "../../hooks/useCategories";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -45,7 +47,7 @@ function TransactionForm({
   const initialFormData: TransactionFormDataType = {
     description: "",
     date: new Date(),
-    categoryId: 2,
+    categoryId: 1,
     amount: 0,
     payeeId: null,
     tagId: null,
@@ -53,32 +55,10 @@ function TransactionForm({
   const [formData, setFormData] = useState<TransactionFormDataType>(
     selectedItem ?? initialFormData
   );
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [mainWalletId, setMainWalletId] = useState(0);
+  const { mainWalletId, error } = useWallets();
+  const { categories } = useCategories();
 
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const result = await getCategories();
-      setCategories(result);
-    };
-
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    const fetchWallets = async () => {
-      const result = await getWallets();
-      const mainWalletId = result.find(
-        (item: Wallet) => item.type === "main"
-      )?.id;
-
-      setMainWalletId(mainWalletId);
-    };
-
-    fetchWallets();
-  }, []);
 
   const addMutation = useMutation({
     mutationFn: addTransaction,
@@ -114,6 +94,9 @@ function TransactionForm({
   const handleSubmit = async () => {
     const { description, amount, date, categoryId, payeeId, tagId } = formData;
     const formattedDate = formatDate(date, "yyyy-MM-dd");
+
+    if (!mainWalletId)
+      return <ErrorMessage message="Main wallet is not found" />;
 
     const payloadData = {
       description,
@@ -159,6 +142,8 @@ function TransactionForm({
   };
 
   const isDisabled = formData.description === "" || formData.amount <= 0;
+
+  if (error) return <ErrorMessage message={error.message} />;
 
   return (
     <Stack spacing={4} sx={{ height: "100%" }}>
