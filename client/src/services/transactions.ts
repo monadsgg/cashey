@@ -1,8 +1,8 @@
 import api from "./api";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../constants";
-import type { Category } from "../hooks/useCategories";
 import type { Tag } from "../hooks/useTags";
 import type { Payee } from "../hooks/usePayees";
+import type { Category } from "./categories";
 
 export interface TransactionPayload {
   categoryId: number;

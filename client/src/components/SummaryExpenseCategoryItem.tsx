@@ -4,7 +4,7 @@ import ProgressBar from "./ProgressBar";
 
 interface SummaryExpenseCategoryItem extends SummaryListItemProps {
   isInBudget?: boolean;
-  percentage: number;
+  percentage?: number;
   dotColor?: string;
 }
 function SummaryExpenseCategoryItem({
@@ -23,7 +23,7 @@ function SummaryExpenseCategoryItem({
         textColor="black"
       />
       {/* TODO: Add progress bar here if the category is in budget */}
-      {isInBudget && <ProgressBar value={percentage} />}
+      {isInBudget && percentage && <ProgressBar value={percentage} />}
     </Stack>
   );
 }

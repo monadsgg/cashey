@@ -4,8 +4,8 @@ import SummaryListItem from "../../components/SummaryListItem";
 import SummaryTitle from "../../components/SummaryTitle";
 import SummaryContainer from "../../components/SummaryContainer";
 import SummaryExpenseCategoryItem from "../../components/SummaryExpenseCategoryItem";
-import type { TransactionItem } from "../../hooks/useAllTransactions";
 import { transferCategory } from "../../constants";
+import type { TransactionItem } from "../../services/transactions";
 
 interface TransactionSummaryProps {
   currentMonth: string;
