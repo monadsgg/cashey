@@ -12,12 +12,21 @@ import StatCard from "./StatCard";
 import Paper from "@mui/material/Paper";
 import CategorySpendingChart from "./CategorySpendingChart";
 import { useBudgets } from "../../hooks/useBudgets";
-import SpendingByCategoryList, {
-  type CategoryExpenseItem,
-} from "./SpendingByCategoryList";
-import type { BudgetItem } from "../../types";
-import { useEffect } from "react";
+import SpendingByCategoryList from "./SpendingByCategoryList";
 import CircularProgress from "@mui/material/CircularProgress";
+import type { Category } from "../../services/categories";
+
+type BudgetItem = {
+  id: number;
+  month: number;
+  year: number;
+  amountLimit: number;
+  createdAt: string;
+  updatedAt: string;
+  category: Category;
+  amountSpent: number;
+  amountLeft: number;
+};
 
 const mockAccountsOverview = [
   {
@@ -50,33 +59,6 @@ const mockAccountsOverview = [
   },
 ];
 
-const thisMonthCategoryMockData = [
-  { id: 1, name: "Groceries", amount: 650, percentage: 33.0, color: "#3b82f6" },
-  { id: 2, name: "Utilities", amount: 380, percentage: 19.3, color: "#8b5cf6" },
-  {
-    id: 3,
-    name: "Dining Out",
-    amount: 320,
-    percentage: 16.2,
-    color: "#ef4444",
-  },
-  {
-    id: 4,
-    name: "Transportation",
-    amount: 280,
-    percentage: 14.2,
-    color: "#10b981",
-  },
-  {
-    id: 5,
-    name: "Entertainment",
-    amount: 245,
-    percentage: 12.4,
-    color: "#f59e0b",
-  },
-  { id: 6, name: "Healthcare", amount: 95, percentage: 4.8, color: "#ec4899" },
-];
-
 function Dashboard() {
   const month = 7;
   const year = 2025;
@@ -86,6 +68,60 @@ function Dashboard() {
 
   const goToPreviousMonth = () => {};
   const goToNextMonth = () => {};
+
+  const spendingByCategoryWidget = () => {
+    if (budgets.length === 0)
+      return (
+        <Typography sx={{ textAlign: "center", mt: 4 }}>
+          No data yet. Proceed to transactions and budgets to add data
+        </Typography>
+      );
+
+    if (isLoading) return <CircularProgress />;
+
+    return (
+      <>
+        <Typography sx={{ textAlign: "center", opacity: 0.6 }}>
+          This month's expense breakdown
+        </Typography>
+
+        {!isLoading && (
+          <Stack
+            direction="row"
+            spacing={6}
+            sx={{ p: 6, justifyContent: "space-between" }}
+          >
+            <SpendingByCategoryList
+              data={budgets.map((b: BudgetItem) => ({
+                id: b.id,
+                name: b.category.name,
+                amountLimit: b.amountLimit,
+                amountSpent: b.amountSpent,
+                dotColor: b.category.color,
+              }))}
+            />
+            <Stack
+              flexDirection="row"
+              sx={{
+                width: "30%",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <CategorySpendingChart
+                data={budgets.map((b: BudgetItem) => ({
+                  name: b.category.name,
+                  amount: b.amountSpent,
+                  color: b.category.color,
+                }))}
+              />
+            </Stack>
+          </Stack>
+        )}
+      </>
+    );
+  };
+
   return (
     <Stack
       spacing={4}
@@ -149,43 +185,7 @@ function Dashboard() {
         <Typography sx={{ textAlign: "center", fontWeight: 600 }}>
           Spending By Category
         </Typography>
-        <Typography sx={{ textAlign: "center", opacity: 0.6 }}>
-          This month's expense breakdown
-        </Typography>
-        {isLoading && <CircularProgress />}
-        {!isLoading && (
-          <Stack
-            direction="row"
-            spacing={6}
-            sx={{ p: 6, justifyContent: "space-between" }}
-          >
-            <SpendingByCategoryList
-              data={budgets.map((b: BudgetItem) => ({
-                id: b.id,
-                name: b.category.name,
-                amountLimit: b.amountLimit,
-                amountSpent: b.amountSpent,
-                dotColor: b.category.color,
-              }))}
-            />
-            <Stack
-              flexDirection="row"
-              sx={{
-                width: "30%",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <CategorySpendingChart
-                data={budgets.map((b: BudgetItem) => ({
-                  name: b.category.name,
-                  amount: b.amountSpent,
-                  color: b.category.color,
-                }))}
-              />
-            </Stack>
-          </Stack>
-        )}
+        {spendingByCategoryWidget()}
       </Paper>
     </Stack>
   );
