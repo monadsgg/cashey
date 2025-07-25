@@ -1,7 +1,6 @@
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import { format, startOfMonth, lastDayOfMonth } from "date-fns";
 import TransactionTable from "./TransactionTable";
 import { useMemo, useState } from "react";
@@ -10,16 +9,13 @@ import {
   getTransactions,
   type TransactionItem,
 } from "../../services/transactions";
-import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import Tooltip from "@mui/material/Tooltip";
 import {
   getFirstDayOfNextMonth,
   getFirstDayOfPrevMonth,
   getLastDayOfNextMonth,
   getLastDayOfPrevMonth,
-  getCurrentMonth,
-  getCurrentYear,
+  getMonth,
+  getYear,
   getZonedDate,
 } from "../../utils/dateUtils";
 import TransactionForm, {
@@ -33,6 +29,7 @@ import TransactionSummary from "./TransactionSummary";
 import { useQuery } from "@tanstack/react-query";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
 import FormDialog from "../../components/FormDialog";
+import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 
 type Pagination = {
   page: number;
@@ -57,10 +54,7 @@ function Transaction() {
     startDate: format(startOfMonth(new Date()), "yyyy-MM-dd"),
     endDate: format(lastDayOfMonth(new Date()), "yyyy-MM-dd"),
   });
-  const [currentTimeFrame, setCurrentTimeFrame] = useState({
-    month: format(new Date(), "MMMM"),
-    year: format(new Date(), "yyyy"),
-  });
+  const [currentDate, setCurrentDate] = useState<Date | string>(new Date());
   const [openForm, setOpenForm] = useState(false);
   const [selectedItem, setSelectedItem] =
     useState<TransactionFormDataType | null>(null);
@@ -69,11 +63,6 @@ function Transaction() {
     tag: false,
     payee: false,
   });
-
-  const currentMonth = useMemo(
-    () => currentTimeFrame.month,
-    [currentTimeFrame.month]
-  );
 
   const paginatedQueryKey = useMemo(
     () => [
@@ -128,20 +117,14 @@ function Transaction() {
     const startDate = getFirstDayOfPrevMonth(dateRange.startDate);
     const endDate = getLastDayOfPrevMonth(dateRange.startDate);
     setDateRange({ startDate, endDate });
-    setCurrentTimeFrame({
-      month: getCurrentMonth(startDate),
-      year: getCurrentYear(startDate),
-    });
+    setCurrentDate(startDate);
   };
 
   const goToNextMonth = () => {
     const startDate = getFirstDayOfNextMonth(dateRange.startDate);
     const endDate = getLastDayOfNextMonth(dateRange.startDate);
     setDateRange({ startDate, endDate });
-    setCurrentTimeFrame({
-      month: getCurrentMonth(startDate),
-      year: getCurrentYear(startDate),
-    });
+    setCurrentDate(startDate);
   };
 
   const handleOpenForm = () => {
@@ -185,24 +168,16 @@ function Transaction() {
     <>
       <Box
         sx={(theme) => ({
-          pr: 3,
-          pl: 3,
           display: "flex",
           flexDirection: "column",
           height: `calc(100vh - ${theme.spacing(6)} * 2)`,
         })}
       >
-        <Stack direction="row" sx={{ alignItems: "center" }}>
-          <Tooltip title="Previous month">
-            <NavigateBeforeIcon onClick={goToPreviousMonth} />
-          </Tooltip>
-          <Typography variant="h2">
-            {currentTimeFrame.month} {currentTimeFrame.year}
-          </Typography>
-          <Tooltip title="Next month">
-            <NavigateNextIcon onClick={goToNextMonth} />
-          </Tooltip>
-        </Stack>
+        <MonthNavigationHeader
+          goToPrevMonth={goToPreviousMonth}
+          goToNextMonth={goToNextMonth}
+          currentDate={currentDate}
+        />
 
         <Stack direction="row" spacing={2} flexGrow={1}>
           <Stack sx={{ display: "flex", flex: 1 }}>
@@ -245,7 +220,7 @@ function Transaction() {
           <Stack direction="column" spacing={1}>
             <TransferMoneyButton label="Save money" />
             <TransactionSummary
-              currentMonth={currentMonth}
+              currentMonth={getMonth(currentDate)}
               transactions={allTransactions}
             />
           </Stack>

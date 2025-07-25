@@ -29,10 +29,13 @@ export const getLastDayOfNextMonth = (dateStr: string) => {
   return format(endOfMonth(addMonths(date, 1)), "yyyy-MM-dd");
 };
 
-export const getCurrentMonth = (dateStr: string) => {
-  return format(getZonedDate(dateStr), "MMMM");
+export const getMonth = (
+  dateStr: string | Date,
+  formatStr: string = "MMMM"
+) => {
+  return format(getZonedDate(dateStr), formatStr);
 };
 
-export const getCurrentYear = (dateStr: string) => {
+export const getYear = (dateStr: string | Date) => {
   return format(getZonedDate(dateStr), "yyyy");
 };
