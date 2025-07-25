@@ -14,8 +14,8 @@ import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import type { TransactionTableSettingsType } from "./TransactionTableSettings";
-import type { TransactionItem } from "../../hooks/useAllTransactions";
 import { transferCategory } from "../../constants";
+import type { TransactionItem } from "../../services/transactions";
 
 interface TransactionTableProps {
   transactions: TransactionItem[];
