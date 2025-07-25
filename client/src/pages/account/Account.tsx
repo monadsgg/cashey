@@ -64,8 +64,6 @@ function Account() {
         spacing={2}
         sx={{
           height: "100%",
-          p: "0",
-          paddingLeft: "20px",
           // border: "1px solid red",
         }}
       >
