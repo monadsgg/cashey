@@ -94,8 +94,9 @@ function Budget() {
             onClickDeleteBtn={handleOnClickDeleteBtn}
           />
         </Stack>
-
-        <BudgetSummary currentDate={currentDate} />
+        <Stack>
+          <BudgetSummary currentDate={currentDate} />
+        </Stack>
       </Box>
 
       <FormDialog

@@ -8,7 +8,12 @@ function SummaryContainer({ children }: SummaryContainerProps) {
   return (
     <Stack
       spacing={3}
-      sx={{ width: 400, border: "1px solid #ccc", p: 4, borderRadius: 4 }}
+      sx={{
+        width: 400,
+        border: "1px solid #ccc",
+        p: 4,
+        borderRadius: 4,
+      }}
     >
       {children}
     </Stack>
