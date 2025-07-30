@@ -64,8 +64,6 @@ function Account() {
         spacing={2}
         sx={{
           height: "100%",
-          p: "0",
-          paddingLeft: "20px",
           // border: "1px solid red",
         }}
       >
@@ -156,7 +154,11 @@ function Account() {
           <TransferMoneyButton label="Transfer funds" isAccounts />
         </Stack>
       </Stack>
-      <FormDialog open={open} onClose={handleClose}>
+      <FormDialog
+        title={`${selectedAccount ? "Edit" : "Add"} account`}
+        open={open}
+        onClose={handleClose}
+      >
         <AccountForm onClose={handleClose} selectedAccount={selectedAccount} />
       </FormDialog>
     </>

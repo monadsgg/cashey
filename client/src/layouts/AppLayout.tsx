@@ -18,7 +18,7 @@ function AppLayout({ children }: AppLayoutProps) {
     >
       <Stack direction="row" sx={{ width: "100%", p: 6 }}>
         <SideBar />
-        <Box sx={{ width: "80%" }}>{children}</Box>
+        <Box sx={{ width: "80%", ml: 2 }}>{children}</Box>
       </Stack>
     </Box>
   );

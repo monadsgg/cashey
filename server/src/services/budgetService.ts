@@ -7,7 +7,7 @@ export async function getAllBudgets(
 ) {
   const budgets = await db.budget.findMany({
     where: { userId, month, year },
-    include: { category: { omit: { userId: true } } },
+    include: { category: { omit: { userId: true, color: true, type: true } } },
     omit: { categoryId: true, userId: true },
   });
 
@@ -74,6 +74,7 @@ export async function addBudget(
 
   const budgetEntry = db.budget.create({
     data: { categoryId, amountLimit, month, year, userId },
+    omit: { userId: true },
   });
 
   return budgetEntry;
@@ -92,6 +93,7 @@ export async function editBudget(
   return db.budget.update({
     where: { id, userId, categoryId, month, year },
     data: { amountLimit },
+    omit: { userId: true },
   });
 }
 

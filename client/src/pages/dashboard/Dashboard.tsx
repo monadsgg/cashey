@@ -128,7 +128,6 @@ function Dashboard() {
       sx={(theme) => ({
         // border: "1px solid red",
         height: `calc(100vh - ${theme.spacing(6)} * 2)`,
-        padding: 2,
       })}
     >
       <Stack

@@ -48,7 +48,7 @@ function TransferMoneyButton({ label, isAccounts }: TransferMoneyButtonProps) {
           {label}
         </Button>
       </Stack>
-      <FormDialog open={open} onClose={handleClose}>
+      <FormDialog title="Transfer Funds" open={open} onClose={handleClose}>
         <TransferMoneyForm onClose={handleClose} isAccounts={isAccounts} />
       </FormDialog>
     </>
