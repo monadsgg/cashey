@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { getBudgets } from "../services/budget";
+import { getBudgets, type BudgetItem } from "../../services/budget";
 
 export const useBudgets = (month: number, year: number) => {
-  const { data: budgets = [], isLoading } = useQuery({
-    queryKey: ["budgets"],
+  const { data: budgets = [], isLoading } = useQuery<BudgetItem[]>({
+    queryKey: ["budgets", month, year],
     queryFn: () => getBudgets(month, year),
   });
 
