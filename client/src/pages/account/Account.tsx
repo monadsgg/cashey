@@ -154,7 +154,11 @@ function Account() {
           <TransferMoneyButton label="Transfer funds" isAccounts />
         </Stack>
       </Stack>
-      <FormDialog open={open} onClose={handleClose}>
+      <FormDialog
+        title={`${selectedAccount ? "Edit" : "Add"} account`}
+        open={open}
+        onClose={handleClose}
+      >
         <AccountForm onClose={handleClose} selectedAccount={selectedAccount} />
       </FormDialog>
     </>

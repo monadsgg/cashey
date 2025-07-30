@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 import DatePickerField from "../../components/DatePickerField";
 import TextInputField from "../../components/TextInputField";
 import SelectInputField from "../../components/SelectInputField";
@@ -19,6 +18,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWallets } from "../../hooks/useWallets";
 import ErrorMessage from "../../components/ErrorMessage";
 import { useCategories } from "../../hooks/useCategories";
+import DialogContent from "@mui/material/DialogContent";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -31,7 +31,6 @@ export type TransactionFormDataType = {
 };
 
 interface TransactionFormProps {
-  title: string;
   formData?: TransactionFormDataType;
   onClose: () => void;
   isLoading?: boolean;
@@ -39,7 +38,6 @@ interface TransactionFormProps {
 }
 
 function TransactionForm({
-  title,
   onClose,
   isLoading,
   selectedItem,
@@ -146,68 +144,69 @@ function TransactionForm({
   if (error) return <ErrorMessage message={error.message} />;
 
   return (
-    <Stack spacing={4} sx={{ height: "100%" }}>
-      <Typography variant="h3">{title}</Typography>
-      <Stack spacing={2} sx={{ flexGrow: 1 }}>
-        <DatePickerField value={formData.date} onChange={handleDateChange} />
-        <TextInputField
-          label="Description"
-          name="description"
-          value={formData.description}
-          onChange={handleFormDataChange}
-        />
-        {categories.length > 0 && (
-          <SelectInputField
-            label="Category"
-            name="categoryId"
-            value={formData.categoryId.toString()}
-            onChange={handleFormSelectChange}
-          >
-            {categories.map((category) => {
-              return <MenuItem value={category.id}>{category.name}</MenuItem>;
-            })}
-          </SelectInputField>
-        )}
+    <DialogContent>
+      <Stack spacing={4} sx={{ height: "100%" }}>
+        <Stack spacing={2} sx={{ flexGrow: 1 }}>
+          <DatePickerField value={formData.date} onChange={handleDateChange} />
+          <TextInputField
+            label="Description"
+            name="description"
+            value={formData.description}
+            onChange={handleFormDataChange}
+          />
+          {categories.length > 0 && (
+            <SelectInputField
+              label="Category"
+              name="categoryId"
+              value={formData.categoryId.toString()}
+              onChange={handleFormSelectChange}
+            >
+              {categories.map((category) => {
+                return <MenuItem value={category.id}>{category.name}</MenuItem>;
+              })}
+            </SelectInputField>
+          )}
 
-        <TextInputField
-          label="Amount"
-          name="amount"
-          value={formData.amount}
-          onChange={handleFormDataChange}
-        />
-      </Stack>
-      {selectedItem && (
-        <Stack>
+          <TextInputField
+            label="Amount"
+            name="amount"
+            value={formData.amount}
+            onChange={handleFormDataChange}
+          />
+        </Stack>
+        {selectedItem && (
+          <Stack>
+            <Button
+              color="secondary"
+              variant="contained"
+              onClick={() => handleDeleteTransaction(selectedItem.id!)}
+            >
+              Delete transaction
+            </Button>
+          </Stack>
+        )}
+        <Divider />
+        <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
           <Button
-            color="secondary"
-            variant="contained"
-            onClick={() => handleDeleteTransaction(selectedItem.id!)}
+            variant="outlined"
+            onClick={onClose}
+            color="primary"
+            disabled={isLoading}
           >
-            Delete transaction
+            Close
+          </Button>
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={isDisabled}
+          >
+            {!selectedItem ? "Add " : "Save "}
+            Transaction
           </Button>
         </Stack>
-      )}
-      <Divider />
-      <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
-        <Button
-          variant="outlined"
-          onClick={onClose}
-          color="primary"
-          disabled={isLoading}
-        >
-          Close
-        </Button>
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={isDisabled}
-        >
-          {!selectedItem ? "Add " : "Save "}
-          Transaction
-        </Button>
       </Stack>
-    </Stack>
+    </DialogContent>
   );
 }
 

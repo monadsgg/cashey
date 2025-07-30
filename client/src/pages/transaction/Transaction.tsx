@@ -226,9 +226,12 @@ function Transaction() {
           </Stack>
         </Stack>
       </Box>
-      <FormDialog onClose={handleCloseForm} open={openForm}>
+      <FormDialog
+        title={`${selectedItem ? "Edit" : "Add"} transaction`}
+        onClose={handleCloseForm}
+        open={openForm}
+      >
         <TransactionForm
-          title={`${selectedItem ? "Edit" : "Add"} transaction`}
           onClose={handleCloseForm}
           selectedItem={selectedItem}
         />

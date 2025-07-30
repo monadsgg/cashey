@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
-import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import DatePickerField from "./DatePickerField";
 import TextInputField from "./TextInputField";
@@ -121,7 +120,6 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
 
   return (
     <Stack spacing={4} sx={{ height: "100%" }}>
-      <Typography variant="h3">Transfer Funds</Typography>
       <Stack spacing={2} sx={{ flexGrow: 1 }}>
         <DatePickerField
           disabled
