@@ -17,7 +17,7 @@ import Divider from "@mui/material/Divider";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWallets } from "../../hooks/useWallets";
 import ErrorMessage from "../../components/ErrorMessage";
-import { useCategories } from "../../hooks/useCategories";
+import { useCategories } from "../../hooks/categories/useCategories";
 import DialogContent from "@mui/material/DialogContent";
 
 export type TransactionFormDataType = {
