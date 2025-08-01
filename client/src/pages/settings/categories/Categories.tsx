@@ -9,6 +9,8 @@ import { CategoryType } from "../../../constants";
 import type { Category } from "../../../services/categories";
 import ListItemBox from "../../../components/ListItemBox";
 import Box from "@mui/material/Box";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+import { useDeleteCategory } from "../../../hooks/categories/useDeleteCategory";
 
 const boxSxProps = {
   width: "100%",
@@ -17,12 +19,22 @@ const boxSxProps = {
   gap: 3,
 };
 
+type ConfirmDeleteData = {
+  id: null | number;
+  openDialog: boolean;
+};
+
 function Categories() {
   const [selectedItem, setSelectedItem] = useState<CategoryFormData | null>(
     null
   );
   const [openForm, setOpenForm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<ConfirmDeleteData>({
+    id: null,
+    openDialog: false,
+  });
   const { categories } = useCategories();
+  const deleteMutation = useDeleteCategory();
 
   const incomeCategories = categories.filter(
     (c) => c.type === CategoryType.INCOME
@@ -51,15 +63,18 @@ function Categories() {
     handleOpenForm();
   };
 
+  const handleCloseConfirmDialog = () => {
+    setConfirmDelete({ id: null, openDialog: false });
+  };
+
   const handleOnDeleteItem = () => {
-    // if (!selectedId) return;
-    // deleteMutation.mutate(selectedId);
-    // handleCloseConfirmDialog();
+    if (!confirmDelete.id) return;
+    deleteMutation.mutate(confirmDelete.id);
+    handleCloseConfirmDialog();
   };
 
   const handleOnClickDeleteBtn = (id: number) => {
-    // setSelectedId(id);
-    // setOpenConfirmDialog(true);
+    setConfirmDelete({ id, openDialog: true });
   };
 
   return (
@@ -113,6 +128,13 @@ function Categories() {
       >
         <CategoryForm selectedItem={selectedItem} onClose={handleCloseForm} />
       </FormDialog>
+
+      <ConfirmDialog
+        title="category"
+        open={confirmDelete.openDialog}
+        onClose={handleCloseConfirmDialog}
+        onClickDelete={handleOnDeleteItem}
+      />
     </>
   );
 }

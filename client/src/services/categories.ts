@@ -30,7 +30,7 @@ export async function updateCategory(
   return result.data;
 }
 
-export async function deleteCategory(id: number): Promise<Category> {
-  const result = await api.delete<Category>(`api/categories/${id}`);
+export async function deleteCategory(id: number): Promise<void> {
+  const result = await api.delete(`api/categories/${id}`);
   return result.data;
 }
