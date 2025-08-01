@@ -25,6 +25,7 @@ model User {
   wallets     Wallet[]
   tags        Tag[]
   payees       Payee[]
+  hiddenCategoryIds HiddenCategory[]
 }
 
 model Transaction {
@@ -68,6 +69,13 @@ model Category {
   color     String
   budgets   Budget[]
   transactions Transaction[]
+}
+
+model HiddenCategory {
+  id        Int          @id @default(autoincrement())
+  user      User         @relation(fields: [userId], references: [id])
+  userId    Int
+  categoryId     Int
 }
 
 model Wallet {
