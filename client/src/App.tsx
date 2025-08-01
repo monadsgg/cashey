@@ -7,8 +7,8 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Transaction from "./pages/transaction/Transaction";
 import Budget from "./pages/budget/Budget";
-import Categories from "./pages/categories/Categories";
 import Account from "./pages/account/Account";
+import Settings from "./pages/settings/Settings";
 
 function App() {
   return (
@@ -20,7 +20,7 @@ function App() {
           <Route path="/transactions" element={<Transaction />} />
           <Route path="/accounts" element={<Account />} />
           <Route path="/budget" element={<Budget />} />
-          <Route path="/categories" element={<Categories />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />

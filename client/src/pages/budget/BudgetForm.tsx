@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCategories } from "../../hooks/useCategories";
+import { useCategories } from "../../hooks/categories/useCategories";
 import { getMonth, getYear } from "../../utils/dateUtils";
 import Stack from "@mui/material/Stack";
 import MenuItem from "@mui/material/MenuItem";
