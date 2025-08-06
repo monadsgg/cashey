@@ -14,10 +14,10 @@ export async function getTags(req: Request, res: Response): Promise<void> {
 
 export async function createTag(req: Request, res: Response): Promise<void> {
   const userId = res.locals.user;
-  const { name } = req.body;
+  const { name, color } = req.body;
 
   try {
-    const tag = await addTag(name, userId);
+    const tag = await addTag(name, color, userId);
     res.status(201).json(tag);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
@@ -27,10 +27,10 @@ export async function createTag(req: Request, res: Response): Promise<void> {
 export async function updateTag(req: Request, res: Response): Promise<void> {
   const userId = res.locals.user;
   const { id } = req.params;
-  const { name } = req.body;
+  const { name, color } = req.body;
 
   try {
-    const tag = await editTag(Number(id), name, userId);
+    const tag = await editTag(Number(id), name, color, userId);
     res.status(200).json(tag);
   } catch (error: any) {
     res.status(500).json({ message: error.message });
