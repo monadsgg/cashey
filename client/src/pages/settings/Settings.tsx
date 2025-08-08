@@ -9,6 +9,7 @@ import { useState } from "react";
 import Paper from "@mui/material/Paper";
 import TabPanel from "../../components/TabPanel";
 import Categories from "./categories/Categories";
+import Tags from "./tags/Tags";
 
 function Settings() {
   const [tab, setTab] = useState(0);
@@ -90,9 +91,7 @@ function Settings() {
           <Categories />
         </TabPanel>
         <TabPanel index={1} value={tab}>
-          <Stack>
-            <Typography>Tags</Typography>
-          </Stack>
+          <Tags />
         </TabPanel>
         <TabPanel index={2} value={tab}>
           <Stack>

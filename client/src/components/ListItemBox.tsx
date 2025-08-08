@@ -5,10 +5,11 @@ import Typography from "@mui/material/Typography";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import type { Category } from "../services/categories";
+import type { Tag } from "../services/tags";
 
 interface ListItemBoxProps {
-  item: Category;
-  onClickEdit: (item: Category) => void;
+  item: Category | Tag;
+  onClickEdit: (item: Category | Tag) => void;
   onClickDelete: (id: number) => void;
 }
 

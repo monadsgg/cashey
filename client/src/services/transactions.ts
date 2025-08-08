@@ -1,6 +1,6 @@
 import api from "./api";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../constants";
-import type { Tag } from "../hooks/useTags";
+import type { Tag } from "../hooks/tags/useTags";
 import type { Payee } from "../hooks/usePayees";
 import type { Category } from "./categories";
 
