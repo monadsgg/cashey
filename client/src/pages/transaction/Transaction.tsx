@@ -146,7 +146,7 @@ function Transaction() {
       amount,
       categoryId: category.id,
       tagId: tag?.id || null,
-      payeeId: payee?.id || null,
+      payee: payee || null,
     });
   };
 

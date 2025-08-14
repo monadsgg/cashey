@@ -19,6 +19,8 @@ import { useWallets } from "../../hooks/useWallets";
 import ErrorMessage from "../../components/ErrorMessage";
 import { useCategories } from "../../hooks/categories/useCategories";
 import DialogContent from "@mui/material/DialogContent";
+import type { Payee } from "../../services/payees";
+import TransactionPayeeField from "./TransactionPayeeField";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -26,7 +28,7 @@ export type TransactionFormDataType = {
   date: Date;
   categoryId: number;
   amount: number;
-  payeeId: number | null;
+  payee: Payee | null;
   tagId: number | null;
 };
 
@@ -47,7 +49,7 @@ function TransactionForm({
     date: new Date(),
     categoryId: 1,
     amount: 0,
-    payeeId: null,
+    payee: null,
     tagId: null,
   };
   const [formData, setFormData] = useState<TransactionFormDataType>(
@@ -90,7 +92,7 @@ function TransactionForm({
   });
 
   const handleSubmit = async () => {
-    const { description, amount, date, categoryId, payeeId, tagId } = formData;
+    const { description, amount, date, categoryId, payee, tagId } = formData;
     const formattedDate = formatDate(date, "yyyy-MM-dd");
 
     if (!mainWalletId)
@@ -100,7 +102,7 @@ function TransactionForm({
       description,
       amount,
       categoryId,
-      payeeId,
+      payeeId: typeof payee === "object" && payee !== null ? payee.id : null,
       tagId,
       date: formattedDate,
       walletId: mainWalletId,
@@ -115,7 +117,7 @@ function TransactionForm({
         ...formData,
         description: "",
         amount: 0,
-        payeeId: null,
+        payee: null,
         tagId: null,
       });
     }
@@ -137,6 +139,10 @@ function TransactionForm({
   const handleFormSelectChange = (e: SelectChangeEvent) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handlePayeeChange = (value: Payee) => {
+    setFormData({ ...formData, payee: value });
   };
 
   const isDisabled = formData.description === "" || formData.amount <= 0;
@@ -172,6 +178,12 @@ function TransactionForm({
             name="amount"
             value={formData.amount}
             onChange={handleFormDataChange}
+          />
+
+          <TransactionPayeeField
+            label="Payee"
+            selectedValue={formData.payee}
+            onChange={handlePayeeChange}
           />
         </Stack>
         {selectedItem && (
