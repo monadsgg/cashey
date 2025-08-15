@@ -1,15 +1,15 @@
 import api from "./api";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../constants";
-import type { Tag } from "../hooks/tags/useTags";
-import type { Payee } from "../hooks/usePayees";
 import type { Category } from "./categories";
+import type { Tag } from "./tags";
+import type { Payee } from "./payees";
 
 export interface TransactionPayload {
   categoryId: number;
   amount: number;
   date: string;
   description: string;
-  tagId?: number | null;
+  tagIds: number[];
   payeeId?: number | null;
   walletId: number;
 }
@@ -37,7 +37,7 @@ export interface TransactionItem {
   amount: number;
   date: string;
   description: string;
-  tag?: Tag;
+  tags?: Tag[];
   payee?: Payee;
 }
 

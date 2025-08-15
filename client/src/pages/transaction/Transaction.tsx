@@ -15,7 +15,6 @@ import {
   getLastDayOfNextMonth,
   getLastDayOfPrevMonth,
   getMonth,
-  getYear,
   getZonedDate,
 } from "../../utils/dateUtils";
 import TransactionForm, {
@@ -137,7 +136,7 @@ function Transaction() {
   };
 
   const handleOnClickActionBtn = (item: TransactionItem) => {
-    const { id, category, description, date, amount, tag, payee } = item;
+    const { id, category, description, date, amount, tags, payee } = item;
     handleOpenForm();
     setSelectedItem({
       id,
@@ -145,7 +144,7 @@ function Transaction() {
       date: getZonedDate(date),
       amount,
       categoryId: category.id,
-      tagId: tag?.id || null,
+      tags: tags || [],
       payee: payee || null,
     });
   };
@@ -159,8 +158,6 @@ function Transaction() {
   ) => {
     setSettings(settings);
   };
-
-  // const handleOnClickTransferBtn = () => {};
 
   const transactionData = paginatedData?.data || [];
 

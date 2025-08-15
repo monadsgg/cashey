@@ -21,6 +21,8 @@ import { useCategories } from "../../hooks/categories/useCategories";
 import DialogContent from "@mui/material/DialogContent";
 import type { Payee } from "../../services/payees";
 import TransactionPayeeField from "./TransactionPayeeField";
+import TransactionTagField from "./TransactionTagField";
+import type { Tag } from "../../services/tags";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -29,7 +31,7 @@ export type TransactionFormDataType = {
   categoryId: number;
   amount: number;
   payee: Payee | null;
-  tagId: number | null;
+  tags: Tag[] | [];
 };
 
 interface TransactionFormProps {
@@ -50,7 +52,7 @@ function TransactionForm({
     categoryId: 1,
     amount: 0,
     payee: null,
-    tagId: null,
+    tags: [],
   };
   const [formData, setFormData] = useState<TransactionFormDataType>(
     selectedItem ?? initialFormData
@@ -92,7 +94,7 @@ function TransactionForm({
   });
 
   const handleSubmit = async () => {
-    const { description, amount, date, categoryId, payee, tagId } = formData;
+    const { description, amount, date, categoryId, payee, tags } = formData;
     const formattedDate = formatDate(date, "yyyy-MM-dd");
 
     if (!mainWalletId)
@@ -103,7 +105,7 @@ function TransactionForm({
       amount,
       categoryId,
       payeeId: typeof payee === "object" && payee !== null ? payee.id : null,
-      tagId,
+      tagIds: tags.map((t) => t.id),
       date: formattedDate,
       walletId: mainWalletId,
     };
@@ -118,7 +120,7 @@ function TransactionForm({
         description: "",
         amount: 0,
         payee: null,
-        tagId: null,
+        tags: [],
       });
     }
   };
@@ -143,6 +145,10 @@ function TransactionForm({
 
   const handlePayeeChange = (value: Payee) => {
     setFormData({ ...formData, payee: value });
+  };
+
+  const handleTagChange = (values: Tag[]) => {
+    setFormData({ ...formData, tags: values });
   };
 
   const isDisabled = formData.description === "" || formData.amount <= 0;
@@ -184,6 +190,12 @@ function TransactionForm({
             label="Payee"
             selectedValue={formData.payee}
             onChange={handlePayeeChange}
+          />
+
+          <TransactionTagField
+            label="Tag"
+            selectedValue={formData.tags}
+            onChange={handleTagChange}
           />
         </Stack>
         {selectedItem && (
