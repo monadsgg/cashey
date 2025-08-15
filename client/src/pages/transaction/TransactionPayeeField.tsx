@@ -13,15 +13,9 @@ interface TransactionPayeeProps {
   onChange: (value: Payee) => void;
 }
 
-interface PayeeOptionType {
-  inputValue?: string;
-  name: string;
-  id?: number;
-}
+type PayeeOptionType = Payee | { inputValue?: string; name: string };
 
-type OptionType = string | Payee | PayeeOptionType;
-
-const filter = createFilterOptions<OptionType>({
+const filter = createFilterOptions<PayeeOptionType>({
   matchFrom: "start",
 });
 
@@ -31,7 +25,7 @@ function TransactionPayeeField({
   onChange,
 }: TransactionPayeeProps) {
   const [inputValue, setInputValue] = useState("");
-  const [value, setValue] = useState<Payee | PayeeOptionType | null>(
+  const [value, setValue] = useState<PayeeOptionType | null>(
     selectedValue ?? null
   );
   const [open, setOpen] = useState(false);
@@ -40,7 +34,7 @@ function TransactionPayeeField({
 
   const handleChange = async (
     _event: React.SyntheticEvent,
-    newValue: OptionType | null
+    newValue: string | PayeeOptionType | null
   ) => {
     if (!newValue) {
       setValue(null);
@@ -60,9 +54,9 @@ function TransactionPayeeField({
       const result = await addPayeeMutation.mutateAsync({ name });
       onChange(result);
     } else {
-      if (!newValue.id) return;
       setValue(newValue);
-      onChange({ id: newValue.id, name: newValue.name });
+
+      if ("id" in newValue) onChange({ id: newValue.id, name: newValue.name });
     }
   };
 
@@ -98,14 +92,14 @@ function TransactionPayeeField({
             });
           }
 
-          return filtered;
+          return filtered as PayeeOptionType[];
         }}
         selectOnFocus
         clearOnBlur
         blurOnSelect
         handleHomeEndKeys
-        options={payees}
-        getOptionLabel={(option: string | Payee | PayeeOptionType) => {
+        options={[...payees] as PayeeOptionType[]}
+        getOptionLabel={(option) => {
           if (typeof option === "string") {
             return option;
           }
@@ -120,9 +114,10 @@ function TransactionPayeeField({
         renderInput={(params) => (
           <TextField
             {...params}
-            name={label.toLocaleLowerCase()}
+            name={label.toLowerCase()}
             hiddenLabel
             variant="outlined"
+            size="small"
           />
         )}
         inputValue={inputValue}
