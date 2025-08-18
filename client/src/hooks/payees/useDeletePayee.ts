@@ -8,7 +8,7 @@ export function useDeletePayee() {
     mutationFn: deletePayee,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["Payee"],
+        queryKey: ["payees"],
       });
     },
   });
