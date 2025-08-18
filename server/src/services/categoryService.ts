@@ -14,6 +14,7 @@ export async function getAllCategories(userId: number) {
       NOT: [{ id: OUT_TRANSFER_CATEGORY_ID }, { id: IN_TRANSFER_CATEGORY_ID }],
       id: { notIn: hiddenIds.map((h) => h.categoryId) },
     },
+    orderBy: { name: 'asc' },
     omit: { userId: true },
   });
 

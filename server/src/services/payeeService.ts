@@ -3,6 +3,7 @@ import db from '../utils/db';
 export async function getAllPayees(userId: number) {
   const payees = await db.payee.findMany({
     where: { userId },
+    orderBy: { name: 'asc' },
     omit: {
       userId: true,
     },

@@ -3,6 +3,7 @@ import db from '../utils/db';
 export async function getAllTags(userId: number) {
   const tags = await db.tag.findMany({
     where: { userId },
+    orderBy: { name: 'asc' },
     omit: { userId: true },
   });
 
