@@ -19,6 +19,10 @@ import { useWallets } from "../../hooks/useWallets";
 import ErrorMessage from "../../components/ErrorMessage";
 import { useCategories } from "../../hooks/categories/useCategories";
 import DialogContent from "@mui/material/DialogContent";
+import type { Payee } from "../../services/payees";
+import TransactionPayeeField from "./TransactionPayeeField";
+import TransactionTagField from "./TransactionTagField";
+import type { Tag } from "../../services/tags";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -26,8 +30,8 @@ export type TransactionFormDataType = {
   date: Date;
   categoryId: number;
   amount: number;
-  payeeId: number | null;
-  tagId: number | null;
+  payee: Payee | null;
+  tags: Tag[] | [];
 };
 
 interface TransactionFormProps {
@@ -47,8 +51,8 @@ function TransactionForm({
     date: new Date(),
     categoryId: 1,
     amount: 0,
-    payeeId: null,
-    tagId: null,
+    payee: null,
+    tags: [],
   };
   const [formData, setFormData] = useState<TransactionFormDataType>(
     selectedItem ?? initialFormData
@@ -90,7 +94,7 @@ function TransactionForm({
   });
 
   const handleSubmit = async () => {
-    const { description, amount, date, categoryId, payeeId, tagId } = formData;
+    const { description, amount, date, categoryId, payee, tags } = formData;
     const formattedDate = formatDate(date, "yyyy-MM-dd");
 
     if (!mainWalletId)
@@ -100,8 +104,8 @@ function TransactionForm({
       description,
       amount,
       categoryId,
-      payeeId,
-      tagId,
+      payeeId: typeof payee === "object" && payee !== null ? payee.id : null,
+      tagIds: tags.map((t) => t.id),
       date: formattedDate,
       walletId: mainWalletId,
     };
@@ -115,8 +119,8 @@ function TransactionForm({
         ...formData,
         description: "",
         amount: 0,
-        payeeId: null,
-        tagId: null,
+        payee: null,
+        tags: [],
       });
     }
   };
@@ -137,6 +141,14 @@ function TransactionForm({
   const handleFormSelectChange = (e: SelectChangeEvent) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handlePayeeChange = (value: Payee) => {
+    setFormData({ ...formData, payee: value });
+  };
+
+  const handleTagChange = (values: Tag[]) => {
+    setFormData({ ...formData, tags: values });
   };
 
   const isDisabled = formData.description === "" || formData.amount <= 0;
@@ -172,6 +184,18 @@ function TransactionForm({
             name="amount"
             value={formData.amount}
             onChange={handleFormDataChange}
+          />
+
+          <TransactionPayeeField
+            label="Payee"
+            selectedValue={formData.payee}
+            onChange={handlePayeeChange}
+          />
+
+          <TransactionTagField
+            label="Tag"
+            selectedValue={formData.tags}
+            onChange={handleTagChange}
           />
         </Stack>
         {selectedItem && (

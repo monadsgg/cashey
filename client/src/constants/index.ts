@@ -37,3 +37,6 @@ export const transferCategory = {
   INCOMING_TRANSFER: 2,
   OUTGOING_TRANSFER: 14,
 };
+
+// tag
+export const TAG_DEFAULT_COLOR = "#8cdbc4";

@@ -109,13 +109,20 @@ function TransactionTable({
             )}
             {settings.tag && (
               <StyledTableCell>
-                {item.tag && (
-                  <Chip
-                    label={item.tag?.name}
-                    sx={{
-                      backgroundColor: "#8cdbc4",
-                    }}
-                  />
+                {item.tags && (
+                  <Stack direction="row" spacing={2}>
+                    {item.tags.map((t) => (
+                      <Chip
+                        key={t.id}
+                        label={t.name}
+                        sx={{
+                          minWidth: "60px",
+                          backgroundColor: t.color,
+                          color: "#fff",
+                        }}
+                      />
+                    ))}
+                  </Stack>
                 )}
               </StyledTableCell>
             )}

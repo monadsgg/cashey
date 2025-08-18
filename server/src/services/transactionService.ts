@@ -49,14 +49,13 @@ export async function getAllTransactions({
           category: {
             omit: { userId: true },
           },
-          tag: { omit: { userId: true } },
+          tags: { omit: { userId: true } },
           payee: { omit: { userId: true } },
         },
         omit: {
           categoryId: true,
           userId: true,
           walletId: true,
-          tagId: true,
           payeeId: true,
         },
       }),
@@ -88,32 +87,9 @@ export async function getAllTransactions({
       categoryId: true,
       userId: true,
       walletId: true,
-      tagId: true,
       payeeId: true,
     },
   });
-}
-
-async function findOrCreateTagByName(name: string, userId: number) {
-  const tagExists = await db.tag.findUnique({
-    where: { name_userId: { name, userId } },
-  });
-  if (tagExists) return tagExists.id;
-
-  const newTag = await db.tag.create({ data: { name, userId } });
-  return newTag.id;
-}
-
-async function findOrCreatePayeeByName(name: string, userId: number) {
-  const payeeExists = await db.payee.findUnique({
-    where: { name_userId: { name, userId } },
-  });
-  if (payeeExists) return payeeExists.id;
-
-  const newPayee = await db.payee.create({
-    data: { name, userId },
-  });
-  return newPayee.id;
 }
 
 export async function addTransaction(
@@ -123,8 +99,8 @@ export async function addTransaction(
   date: string,
   userId: number,
   walletId: number,
-  tagName: string,
-  payeeName: string,
+  tagIds: number[],
+  payeeId: number,
 ) {
   if (!description || !categoryId || !amount || !date)
     throw new Error('All fields are required');
@@ -138,12 +114,6 @@ export async function addTransaction(
   if (!category) throw new Error('Category does not exist');
 
   const result = await db.$transaction(async (tx) => {
-    // 0) Find/Create tag or payee
-    const tagId = tagName ? await findOrCreateTagByName(tagName, userId) : null;
-    const payeeId = payeeName
-      ? await findOrCreatePayeeByName(payeeName, userId)
-      : null;
-
     // 1) create a new transaction
     const newTransaction = await tx.transaction.create({
       data: {
@@ -153,21 +123,22 @@ export async function addTransaction(
         date: new Date(date),
         userId,
         walletId,
-        tagId: tagId ? tagId : undefined,
+        tags: {
+          connect: tagIds.map((id) => ({ id })),
+        },
         payeeId: payeeId ? payeeId : undefined,
       },
       include: {
         category: {
           omit: { userId: true },
         },
-        tag: { omit: { userId: true } },
+        tags: { omit: { userId: true } },
         payee: { omit: { userId: true } },
       },
       omit: {
         categoryId: true,
         userId: true,
         walletId: true,
-        tagId: true,
         payeeId: true,
       },
     });
@@ -200,7 +171,7 @@ export async function editTransaction(
   amount: number,
   date: string,
   userId: number,
-  tagId: number | null,
+  tagIds: number[],
   payeeId: number | null,
 ) {
   if (!description || !categoryId || !amount || !date)
@@ -209,7 +180,7 @@ export async function editTransaction(
   const result = await db.$transaction(async (tx) => {
     // 1) Get the old transaction (with category)
     const oldTransaction = await tx.transaction.findUniqueOrThrow({
-      where: { id },
+      where: { id, userId },
       include: { category: true },
     });
 
@@ -261,21 +232,22 @@ export async function editTransaction(
         categoryId,
         amount,
         date: new Date(date),
-        tagId,
+        tags: {
+          set: tagIds.map((id) => ({ id })),
+        },
         payeeId,
       },
       include: {
         category: {
           omit: { userId: true },
         },
-        tag: { omit: { userId: true } },
+        tags: { omit: { userId: true } },
         payee: { omit: { userId: true } },
       },
       omit: {
         categoryId: true,
         userId: true,
         walletId: true,
-        tagId: true,
         payeeId: true,
       },
     });
@@ -344,7 +316,6 @@ export async function transferFunds(
       },
       omit: {
         userId: true,
-        tagId: true,
         payeeId: true,
       },
     });

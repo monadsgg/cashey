@@ -1,4 +1,3 @@
-import Stack from "@mui/material/Stack";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import Typography from "@mui/material/Typography";
@@ -10,6 +9,8 @@ import Paper from "@mui/material/Paper";
 import TabPanel from "../../components/TabPanel";
 import Categories from "./categories/Categories";
 import Tags from "./tags/Tags";
+import Payees from "./payees/Payees";
+import Box from "@mui/material/Box";
 
 function Settings() {
   const [tab, setTab] = useState(0);
@@ -86,7 +87,7 @@ function Settings() {
           />
         </Tabs>
       </Paper>
-      <Paper sx={{ padding: 8 }}>
+      <Box sx={{ height: "80%" }}>
         <TabPanel index={0} value={tab}>
           <Categories />
         </TabPanel>
@@ -94,11 +95,9 @@ function Settings() {
           <Tags />
         </TabPanel>
         <TabPanel index={2} value={tab}>
-          <Stack>
-            <Typography>Payees</Typography>
-          </Stack>
+          <Payees />
         </TabPanel>
-      </Paper>
+      </Box>
     </Paper>
   );
 }

@@ -3,6 +3,10 @@ import db from '../utils/db';
 export async function getAllPayees(userId: number) {
   const payees = await db.payee.findMany({
     where: { userId },
+    orderBy: { name: 'asc' },
+    omit: {
+      userId: true,
+    },
   });
 
   return payees;
@@ -21,6 +25,9 @@ export async function addPayee(name: string, userId: number) {
       name,
       userId,
     },
+    omit: {
+      userId: true,
+    },
   });
 
   return newPayee;
@@ -32,7 +39,13 @@ export async function editPayee(id: number, name: string, userId: number) {
   if (!payee || payee.userId !== userId)
     throw new Error('Payee not found or not allowed to edit');
 
-  return db.payee.update({ where: { id }, data: { name } });
+  return db.payee.update({
+    where: { id },
+    data: { name },
+    omit: {
+      userId: true,
+    },
+  });
 }
 
 export async function removePayee(id: number, userId: number) {
