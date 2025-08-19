@@ -32,3 +32,11 @@ export const isAuthenticated = () => {
 
   return true;
 };
+
+export const getUserName = () => {
+  const user = localStorage.getItem("user");
+
+  if (user) {
+    return JSON.parse(user).name;
+  }
+};
