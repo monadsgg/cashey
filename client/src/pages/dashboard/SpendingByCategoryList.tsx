@@ -4,9 +4,8 @@ import SummaryExpenseCategoryItem from "../../components/SummaryExpenseCategoryI
 export type CategoryExpenseItem = {
   id: number;
   name: string;
-  amountLimit: number;
   amountSpent: number;
-  dotColor?: string;
+  dotColor: string;
 };
 
 interface SpendingByCategoryListProps {
@@ -14,20 +13,14 @@ interface SpendingByCategoryListProps {
 }
 
 function SpendingByCategoryList({ data }: SpendingByCategoryListProps) {
-  console.log(data);
-
   return (
-    <Stack flex={1} spacing={1}>
+    <Stack sx={{ width: "50%" }}>
       {data.map((item) => {
-        const percentage = Math.ceil(
-          (item.amountSpent / item.amountLimit) * 100
-        );
         return (
           <SummaryExpenseCategoryItem
             key={item.id}
             title={item.name}
             amount={item.amountSpent}
-            percentage={percentage}
             isInBudget
             dotColor={item.dotColor}
           />
