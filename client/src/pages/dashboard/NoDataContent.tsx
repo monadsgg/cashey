@@ -16,7 +16,7 @@ function NoDataContent() {
       <img src={charts_illustration} width="500px" alt="charts illustration" />
       <Stack sx={{ alignItems: "center" }}>
         <Typography variant="body1" sx={{ mt: "10px" }}>
-          No data available yet.
+          No data available for this month.
         </Typography>
         <Typography variant="body1" sx={{ mt: "10px" }}>
           Add transactions and budget data to generate spending reports and
