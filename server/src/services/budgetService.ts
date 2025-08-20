@@ -7,20 +7,13 @@ export async function getAllBudgets(
 ) {
   const budgets = await db.budget.findMany({
     where: { userId, month, year },
-    include: { category: { omit: { userId: true, color: true, type: true } } },
+    include: { category: { omit: { userId: true, type: true } } },
     omit: { categoryId: true, userId: true },
   });
 
-  let startDate;
-  let endDate;
-  if (month && year) {
-    startDate = new Date(year, month - 1, 1);
-    endDate = new Date(year, month, 0);
-  }
-  if (year) {
-    startDate = new Date(year, 0, 1);
-    endDate = new Date(year, 11, 31);
-  }
+  // handle monthly and yearly period
+  let startDate = month ? new Date(year, month - 1, 1) : new Date(year, 0, 1);
+  let endDate = month ? new Date(year, month, 0) : new Date(year, 11, 31);
 
   const categoryIds = [...new Set(budgets.map((b) => b.category.id))];
   const transactions = await db.transaction.groupBy({
