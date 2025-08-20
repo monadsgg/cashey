@@ -8,7 +8,7 @@ export const useSpendingByCategory = (month: number, year: number) => {
   const { data: spendingByCategory = [], isLoading } = useQuery<
     SpendingByCategoryResponse[]
   >({
-    queryKey: ["spendingCategory"],
+    queryKey: ["spendingCategory", month, year],
     queryFn: () => getSpendingByCategory(month, year),
   });
 
