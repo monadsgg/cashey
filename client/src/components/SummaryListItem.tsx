@@ -10,6 +10,11 @@ export interface SummaryListItemProps {
   dotColor?: string;
 }
 
+const textSxProps = {
+  fontWeight: 500,
+  fontSize: "18px",
+};
+
 function SummaryListItem({
   title,
   amount,
@@ -20,17 +25,12 @@ function SummaryListItem({
     <Stack direction="row" sx={{ justifyContent: "space-between" }}>
       <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
         {dotColor && <Dot color={dotColor} />}
-        <Typography
-          color={textColor}
-          sx={{ fontWeight: 500, fontSize: "18px" }}
-        >
+        <Typography color={textColor} sx={textSxProps}>
           {title}
         </Typography>
       </Stack>
 
-      <Typography sx={{ fontSize: "18px" }}>
-        {formatCurrency(amount)}
-      </Typography>
+      <Typography sx={textSxProps}>{formatCurrency(amount)}</Typography>
     </Stack>
   );
 }
