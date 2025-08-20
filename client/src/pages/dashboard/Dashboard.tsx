@@ -1,138 +1,34 @@
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import TrendingDownIcon from "@mui/icons-material/TrendingDown";
-import SavingsIcon from "@mui/icons-material/Savings";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import StatCard from "./StatCard";
-import Paper from "@mui/material/Paper";
-import CategorySpendingChart from "./CategorySpendingChart";
-import SpendingByCategoryList from "./SpendingByCategoryList";
-import CircularProgress from "@mui/material/CircularProgress";
-import NoDataContent from "./NoDataContent";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 import { getMonth } from "../../utils/dateUtils";
-import {
-  addMonths,
-  format,
-  getYear,
-  lastDayOfMonth,
-  startOfMonth,
-  subMonths,
-} from "date-fns";
+import { addMonths, getYear, subMonths } from "date-fns";
 import { getUserName } from "../../utils/auth";
-import { useAllTransactions } from "../../hooks/useAllTransactions";
-import { useSpendingByCategory } from "../../hooks/reports/useSpendingByCategory";
-import type { SpendingByCategoryResponse } from "../../services/reports";
-
-const mockAccountsOverview = [
-  {
-    title: "Total Income",
-    icon: TrendingUpIcon,
-    amount: 0,
-    caption: "This month",
-    color: "green",
-  },
-  {
-    title: "Total Expense",
-    icon: TrendingDownIcon,
-    amount: 0,
-    caption: "This month",
-    color: "red",
-  },
-  {
-    title: "Total Savings",
-    icon: SavingsIcon,
-    amount: 0,
-    caption: "43.7% savings rate",
-    color: "blue",
-  },
-  {
-    title: "Total Balance",
-    icon: AccountBalanceWalletIcon,
-    amount: 0,
-    caption: "+2.5% from last month",
-    color: "black",
-  },
-];
+import { useStatsOverview } from "../../hooks/reports/useOverview";
+import { mapStatsToOverview } from "../../utils/mapStatsToOverview";
+import SpendingByCategoryWidget from "./SpendingByCategoryWidget";
 
 function Dashboard() {
-  const [currentDate, setCurrentDate] = useState<Date | string>(new Date());
-  const month = Number(getMonth(currentDate, "M"));
-  const year = Number(getYear(currentDate));
-  const { transactions } = useAllTransactions({
-    startDate: format(startOfMonth(currentDate), "yyyy-MM-dd"),
-    endDate: format(lastDayOfMonth(currentDate), "yyyy-MM-dd"),
-  });
-  const { spendingByCategory, isLoading } = useSpendingByCategory(month, year);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const currentMonth = Number(getMonth(currentDate, "M"));
+  const currentYear = Number(getYear(currentDate));
 
-  console.log("transactions", transactions);
+  const { statsOverview: stats } = useStatsOverview(currentMonth, currentYear);
+  const { statsOverview: prevStats } = useStatsOverview(
+    currentMonth - 1,
+    currentYear
+  );
 
-  const goToPreviousMonth = () => {
-    const prevDate = subMonths(currentDate, 1);
-    setCurrentDate(prevDate);
-  };
+  const overView = useMemo(
+    () => mapStatsToOverview(stats, prevStats),
+    [stats, prevStats]
+  );
 
-  const goToNextMonth = () => {
-    const nextDate = addMonths(currentDate, 1);
-    setCurrentDate(nextDate);
-  };
-
-  const spendingByCategoryWidget = () => {
-    if (isLoading) return <CircularProgress />;
-
-    return (
-      <Paper elevation={1} sx={{ p: 4, width: "50%" }}>
-        <Typography sx={{ textAlign: "center", fontWeight: 600 }}>
-          Spending By Category
-        </Typography>
-        <Typography sx={{ textAlign: "center", opacity: 0.6 }}>
-          This month's expense breakdown
-        </Typography>
-
-        {!isLoading && (
-          <Stack
-            direction="column-reverse"
-            spacing={6}
-            sx={{ p: 6, alignItems: "center" }}
-          >
-            <SpendingByCategoryList
-              data={spendingByCategory.map((c: SpendingByCategoryResponse) => ({
-                id: c.category.id,
-                name: c.category.name,
-                amountSpent: c.total,
-                dotColor: c.category.color,
-              }))}
-            />
-            <Box
-              sx={{
-                width: "40%",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <CategorySpendingChart
-                data={spendingByCategory.map(
-                  (c: SpendingByCategoryResponse) => ({
-                    name: c.category.name,
-                    amount: c.total,
-                    color: c.category.color,
-                  })
-                )}
-              />
-            </Box>
-          </Stack>
-        )}
-      </Paper>
-    );
-  };
-
-  const displayReports = () => {
-    if (spendingByCategory.length === 0) return <NoDataContent />;
-    return spendingByCategoryWidget();
-  };
+  const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
+  const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
   return (
     <Stack
@@ -174,11 +70,11 @@ function Dashboard() {
         sx={{
           width: "100%",
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateColumns: "repeat(5, 1fr)",
           gap: 3,
         }}
       >
-        {mockAccountsOverview.map((acc) => (
+        {overView.map((acc) => (
           <StatCard
             key={acc.title}
             title={acc.title}
@@ -190,7 +86,12 @@ function Dashboard() {
         ))}
       </Box>
 
-      <Stack spacing={2}>{displayReports()}</Stack>
+      <Stack spacing={2}>
+        <SpendingByCategoryWidget
+          currentMonth={currentMonth}
+          currentYear={currentYear}
+        />
+      </Stack>
     </Stack>
   );
 }
