@@ -118,8 +118,16 @@ const AccountCard = ({
     );
 
   return (
-    <Card>
-      <Stack p={2} spacing={2}>
+    <Card
+      elevation={0}
+      sx={{
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderColor: "rgba(204, 204, 204, 0.8)",
+        borderRadius: 4,
+      }}
+    >
+      <Stack p={2} spacing={1}>
         <Stack
           direction="row"
           sx={{
