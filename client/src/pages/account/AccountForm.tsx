@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
-import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import TextInputField from "../../components/TextInputField";
 import SelectInputField from "../../components/SelectInputField";
@@ -9,14 +8,10 @@ import { type SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { INVESTMENT_TYPE, InvestmentType, WalletType } from "../../constants";
 import Alert from "@mui/material/Alert";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  addAccount,
-  deleteAccount,
-  updateAccount,
-  type AccountPayload,
-} from "../../services/accounts";
+import { type AccountPayload } from "../../services/accounts";
 import DialogContent from "@mui/material/DialogContent";
+import { useAddAccount } from "../../hooks/accounts/useAddAccount";
+import { useUpdateAccount } from "../../hooks/accounts/useUpdateAccount";
 
 interface AccountFormProps {
   onClose: () => void;
@@ -41,33 +36,8 @@ function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
     selectedAccount ?? initialFormData
   );
   const [error, setError] = useState("");
-  const queryClient = useQueryClient();
-
-  const addMutation = useMutation({
-    mutationFn: addAccount,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
-      queryClient.refetchQueries({ queryKey: ["wallets"] });
-      onClose();
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: AccountPayload }) =>
-      updateAccount(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
-      onClose();
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteAccount,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
-      onClose();
-    },
-  });
+  const addAccountMutation = useAddAccount();
+  const updateAccountMutation = useUpdateAccount();
 
   const handleSubmit = () => {
     const {
@@ -97,9 +67,9 @@ function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
     };
 
     if (formData.id) {
-      updateMutation.mutate({ id: formData.id, payload: payload });
+      updateAccountMutation.mutate({ id: formData.id, payload: payload });
     } else {
-      addMutation.mutate(payload);
+      addAccountMutation.mutate(payload);
       setFormData({
         ...formData,
         name: "",
@@ -108,15 +78,14 @@ function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
         targetAmt: 0,
       });
     }
-  };
 
-  const handleDeleteAccount = (id: number) => {
-    deleteMutation.mutate(id);
+    onClose();
   };
 
   const handleFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    setError("");
   };
 
   const handleFormSelectChange = (e: SelectChangeEvent) => {
@@ -191,35 +160,19 @@ function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
             <Alert severity="error">{error}</Alert>
           </Stack>
         )}
-        {selectedAccount && (
-          <Stack spacing={1}>
-            <Button color="primary" variant="outlined" onClick={handleSubmit}>
-              Save changes
-            </Button>
-            <Button
-              color="secondary"
-              variant="outlined"
-              onClick={() => handleDeleteAccount(selectedAccount.id!)}
-            >
-              Delete this account
-            </Button>
-          </Stack>
-        )}
         <Divider />
         <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
           <Button variant="outlined" onClick={onClose} color="primary">
             Close
           </Button>
-          {!selectedAccount && (
-            <Button
-              color="primary"
-              variant="contained"
-              onClick={handleSubmit}
-              disabled={!!error}
-            >
-              Add
-            </Button>
-          )}
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={!!error}
+          >
+            {!selectedAccount ? "Add " : "Save "}
+          </Button>
         </Stack>
       </Stack>
     </DialogContent>

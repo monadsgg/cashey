@@ -7,13 +7,16 @@ import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import AccountCard from "./AccountCard";
 import Button from "@mui/material/Button";
-import { useAccounts } from "../../hooks/useAccounts";
 import FormDialog from "../../components/FormDialog";
 import AccountForm, { type AccountFormDataType } from "./AccountForm";
 import AccountSummary from "./AccountSummary";
 import AccountTransactions from "./AccountTransactions";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
 import type { AccountItem } from "../../services/accounts";
+import { useAccounts } from "../../hooks/accounts/useAccounts";
+import { useDeleteAccount } from "../../hooks/accounts/useDeleteAccount";
+import type { ConfirmDeleteData } from "../transaction/Transaction";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 function Account() {
   const [tab, setTab] = useState(0);
@@ -21,6 +24,12 @@ function Account() {
   const [open, setOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] =
     useState<AccountFormDataType | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<ConfirmDeleteData>({
+    id: null,
+    openDialog: false,
+  });
+
+  const deleteAccountMutation = useDeleteAccount();
 
   const handleChange = (_e: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
@@ -35,7 +44,7 @@ function Account() {
     setOpen(true);
   };
 
-  const handleOnClickCard = (acc: AccountItem) => {
+  const handleOnClickEdit = (acc: AccountItem) => {
     console.log(acc);
     const {
       id,
@@ -55,6 +64,20 @@ function Account() {
       investmentType: investmentType ?? null,
       contributionLimit: contributionLimit ?? null,
     });
+  };
+
+  const handleCloseConfirmDialog = () => {
+    setConfirmDelete({ id: null, openDialog: false });
+  };
+
+  const handleOnClickDeleteBtn = (id: number) => {
+    setConfirmDelete({ id, openDialog: true });
+  };
+
+  const handleOnDeleteAcct = () => {
+    if (!confirmDelete.id) return;
+    deleteAccountMutation.mutate(confirmDelete.id);
+    handleCloseConfirmDialog();
   };
 
   return (
@@ -110,7 +133,9 @@ function Account() {
                       targetAmt={targetAmt}
                       remainingAmt={remaining}
                       percentage={percentage}
-                      onClick={() => handleOnClickCard(acc)}
+                      onClickEdit={() => handleOnClickEdit(acc)}
+                      onClickDelete={() => handleOnClickDeleteBtn(acc.id)}
+                      showDeleteBtn={!acc.transactions.length}
                     />
                   );
                 })}
@@ -140,7 +165,9 @@ function Account() {
                       remainingAmt={remaining}
                       contributionLimit={contributionLimit}
                       percentage={percentage}
-                      onClick={() => handleOnClickCard(acc)}
+                      onClickEdit={() => handleOnClickEdit(acc)}
+                      onClickDelete={() => handleOnClickDeleteBtn(acc.id)}
+                      showDeleteBtn={!acc.transactions.length}
                     />
                   );
                 })}
@@ -154,6 +181,7 @@ function Account() {
           <TransferMoneyButton label="Transfer funds" isAccounts />
         </Stack>
       </Stack>
+
       <FormDialog
         title={`${selectedAccount ? "Edit" : "Add"} account`}
         open={open}
@@ -161,6 +189,13 @@ function Account() {
       >
         <AccountForm onClose={handleClose} selectedAccount={selectedAccount} />
       </FormDialog>
+
+      <ConfirmDialog
+        title="account"
+        open={confirmDelete.openDialog}
+        onClose={handleCloseConfirmDialog}
+        onClickDelete={handleOnDeleteAcct}
+      />
     </>
   );
 }

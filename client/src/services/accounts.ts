@@ -6,6 +6,7 @@ export interface AccountItem {
   balance: number;
   type: string;
   account: AccountDetails;
+  transactions: { id: number }[];
 }
 
 interface AccountDetails {
