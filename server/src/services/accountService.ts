@@ -22,6 +22,7 @@ export async function getAllAccounts(userId: number) {
     },
     include: {
       account: true,
+      transactions: { select: { id: true } },
     },
     omit: {
       userId: true,
