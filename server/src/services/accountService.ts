@@ -128,7 +128,6 @@ export async function getAllAccountsTransactions(
     omit: {
       userId: true,
       categoryId: true,
-      tagId: true,
       payeeId: true,
       walletId: true,
     },
