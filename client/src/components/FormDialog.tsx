@@ -21,6 +21,7 @@ function FormDialog({ onClose, open, children, title }: FormDialogProps) {
             width: "25vw",
             borderRadius: "10px",
             p: "8px",
+            minWidth: "500px",
           },
         },
       }}
