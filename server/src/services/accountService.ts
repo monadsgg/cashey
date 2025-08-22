@@ -20,6 +20,7 @@ export async function getAllAccounts(userId: number) {
       userId,
       OR: [{ type: WalletType.SAVINGS }, { type: WalletType.INVESTMENT }],
     },
+    orderBy: { name: 'asc' },
     include: {
       account: true,
       transactions: { select: { id: true } },
