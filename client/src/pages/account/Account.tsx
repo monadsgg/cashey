@@ -108,9 +108,12 @@ function Account() {
               <Tab label="Personal Savings" />
               <Tab label="Investment" />
             </Tabs>
-            <Button variant="outlined" onClick={handleClickBtn}>
-              Add Accounts
-            </Button>
+            <Stack direction={"row"} spacing={1}>
+              <TransferMoneyButton label="Transfer funds" isAccounts />
+              <Button variant="outlined" onClick={handleClickBtn}>
+                Add Accounts
+              </Button>
+            </Stack>
           </Stack>
           <Box mt={2}>
             <TabPanel index={0} value={tab}>
@@ -178,7 +181,6 @@ function Account() {
         <Stack spacing={1}>
           <AccountSummary />
           <AccountTransactions />
-          <TransferMoneyButton label="Transfer funds" isAccounts />
         </Stack>
       </Stack>
 

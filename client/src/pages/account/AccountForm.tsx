@@ -160,7 +160,9 @@ function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
             <Alert severity="error">{error}</Alert>
           </Stack>
         )}
+
         <Divider />
+
         <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
           <Button variant="outlined" onClick={onClose} color="primary">
             Close
