@@ -5,7 +5,6 @@ import { format, startOfMonth, lastDayOfMonth } from "date-fns";
 import TransactionTable from "./TransactionTable";
 import { useMemo, useState } from "react";
 import {
-  getAllTransactions,
   getTransactions,
   type TransactionItem,
 } from "../../services/transactions";
@@ -29,6 +28,13 @@ import { useQuery } from "@tanstack/react-query";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
 import FormDialog from "../../components/FormDialog";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
+import Typography from "@mui/material/Typography";
+import { useWallets } from "../../hooks/useWallets";
+import { formatCurrency } from "../../utils/currencyUtils";
+import ConfirmDialog from "../../components/ConfirmDialog";
+import { useDeleteTransaction } from "../../hooks/transactions/useDeleteTransaction";
+import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
+import SummaryContainer from "../../components/SummaryContainer";
 
 type Pagination = {
   page: number;
@@ -40,6 +46,11 @@ type Pagination = {
 export type DateRange = {
   startDate: string;
   endDate: string;
+};
+
+export type ConfirmDeleteData = {
+  id: null | number;
+  openDialog: boolean;
 };
 
 function Transaction() {
@@ -62,6 +73,13 @@ function Transaction() {
     tag: false,
     payee: false,
   });
+  const [confirmDelete, setConfirmDelete] = useState<ConfirmDeleteData>({
+    id: null,
+    openDialog: false,
+  });
+  const { transactions: allTransactions } = useAllTransactions(dateRange);
+  const { mainWallet } = useWallets();
+  const deleteTransactionMutation = useDeleteTransaction();
 
   const paginatedQueryKey = useMemo(
     () => [
@@ -85,17 +103,6 @@ function Transaction() {
         dateRange.endDate,
         searchValue
       ),
-  });
-
-  const allTransactionQueryKey = useMemo(
-    () => ["all-transactions", dateRange.startDate, dateRange.endDate],
-    [dateRange.startDate, dateRange.endDate]
-  );
-
-  // fetch all transactions for summary
-  const { data: allTransactions = [] } = useQuery({
-    queryKey: allTransactionQueryKey,
-    queryFn: () => getAllTransactions(dateRange.startDate, dateRange.endDate),
   });
 
   useMemo(() => {
@@ -135,7 +142,7 @@ function Transaction() {
     setSelectedItem(null);
   };
 
-  const handleOnClickActionBtn = (item: TransactionItem) => {
+  const handleOnClickEditBtn = (item: TransactionItem) => {
     const { id, category, description, date, amount, tags, payee } = item;
     handleOpenForm();
     setSelectedItem({
@@ -157,6 +164,20 @@ function Transaction() {
     settings: TransactionTableSettingsType
   ) => {
     setSettings(settings);
+  };
+
+  const handleCloseConfirmDialog = () => {
+    setConfirmDelete({ id: null, openDialog: false });
+  };
+
+  const handleOnClickDeleteBtn = (id: number) => {
+    setConfirmDelete({ id, openDialog: true });
+  };
+
+  const handleOnDeleteAcct = () => {
+    if (!confirmDelete.id) return;
+    deleteTransactionMutation.mutate(confirmDelete.id);
+    handleCloseConfirmDialog();
   };
 
   const transactionData = paginatedData?.data || [];
@@ -185,21 +206,22 @@ function Transaction() {
                 justifyContent: "space-between",
               }}
             >
-              <Stack direction="row">
-                <Button variant="outlined" onClick={handleOpenForm}>
-                  Add Transaction
-                </Button>
+              <Stack direction="row" spacing={1}>
                 {/* TO FOLLOW */}
                 {/* <Button variant="outlined">Import/Export</Button> */}
-              </Stack>
-              <Stack direction="row" spacing={1}>
-                <SearchInputField onChange={handleOnSearch} />
                 <TransactionTableSettings
                   settings={settings}
                   onChange={handleOnChangeTableSettings}
                 />
                 <Button variant="outlined" size="large">
                   Filter
+                </Button>
+              </Stack>
+              <Stack direction="row" spacing={1}>
+                <SearchInputField onChange={handleOnSearch} />
+                <TransferMoneyButton label="Save money" />
+                <Button variant="outlined" onClick={handleOpenForm}>
+                  Add Transaction
                 </Button>
               </Stack>
             </Stack>
@@ -210,12 +232,26 @@ function Transaction() {
               pageSize={pagination.pageSize}
               onPageChange={handlePageChange}
               totalPages={pagination.totalPages}
-              onClickActionBtn={handleOnClickActionBtn}
+              onClickEditBtn={handleOnClickEditBtn}
+              onClickDeleteBtn={handleOnClickDeleteBtn}
               settings={settings}
             />
           </Stack>
           <Stack direction="column" spacing={1}>
-            <TransferMoneyButton label="Save money" />
+            <Stack
+              spacing={1}
+              sx={{
+                border: "1px solid #ccc",
+                p: 4,
+                borderRadius: 4,
+                alignItems: "center",
+              }}
+            >
+              <Typography variant="subtitle1">Main Wallet Balance</Typography>
+              <Typography variant="h4">
+                {formatCurrency(mainWallet?.balance || 0)}
+              </Typography>
+            </Stack>
             <TransactionSummary
               currentMonth={getMonth(currentDate)}
               transactions={allTransactions}
@@ -223,6 +259,7 @@ function Transaction() {
           </Stack>
         </Stack>
       </Box>
+
       <FormDialog
         title={`${selectedItem ? "Edit" : "Add"} transaction`}
         onClose={handleCloseForm}
@@ -233,6 +270,13 @@ function Transaction() {
           selectedItem={selectedItem}
         />
       </FormDialog>
+
+      <ConfirmDialog
+        title="transaction"
+        open={confirmDelete.openDialog}
+        onClose={handleCloseConfirmDialog}
+        onClickDelete={handleOnDeleteAcct}
+      />
     </>
   );
 }
