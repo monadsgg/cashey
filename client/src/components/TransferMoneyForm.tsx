@@ -82,6 +82,8 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
     };
 
     transferFundsMutation.mutate(payloadData);
+
+    setFormData({ ...formData, amount: 0, description: "" });
   };
 
   const handleDateChange = (value: Date) => {

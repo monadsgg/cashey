@@ -63,18 +63,12 @@ function TransactionSummary({
 
     const financialSummary: FinancialSummary = {
       ...summary,
-      remainingFunds:
-        summary.income +
-        summary.fundsFromSavings -
-        summary.expense -
-        summary.savings,
+      remainingFunds: summary.income - summary.expense - summary.savings,
     };
 
     const categoryExpense: CategoryExpenseType[] = Array.from(
       categoryMap.entries()
     ).map(([category, amount]) => ({ category, amount }));
-
-    console.log("category expense", categoryExpense);
 
     return { financialSummary, categoryExpense };
   }, [transactions]);
@@ -87,7 +81,7 @@ function TransactionSummary({
       <SummaryTitle title={`${currentMonth} Summary`} />
       <Stack>
         <SummaryListItem title="Income" amount={income} />
-        {fundsFromSavings && (
+        {!!fundsFromSavings && (
           <SummaryListItem
             title="Funds from savings"
             amount={fundsFromSavings}
@@ -95,7 +89,10 @@ function TransactionSummary({
         )}
         <SummaryListItem title="Expense" amount={expense} />
         <SummaryListItem title="Savings" amount={savings} />
-        <SummaryListItem title="Remaining" amount={remainingFunds} />
+        <SummaryListItem
+          title="Remaining from salary"
+          amount={remainingFunds}
+        />
       </Stack>
       <Stack spacing={1}>
         {categoryExpense.length > 0 && (

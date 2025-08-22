@@ -10,7 +10,6 @@ const Search = styled("div")(({ theme }) => ({
   "&:hover": {
     backgroundColor: alpha("#F3F3F5", 0.75),
   },
-  width: "100%",
 }));
 
 const SearchIconWrapper = styled("div")(({ theme }) => ({
