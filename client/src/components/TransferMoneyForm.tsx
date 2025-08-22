@@ -5,15 +5,15 @@ import Stack from "@mui/material/Stack";
 import DatePickerField from "./DatePickerField";
 import TextInputField from "./TextInputField";
 import SelectInputField from "./SelectInputField";
+import DialogContent from "@mui/material/DialogContent";
 import { useWallets } from "../hooks/useWallets";
 import { type SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import { formatDate } from "../utils/dateUtils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { transferFunds } from "../services/transactions";
 import CircularProgress from "@mui/material/CircularProgress";
 import ErrorMessage from "./ErrorMessage";
+import { useTransferFunds } from "../hooks/transactions/useTransferFunds";
 
 interface TransferMoneyFormProps {
   onClose: () => void;
@@ -41,7 +41,6 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
     useState<TransferMoneyFormData>(initialFormData);
   const [errorForm, setErrorForm] = useState("");
   const [accountWalletsList, setaccountWalletsList] = useState(accountWallets);
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isLoading) {
@@ -63,16 +62,7 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
     }
   }, [formData.fromWalletId]);
 
-  const addMutation = useMutation({
-    mutationFn: transferFunds,
-    onSuccess: () => {
-      queryClient.refetchQueries({ queryKey: ["transaction"] });
-      queryClient.refetchQueries({ queryKey: ["all-transactions"] });
-      queryClient.refetchQueries({ queryKey: ["accounts"] });
-      queryClient.refetchQueries({ queryKey: ["accounts-transactions"] });
-      onClose();
-    },
-  });
+  const transferFundsMutation = useTransferFunds();
 
   const handleSubmit = () => {
     const { description, date, amount, fromWalletId, toWalletId } = formData;
@@ -91,7 +81,7 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
       toWalletId,
     };
 
-    addMutation.mutate(payloadData);
+    transferFundsMutation.mutate(payloadData);
   };
 
   const handleDateChange = (value: Date) => {
@@ -116,100 +106,102 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
     accountWallets?.length === 0 ||
     formData.amount === 0 ||
     !!error ||
-    addMutation.isPending;
+    transferFundsMutation.isPending;
 
   return (
-    <Stack spacing={4} sx={{ height: "100%" }}>
-      <Stack spacing={2} sx={{ flexGrow: 1 }}>
-        <DatePickerField
-          disabled
-          value={formData.date}
-          onChange={handleDateChange}
-        />
-        <TextInputField
-          label="Description"
-          name="description"
-          value={formData.description}
-          onChange={handleFormDataChange}
-        />
+    <DialogContent>
+      <Stack spacing={4} sx={{ height: "100%" }}>
+        <Stack spacing={2} sx={{ flexGrow: 1 }}>
+          <DatePickerField
+            disabled
+            value={formData.date}
+            onChange={handleDateChange}
+          />
+          <TextInputField
+            label="Description"
+            name="description"
+            value={formData.description}
+            onChange={handleFormDataChange}
+          />
 
-        {formData.fromWalletId && (
-          <SelectInputField
-            label="From Account"
-            name="fromWalletId"
-            value={formData.fromWalletId?.toString()}
-            onChange={handleFormSelectChange}
-          >
-            {!isAccounts && (
-              <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
-            )}
-            {isAccounts &&
-              accountWallets.map((item) => {
+          {formData.fromWalletId && (
+            <SelectInputField
+              label="From Account"
+              name="fromWalletId"
+              value={formData.fromWalletId?.toString()}
+              onChange={handleFormSelectChange}
+            >
+              {!isAccounts && (
+                <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+              )}
+              {isAccounts &&
+                accountWallets.map((item) => {
+                  return <MenuItem value={item.id}>{item.name}</MenuItem>;
+                })}
+            </SelectInputField>
+          )}
+
+          {accountWallets.length > 0 && formData.toWalletId && (
+            <SelectInputField
+              label="To Account"
+              name="toWalletId"
+              value={formData.toWalletId?.toString()}
+              onChange={handleFormSelectChange}
+            >
+              {isAccounts && (
+                <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
+              )}
+              {accountWalletsList.map((item) => {
                 return <MenuItem value={item.id}>{item.name}</MenuItem>;
               })}
-          </SelectInputField>
+            </SelectInputField>
+          )}
+
+          <TextInputField
+            label="Amount"
+            name="amount"
+            value={formData.amount}
+            onChange={handleFormDataChange}
+          />
+        </Stack>
+
+        {accountWallets.length === 0 && (
+          <Stack>
+            <Alert severity="error">
+              You need to add at least one account before you can transfer any
+              funds.
+            </Alert>
+          </Stack>
         )}
 
-        {accountWallets.length > 0 && formData.toWalletId && (
-          <SelectInputField
-            label="To Account"
-            name="toWalletId"
-            value={formData.toWalletId?.toString()}
-            onChange={handleFormSelectChange}
+        {error && (
+          <Stack>
+            <Alert severity="error">{errorForm}</Alert>
+          </Stack>
+        )}
+
+        <Divider />
+
+        <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
+          <Button
+            variant="outlined"
+            onClick={onClose}
+            color="primary"
+            disabled={isLoading}
           >
-            {isAccounts && (
-              <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
-            )}
-            {accountWalletsList.map((item) => {
-              return <MenuItem value={item.id}>{item.name}</MenuItem>;
-            })}
-          </SelectInputField>
-        )}
-
-        <TextInputField
-          label="Amount"
-          name="amount"
-          value={formData.amount}
-          onChange={handleFormDataChange}
-        />
-      </Stack>
-
-      {accountWallets.length === 0 && (
-        <Stack>
-          <Alert severity="error">
-            You need to add at least one account before you can transfer any
-            funds.
-          </Alert>
+            Close
+          </Button>
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={isDisabled}
+          >
+            Transfer
+          </Button>
         </Stack>
-      )}
-
-      {error && (
-        <Stack>
-          <Alert severity="error">{errorForm}</Alert>
-        </Stack>
-      )}
-
-      <Divider />
-
-      <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
-        <Button
-          variant="outlined"
-          onClick={onClose}
-          color="primary"
-          disabled={isLoading}
-        >
-          Close
-        </Button>
-        <Button
-          color="primary"
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={isDisabled}
-        >
-          Transfer
-        </Button>
       </Stack>
-    </Stack>
+    </DialogContent>
   );
 }
 
