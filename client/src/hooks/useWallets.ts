@@ -30,6 +30,7 @@ export const useWallets = () => {
 
   return {
     wallets,
+    mainWallet,
     mainWalletId: mainWallet?.id ?? null,
     accountWallets,
     isLoading,

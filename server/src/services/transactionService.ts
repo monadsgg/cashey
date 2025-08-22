@@ -78,16 +78,11 @@ export async function getAllTransactions({
   return db.transaction.findMany({
     where: { ...where, wallet: { type: WalletType.MAIN } },
     orderBy: [{ date: 'desc' }, { id: 'desc' }],
-    include: {
-      category: {
-        omit: { userId: true },
-      },
-    },
-    omit: {
-      categoryId: true,
-      userId: true,
-      walletId: true,
-      payeeId: true,
+    select: {
+      id: true,
+      date: true,
+      amount: true,
+      category: { omit: { userId: true, color: true } },
     },
   });
 }
@@ -261,13 +256,27 @@ export async function editTransaction(
 export async function removeTransaction(id: number, userId: number) {
   const transaction = await db.transaction.findUnique({
     where: { id, userId },
+    include: { category: true },
   });
+
+  const wallet = await db.wallet.findUnique({
+    where: { id: transaction?.walletId, userId },
+  });
+
+  // get main wallet balance and tx amount
+  let balance = Number(wallet?.balance);
+  let transactionAmount = transaction?.amount;
+
+  // if category type = expense increment balance; else decrement
+  if (transaction?.category.type === CategoryType.EXPENSE)
+    balance += Number(transactionAmount);
+  else balance -= Number(transactionAmount);
 
   await db.$transaction([
     db.transaction.delete({ where: { id, userId } }),
     db.wallet.update({
       where: { id: transaction?.walletId },
-      data: { balance: { decrement: transaction?.amount } },
+      data: { balance },
     }),
   ]);
 }

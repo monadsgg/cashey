@@ -6,15 +6,8 @@ import SelectInputField from "../../components/SelectInputField";
 import MenuItem from "@mui/material/MenuItem";
 import { type SelectChangeEvent } from "@mui/material/Select";
 import Button from "@mui/material/Button";
-import {
-  addTransaction,
-  deleteTransaction,
-  updateTransaction,
-  type TransactionPayload,
-} from "../../services/transactions";
 import { formatDate } from "../../utils/dateUtils";
 import Divider from "@mui/material/Divider";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useWallets } from "../../hooks/useWallets";
 import ErrorMessage from "../../components/ErrorMessage";
 import { useCategories } from "../../hooks/categories/useCategories";
@@ -23,6 +16,8 @@ import type { Payee } from "../../services/payees";
 import TransactionPayeeField from "./TransactionPayeeField";
 import TransactionTagField from "./TransactionTagField";
 import type { Tag } from "../../services/tags";
+import { useAddTransaction } from "../../hooks/transactions/useAddTransaction";
+import { useUpdateTransaction } from "../../hooks/transactions/useUpdateTransaction";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -60,38 +55,8 @@ function TransactionForm({
   const { mainWalletId, error } = useWallets();
   const { categories } = useCategories();
 
-  const queryClient = useQueryClient();
-
-  const addMutation = useMutation({
-    mutationFn: addTransaction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transaction"] });
-      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
-      onClose();
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({
-      id,
-      payload,
-    }: {
-      id: number;
-      payload: TransactionPayload;
-    }) => updateTransaction(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transaction"] });
-      onClose();
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteTransaction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transaction"] });
-      onClose();
-    },
-  });
+  const addTransactionMutation = useAddTransaction();
+  const updateTransactionMutation = useUpdateTransaction();
 
   const handleSubmit = async () => {
     const { description, amount, date, categoryId, payee, tags } = formData;
@@ -111,9 +76,12 @@ function TransactionForm({
     };
 
     if (formData?.id) {
-      updateMutation.mutate({ id: formData.id, payload: payloadData });
+      updateTransactionMutation.mutate({
+        id: formData.id,
+        payload: payloadData,
+      });
     } else {
-      addMutation.mutate(payloadData);
+      addTransactionMutation.mutate(payloadData);
 
       setFormData({
         ...formData,
@@ -123,10 +91,8 @@ function TransactionForm({
         tags: [],
       });
     }
-  };
 
-  const handleDeleteTransaction = async (id: number) => {
-    deleteMutation.mutate(id);
+    onClose();
   };
 
   const handleDateChange = (value: Date) => {
@@ -198,18 +164,9 @@ function TransactionForm({
             onChange={handleTagChange}
           />
         </Stack>
-        {selectedItem && (
-          <Stack>
-            <Button
-              color="secondary"
-              variant="contained"
-              onClick={() => handleDeleteTransaction(selectedItem.id!)}
-            >
-              Delete transaction
-            </Button>
-          </Stack>
-        )}
+
         <Divider />
+
         <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
           <Button
             variant="outlined"

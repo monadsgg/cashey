@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import { useAccounts } from "../../hooks/useAccounts";
 import Stack from "@mui/material/Stack";
 import SummaryTitle from "../../components/SummaryTitle";
 import SummaryListItem from "../../components/SummaryListItem";
 import Divider from "@mui/material/Divider";
 import SummaryContainer from "../../components/SummaryContainer";
+import { useAccounts } from "../../hooks/accounts/useAccounts";
 
 function AccountSummary() {
   const { accounts, personalAccounts, investmentAccounts } = useAccounts();

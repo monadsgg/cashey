@@ -20,8 +20,10 @@ export async function getAllAccounts(userId: number) {
       userId,
       OR: [{ type: WalletType.SAVINGS }, { type: WalletType.INVESTMENT }],
     },
+    orderBy: { name: 'asc' },
     include: {
       account: true,
+      transactions: { select: { id: true } },
     },
     omit: {
       userId: true,
@@ -128,7 +130,6 @@ export async function getAllAccountsTransactions(
     omit: {
       userId: true,
       categoryId: true,
-      tagId: true,
       payeeId: true,
       walletId: true,
     },
