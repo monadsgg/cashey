@@ -8,11 +8,12 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { formatDate } from "../../utils/dateUtils";
 import { formatCurrency, getAmountSign } from "../../utils/currencyUtils";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import type { TransactionTableSettingsType } from "./TransactionTableSettings";
 import { transferCategory } from "../../constants";
 import type { TransactionItem } from "../../services/transactions";
@@ -24,7 +25,8 @@ interface TransactionTableProps {
   pageSize: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onClickActionBtn: (item: TransactionItem) => void;
+  onClickEditBtn: (item: TransactionItem) => void;
+  onClickDeleteBtn: (id: number) => void;
   settings: TransactionTableSettingsType;
 }
 
@@ -45,7 +47,8 @@ function TransactionTable({
   page = 0,
   totalPages,
   onPageChange,
-  onClickActionBtn,
+  onClickEditBtn,
+  onClickDeleteBtn,
   settings,
 }: TransactionTableProps) {
   // console.log("transactions", transactions);
@@ -75,10 +78,6 @@ function TransactionTable({
     );
   };
 
-  const handleClickActionBtn = (item: TransactionItem) => {
-    onClickActionBtn(item);
-  };
-
   const renderTableBody = () => {
     if (!totalCount)
       return (
@@ -91,53 +90,63 @@ function TransactionTable({
 
     return (
       <>
-        {transactions.map((item: TransactionItem) => (
-          <TableRow key={item.id}>
-            <StyledTableCell>
-              {formatDate(item.date, "eee, MMM dd")}
-            </StyledTableCell>
-            <StyledTableCell>{item.description}</StyledTableCell>
-            <StyledTableCell>{item.category.name}</StyledTableCell>
-            <StyledTableCell align="right">
-              {getAmountSign(item.category.type)}
-              {formatCurrency(item.amount)}
-            </StyledTableCell>
-            {settings.payee && (
+        {transactions.map((item: TransactionItem) => {
+          const isBtnDisabled =
+            item.category.id === transferCategory.OUTGOING_TRANSFER ||
+            item.category.id === transferCategory.INCOMING_TRANSFER;
+
+          return (
+            <TableRow key={item.id}>
               <StyledTableCell>
-                {item.payee && item.payee?.name}
+                {formatDate(item.date, "eee, MMM dd")}
               </StyledTableCell>
-            )}
-            {settings.tag && (
+              <StyledTableCell>{item.description}</StyledTableCell>
+              <StyledTableCell>{item.category.name}</StyledTableCell>
+              <StyledTableCell align="right">
+                {getAmountSign(item.category.type)}
+                {formatCurrency(item.amount)}
+              </StyledTableCell>
+              {settings.payee && (
+                <StyledTableCell>
+                  {item.payee && item.payee?.name}
+                </StyledTableCell>
+              )}
+              {settings.tag && (
+                <StyledTableCell>
+                  {item.tags && (
+                    <Stack direction="row" spacing={2}>
+                      {item.tags.map((t) => (
+                        <Chip
+                          key={t.id}
+                          label={t.name}
+                          sx={{
+                            minWidth: "60px",
+                            backgroundColor: t.color,
+                            color: "#fff",
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  )}
+                </StyledTableCell>
+              )}
               <StyledTableCell>
-                {item.tags && (
-                  <Stack direction="row" spacing={2}>
-                    {item.tags.map((t) => (
-                      <Chip
-                        key={t.id}
-                        label={t.name}
-                        sx={{
-                          minWidth: "60px",
-                          backgroundColor: t.color,
-                          color: "#fff",
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
+                <IconButton
+                  disabled={isBtnDisabled}
+                  onClick={() => onClickEditBtn(item)}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+                <IconButton
+                  disabled={isBtnDisabled}
+                  onClick={() => onClickDeleteBtn(item.id)}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
               </StyledTableCell>
-            )}
-            <StyledTableCell>
-              <IconButton
-                disabled={
-                  item.category.id === transferCategory.OUTGOING_TRANSFER
-                }
-                onClick={() => handleClickActionBtn(item)}
-              >
-                <KeyboardArrowRightIcon />
-              </IconButton>
-            </StyledTableCell>
-          </TableRow>
-        ))}
+            </TableRow>
+          );
+        })}
       </>
     );
   };
