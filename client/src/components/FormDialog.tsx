@@ -1,14 +1,22 @@
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
+import type { SxProps } from "@mui/material/styles";
 
 interface FormDialogProps {
   onClose: () => void;
   open: boolean;
   children: React.ReactNode;
   title: string;
+  paperSx?: SxProps;
 }
 
-function FormDialog({ onClose, open, children, title }: FormDialogProps) {
+function FormDialog({
+  onClose,
+  open,
+  children,
+  title,
+  paperSx,
+}: FormDialogProps) {
   return (
     <Dialog
       closeAfterTransition={false}
@@ -22,6 +30,7 @@ function FormDialog({ onClose, open, children, title }: FormDialogProps) {
             borderRadius: "10px",
             p: "8px",
             minWidth: "500px",
+            ...paperSx,
           },
         },
       }}
