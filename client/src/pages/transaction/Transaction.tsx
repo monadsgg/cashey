@@ -34,7 +34,8 @@ import { formatCurrency } from "../../utils/currencyUtils";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useDeleteTransaction } from "../../hooks/transactions/useDeleteTransaction";
 import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
-import SummaryContainer from "../../components/SummaryContainer";
+
+import UploadFileDialog from "./UploadFileDialog";
 
 type Pagination = {
   page: number;
@@ -77,6 +78,7 @@ function Transaction() {
     id: null,
     openDialog: false,
   });
+  const [openUploadDialog, setOpenUploadDialog] = useState(false);
   const { transactions: allTransactions } = useAllTransactions(dateRange);
   const { mainWallet } = useWallets();
   const deleteTransactionMutation = useDeleteTransaction();
@@ -180,6 +182,14 @@ function Transaction() {
     handleCloseConfirmDialog();
   };
 
+  const handleOpenUploadDialog = () => {
+    setOpenUploadDialog(true);
+  };
+
+  const handleCloseUploadDialog = () => {
+    setOpenUploadDialog(false);
+  };
+
   const transactionData = paginatedData?.data || [];
 
   return (
@@ -207,8 +217,9 @@ function Transaction() {
               }}
             >
               <Stack direction="row" spacing={1}>
-                {/* TO FOLLOW */}
-                {/* <Button variant="outlined">Import/Export</Button> */}
+                <Button variant="outlined" onClick={handleOpenUploadDialog}>
+                  Import
+                </Button>
                 <TransactionTableSettings
                   settings={settings}
                   onChange={handleOnChangeTableSettings}
@@ -277,6 +288,14 @@ function Transaction() {
         onClose={handleCloseConfirmDialog}
         onClickDelete={handleOnDeleteAcct}
       />
+
+      <FormDialog
+        title="Upload File"
+        open={openUploadDialog}
+        onClose={handleCloseUploadDialog}
+      >
+        <UploadFileDialog onClose={handleCloseUploadDialog} />
+      </FormDialog>
     </>
   );
 }
