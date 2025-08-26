@@ -8,17 +8,19 @@ import IconButton from "@mui/material/IconButton";
 
 interface CSVFileUploaderProps {
   onChange: (item: File[]) => void;
+  onRemoveFile: (fileName: string) => void;
 }
 
-function CSVFileUploader({ onChange }: CSVFileUploaderProps) {
+function CSVFileUploader({ onChange, onRemoveFile }: CSVFileUploaderProps) {
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // console.log(e.currentTarget.files);
-    if (e.target.files?.length) {
-      setFiles([...files, ...Array.from(e.target.files)]);
-      onChange(Array.from(e.target.files));
+    const uploadedFiles = e.target.files;
+    if (uploadedFiles?.length) {
+      setFiles([...files, ...Array.from(uploadedFiles)]);
+      onChange(Array.from(uploadedFiles));
     }
   };
 
@@ -30,17 +32,36 @@ function CSVFileUploader({ onChange }: CSVFileUploaderProps) {
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    // console.log(event);
-    if (event.dataTransfer.files?.length) {
-      const droppedFiles = event.dataTransfer.files;
+    boxRef.current?.classList.remove("drag-over");
+    const droppedFiles = event.dataTransfer.files;
+
+    if (droppedFiles?.length) {
       setFiles([...files, ...Array.from(droppedFiles)]);
       onChange(Array.from(droppedFiles));
     }
   };
 
+  const handleDragEnter = (_event: DragEvent<HTMLDivElement>) => {
+    boxRef.current?.classList.add("drag-over");
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    boxRef.current?.classList.add("drag-over");
+  };
+
+  const handleDragLeave = (_event: DragEvent<HTMLDivElement>) => {
+    boxRef.current?.classList.remove("drag-over");
+  };
+
   const handleRemoveFile = (index: number) => {
+    const removedFile = files[index];
     const newFiles = files.filter((_, i) => i !== index);
     setFiles(newFiles);
+
+    if (removedFile) {
+      onRemoveFile(removedFile.name);
+    }
   };
 
   const renderUploadedFiles = () => {
@@ -71,20 +92,19 @@ function CSVFileUploader({ onChange }: CSVFileUploaderProps) {
           borderRadius: 2,
           p: 6,
           display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
           alignItems: "center",
-          "&:hover": {
+          "&:hover, &.drag-over": {
             backgroundColor: alpha("#ccc", 0.15),
             borderColor: "#000",
           },
           height: "200px",
         }}
         onClick={handleClick}
-        onDragOver={(event: DragEvent<HTMLDivElement>) => {
-          event.preventDefault();
-        }}
-        onDragEnter={(event: DragEvent<HTMLDivElement>) => {
-          event.preventDefault();
-        }}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
         <Typography variant="body2">Click to select files</Typography>
@@ -100,6 +120,7 @@ function CSVFileUploader({ onChange }: CSVFileUploaderProps) {
         onChange={handleFileChange}
         multiple
       />
+      <Typography variant="body2">Note: Only CSV file are supported</Typography>
       <Stack>{renderUploadedFiles()}</Stack>
     </>
   );
