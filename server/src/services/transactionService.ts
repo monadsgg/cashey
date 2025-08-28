@@ -3,6 +3,8 @@ import db from '../utils/db';
 import {
   OUT_TRANSFER_CATEGORY_ID,
   IN_TRANSFER_CATEGORY_ID,
+  CATEGORY_DEFAULT_COLOR,
+  TAG_DEFAULT_COLOR,
 } from '../constants';
 import { CategoryType, WalletType } from '../utils/enums';
 
@@ -13,6 +15,15 @@ interface TransactionFilters {
   end?: string;
   page?: number;
   pageSize?: number;
+}
+
+interface ImportedTransaction {
+  date: string;
+  description: string;
+  amount: number;
+  category: string;
+  payee: string;
+  tags: string[];
 }
 
 export async function getAllTransactions({
@@ -357,4 +368,107 @@ export async function transferFunds(
   });
 
   return result;
+}
+
+export async function addTransactions(
+  transactions: ImportedTransaction[],
+  userId: number,
+) {
+  const createdTransactions = [];
+
+  // get main wallet id
+  const wallet = await db.wallet.findFirst({
+    where: { userId, type: { equals: WalletType.MAIN } },
+  });
+  if (!wallet) throw new Error('Wallet does not exist');
+
+  for (const t of transactions) {
+    // check if category exist else create a new one
+    const isRefund = t.description.toLowerCase().includes('refund');
+
+    let category = await db.category.findFirst({
+      where: {
+        OR: [{ userId }, { userId: { equals: null } }],
+        name: t.category,
+      },
+    });
+
+    if (category && category.type === CategoryType.EXPENSE && isRefund) {
+      category = await db.category.create({
+        data: {
+          userId,
+          name: t.category,
+          type: CategoryType.INCOME,
+          color: CATEGORY_DEFAULT_COLOR,
+        },
+      });
+    }
+
+    if (!category) {
+      category = await db.category.create({
+        data: {
+          userId,
+          name: t.category,
+          type: isRefund ? CategoryType.INCOME : CategoryType.EXPENSE,
+          color: CATEGORY_DEFAULT_COLOR,
+        },
+      });
+    }
+
+    // check if payee exist else create a new one
+    let payeeId: number | null = null;
+    if (t.payee) {
+      const payee = await db.payee.upsert({
+        where: { name_userId: { name: t.payee, userId } },
+        update: {},
+        create: { name: t.payee, userId },
+      });
+
+      payeeId = payee.id;
+    }
+
+    // check if tags exist else create a new one
+    let tagIds: number[] = [];
+    if (t.tags && t.tags.length > 0) {
+      for (const tagName of t.tags) {
+        const tag = await db.tag.upsert({
+          where: { name_userId: { name: tagName, userId } },
+          update: {},
+          create: { name: tagName, userId, color: TAG_DEFAULT_COLOR },
+        });
+        tagIds.push(tag.id);
+      }
+    }
+
+    // creata a new transaction
+    const transaction = await db.transaction.create({
+      data: {
+        description: t.description,
+        amount: t.amount,
+        date: new Date(t.date),
+        userId,
+        walletId: wallet?.id,
+        categoryId: category.id,
+        payeeId,
+        tags: { connect: tagIds.map((id) => ({ id })) },
+      },
+      include: {
+        category: {
+          omit: { userId: true },
+        },
+        tags: { omit: { userId: true } },
+        payee: { omit: { userId: true } },
+      },
+      omit: {
+        categoryId: true,
+        userId: true,
+        walletId: true,
+        payeeId: true,
+      },
+    });
+
+    createdTransactions.push(transaction);
+  }
+
+  return createdTransactions;
 }
