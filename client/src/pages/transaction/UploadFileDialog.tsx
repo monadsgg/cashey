@@ -14,6 +14,9 @@ import FormDialog from "../../components/FormDialog";
 import TableCell from "@mui/material/TableCell";
 import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
+import { importTransactions } from "../../services/transactions";
+import Toast from "../../components/Toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UploadFileDialogProps {
   onClose: () => void;
@@ -25,38 +28,90 @@ interface PreviewData {
   amount: number;
   category: string;
   payee?: string;
-  tag?: string;
+  tags?: string;
   __fileName?: string; // for tracking only
+}
+
+interface Toast {
+  message: string;
+  open: boolean;
 }
 
 function UploadFileDialog({ onClose }: UploadFileDialogProps) {
   const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewData[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [toast, setToast] = useState({ message: "", open: false });
   const [error, setError] = useState("");
+  const queryClient = useQueryClient();
 
-  const handleOnProcessData = () => {};
+  const handleOnProcessData = async () => {
+    try {
+      setIsProcessing(true);
+      const payload = previewData.map((tx) => {
+        let tags;
+        if (tx.tags) {
+          const delimeter = "/";
+          tags = tx.tags.split(delimeter);
+        }
+
+        return {
+          description: tx.description,
+          date: tx.date,
+          amount: tx.amount,
+          category: tx.category,
+          payee: tx.payee,
+          tags: tags,
+        };
+      });
+      // endpoint here
+      const result = await importTransactions(payload);
+      console.log("imported tx", result);
+
+      setIsProcessing(false);
+      setIsCompleted(true);
+      setToast({ message: result.message, open: true });
+      queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+    } catch (error: any) {
+      setError(error.message);
+    }
+  };
 
   const handleOnUploadChange = (files: File[]) => {
     files.map((file: File) =>
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
+        delimiter: ",",
         error: (error: Error) => {
           setError(error.message);
         },
         complete: (results) => {
-          console.log("results:", results);
-          if (!!results.errors.length) {
-            setError(results.errors.map((e) => e.message).join(", "));
-            return;
-          }
+          try {
+            const parsedData = results.data as PreviewData[];
 
-          if (!!results.data.length) {
-            const newData = (results.data as PreviewData[]).map((d) => ({
-              ...d,
-              __fileName: file.name,
-            }));
-            setPreviewData([...previewData, ...newData]);
+            // validate and transform
+            const cleanedData = parsedData.map((row, index) => {
+              if (!row.date || !row.amount) {
+                throw new Error(
+                  `Row ${index + 1} is missing required fields (date or amount)`
+                );
+              }
+
+              return {
+                ...row,
+                amount: Number(row.amount),
+                __fileName: file.name,
+              };
+            });
+
+            setPreviewData([...previewData, ...cleanedData]);
+            setError("");
+          } catch (error: any) {
+            setError(error.message);
+            setPreviewData([]);
           }
         },
       })
@@ -69,7 +124,13 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
   };
 
   const handleClosePreviewDialog = () => {
-    () => setOpenPreviewDialog(false);
+    onClose();
+    setOpenPreviewDialog(false);
+    setIsCompleted(false);
+  };
+
+  const handleCloseToast = () => {
+    setToast({ message: "", open: false });
   };
 
   const renderPreviewTableHeader = () => {
@@ -91,7 +152,7 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
           <TableCell>{d.amount}</TableCell>
           <TableCell>{d.category}</TableCell>
           <TableCell>{d.payee}</TableCell>
-          <TableCell>{d.tag}</TableCell>
+          <TableCell>{d.tags}</TableCell>
         </TableRow>
       );
     });
@@ -119,8 +180,11 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
           <Stack
             direction="row"
             spacing={2}
-            sx={{ justifyContent: "space-between" }}
+            sx={{ justifyContent: "flex-end" }}
           >
+            <Button variant="outlined" onClick={onClose} color="primary">
+              Close
+            </Button>
             <Button
               variant="outlined"
               onClick={() => setOpenPreviewDialog(true)}
@@ -129,23 +193,6 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
             >
               Preview data
             </Button>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{ justifyContent: "flex-end" }}
-            >
-              <Button variant="outlined" onClick={onClose} color="primary">
-                Close
-              </Button>
-              <Button
-                color="primary"
-                variant="contained"
-                onClick={handleOnProcessData}
-                disabled={!previewData.length}
-              >
-                Process
-              </Button>
-            </Stack>
           </Stack>
         </Stack>
       </DialogContent>
@@ -168,20 +215,36 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
             </TableContainer>
 
             <Stack
+              spacing={2}
               direction="row"
               justifyContent="flex-end"
               alignItems="center"
             >
               <Button
-                variant="contained"
+                variant="outlined"
                 onClick={handleClosePreviewDialog}
                 color="primary"
               >
                 Close
               </Button>
+              <Button
+                loading={isProcessing}
+                loadingPosition="start"
+                color="primary"
+                variant="contained"
+                onClick={handleOnProcessData}
+                disabled={isCompleted}
+              >
+                {isCompleted ? "Processing complete" : "Process"}
+              </Button>
             </Stack>
           </Stack>
         </DialogContent>
+        <Toast
+          open={toast.open}
+          message={toast.message}
+          onClose={handleCloseToast}
+        />
       </FormDialog>
     </>
   );
