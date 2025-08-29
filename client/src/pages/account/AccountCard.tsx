@@ -10,7 +10,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ProgressBar from "../../components/ProgressBar";
 import { WalletType } from "../../constants";
-import { formatCurrency } from "../../utils/currencyUtils";
+import { formatCurrency } from "../../utils/currency";
 import type { MenuProps } from "@mui/material/Menu";
 import Menu from "@mui/material/Menu";
 import { styled } from "@mui/material/styles";

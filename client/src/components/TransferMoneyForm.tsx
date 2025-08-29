@@ -10,7 +10,7 @@ import { useWallets } from "../hooks/useWallets";
 import { type SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
-import { formatDate } from "../utils/dateUtils";
+import { formatDate } from "../utils/date";
 import CircularProgress from "@mui/material/CircularProgress";
 import ErrorMessage from "./ErrorMessage";
 import { useTransferFunds } from "../hooks/transactions/useTransferFunds";

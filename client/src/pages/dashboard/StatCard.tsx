@@ -1,7 +1,7 @@
 import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { formatCurrency } from "../../utils/currencyUtils";
+import { formatCurrency } from "../../utils/currency";
 import type { SvgIconProps } from "@mui/material/SvgIcon";
 
 type IconType = React.ComponentType<SvgIconProps>;

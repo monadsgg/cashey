@@ -15,7 +15,7 @@ import {
   getLastDayOfPrevMonth,
   getMonth,
   getZonedDate,
-} from "../../utils/dateUtils";
+} from "../../utils/date";
 import TransactionForm, {
   type TransactionFormDataType,
 } from "./TransactionForm";
@@ -30,11 +30,12 @@ import FormDialog from "../../components/FormDialog";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 import Typography from "@mui/material/Typography";
 import { useWallets } from "../../hooks/useWallets";
-import { formatCurrency } from "../../utils/currencyUtils";
+import { formatCurrency } from "../../utils/currency";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useDeleteTransaction } from "../../hooks/transactions/useDeleteTransaction";
 import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
-import SummaryContainer from "../../components/SummaryContainer";
+
+import UploadFileDialog from "./UploadFileDialog";
 
 type Pagination = {
   page: number;
@@ -71,12 +72,13 @@ function Transaction() {
   const [searchValue, setSearchValue] = useState("");
   const [settings, setSettings] = useState<TransactionTableSettingsType>({
     tag: false,
-    payee: false,
+    payee: true,
   });
   const [confirmDelete, setConfirmDelete] = useState<ConfirmDeleteData>({
     id: null,
     openDialog: false,
   });
+  const [openUploadDialog, setOpenUploadDialog] = useState(false);
   const { transactions: allTransactions } = useAllTransactions(dateRange);
   const { mainWallet } = useWallets();
   const deleteTransactionMutation = useDeleteTransaction();
@@ -180,6 +182,14 @@ function Transaction() {
     handleCloseConfirmDialog();
   };
 
+  const handleOpenUploadDialog = () => {
+    setOpenUploadDialog(true);
+  };
+
+  const handleCloseUploadDialog = () => {
+    setOpenUploadDialog(false);
+  };
+
   const transactionData = paginatedData?.data || [];
 
   return (
@@ -207,8 +217,9 @@ function Transaction() {
               }}
             >
               <Stack direction="row" spacing={1}>
-                {/* TO FOLLOW */}
-                {/* <Button variant="outlined">Import/Export</Button> */}
+                <Button variant="outlined" onClick={handleOpenUploadDialog}>
+                  Import
+                </Button>
                 <TransactionTableSettings
                   settings={settings}
                   onChange={handleOnChangeTableSettings}
@@ -277,6 +288,14 @@ function Transaction() {
         onClose={handleCloseConfirmDialog}
         onClickDelete={handleOnDeleteAcct}
       />
+
+      <FormDialog
+        title="Upload File"
+        open={openUploadDialog}
+        onClose={handleCloseUploadDialog}
+      >
+        <UploadFileDialog onClose={handleCloseUploadDialog} />
+      </FormDialog>
     </>
   );
 }

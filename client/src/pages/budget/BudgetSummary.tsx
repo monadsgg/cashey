@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import SummaryContainer from "../../components/SummaryContainer";
 import SummaryTitle from "../../components/SummaryTitle";
 import { useBudgets } from "../../hooks/budget/useBudgets";
-import { getMonth, getYear } from "../../utils/dateUtils";
+import { getMonth, getYear } from "../../utils/date";
 import SummaryListItem from "../../components/SummaryListItem";
 import Stack from "@mui/material/Stack";
 

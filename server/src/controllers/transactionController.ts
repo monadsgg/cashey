@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import {
   addTransaction,
+  addTransactions,
   editTransaction,
   getAllTransactions,
   removeTransaction,
@@ -111,6 +112,25 @@ export async function transferFundsTransaction(
       description,
     );
     res.status(201).json(transaction);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export async function importTransactions(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const userId = res.locals.user;
+  const transactions = req.body;
+
+  try {
+    const createdTransactions = await addTransactions(transactions, userId);
+    res.status(201).json({
+      message: `(${createdTransactions.length}) Transactions  imported successfully`,
+      transactions: createdTransactions,
+      count: createdTransactions.length,
+    });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }

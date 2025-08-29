@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import StatCard from "./StatCard";
 import { useMemo, useState } from "react";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
-import { getMonth } from "../../utils/dateUtils";
+import { getMonth } from "../../utils/date";
 import { addMonths, getYear, subMonths } from "date-fns";
 import { getUserName } from "../../utils/auth";
 import { useStatsOverview } from "../../hooks/reports/useOverview";

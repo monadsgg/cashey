@@ -3,7 +3,7 @@ import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import { getMonth } from "../utils/dateUtils";
+import { getMonth } from "../utils/date";
 import { getYear } from "date-fns";
 
 interface MonthNavigationHeaderProps {

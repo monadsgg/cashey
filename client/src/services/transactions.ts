@@ -61,6 +61,21 @@ export interface AllTransactionsResponse {
   description: string;
 }
 
+interface ImportedTransactionPayload {
+  date: string;
+  description: string;
+  amount: number;
+  category: string;
+  payee?: string;
+  tags?: string[];
+}
+
+interface ImportedTransactionResponse {
+  transactions: TransactionItem;
+  message: string;
+  count: number;
+}
+
 export async function getTransactions(
   pageSize: number = DEFAULT_PAGE_SIZE,
   page: number = DEFAULT_PAGE,
@@ -113,6 +128,16 @@ export async function transferFunds(
 ): Promise<TransferResponse> {
   const result = await api.post<TransferResponse>(
     "/api/transactions/transfer",
+    data
+  );
+  return result.data;
+}
+
+export async function importTransactions(
+  data: ImportedTransactionPayload[]
+): Promise<ImportedTransactionResponse> {
+  const result = await api.post<ImportedTransactionResponse>(
+    "/api/transactions/import-transactions",
     data
   );
   return result.data;
