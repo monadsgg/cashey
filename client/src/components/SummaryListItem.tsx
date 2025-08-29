@@ -1,6 +1,6 @@
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { formatCurrency } from "../utils/currencyUtils";
+import { formatCurrency } from "../utils/currency";
 import Dot from "./Dot";
 
 export interface SummaryListItemProps {

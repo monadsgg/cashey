@@ -15,7 +15,7 @@ import {
   getLastDayOfPrevMonth,
   getMonth,
   getZonedDate,
-} from "../../utils/dateUtils";
+} from "../../utils/date";
 import TransactionForm, {
   type TransactionFormDataType,
 } from "./TransactionForm";
@@ -30,7 +30,7 @@ import FormDialog from "../../components/FormDialog";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 import Typography from "@mui/material/Typography";
 import { useWallets } from "../../hooks/useWallets";
-import { formatCurrency } from "../../utils/currencyUtils";
+import { formatCurrency } from "../../utils/currency";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useDeleteTransaction } from "../../hooks/transactions/useDeleteTransaction";
 import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
@@ -72,7 +72,7 @@ function Transaction() {
   const [searchValue, setSearchValue] = useState("");
   const [settings, setSettings] = useState<TransactionTableSettingsType>({
     tag: false,
-    payee: false,
+    payee: true,
   });
   const [confirmDelete, setConfirmDelete] = useState<ConfirmDeleteData>({
     id: null,

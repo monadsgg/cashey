@@ -7,7 +7,7 @@ import { AccountTransactionType, transferCategory } from "../../constants";
 import groupBy from "lodash/groupBy";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
-import { getAmountSign } from "../../utils/currencyUtils";
+import { getAmountSign } from "../../utils/currency";
 import { format, lastDayOfMonth, startOfMonth } from "date-fns";
 import styled from "@mui/system/styled";
 import Box from "@mui/material/Box";

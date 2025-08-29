@@ -6,8 +6,8 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import { formatDate } from "../../utils/dateUtils";
-import { formatCurrency, getAmountSign } from "../../utils/currencyUtils";
+import { formatDate } from "../../utils/date";
+import { formatCurrency, getAmountSign } from "../../utils/currency";
 import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
@@ -60,20 +60,25 @@ function TransactionTable({
     _event: React.ChangeEvent<unknown>,
     newPage: number
   ) => {
-    console.log("handleChangePage table", newPage);
     onPageChange(newPage);
   };
 
   const renderTableHeader = () => {
     return (
       <>
-        <StyledTableCell>Date</StyledTableCell>
-        <StyledTableCell>Description</StyledTableCell>
-        <StyledTableCell>Category</StyledTableCell>
-        <StyledTableCell align="right">Amount</StyledTableCell>
-        {settings.payee && <StyledTableCell>Payee</StyledTableCell>}
-        {settings.tag && <StyledTableCell>Tag</StyledTableCell>}
-        <StyledTableCell>Action</StyledTableCell>
+        <StyledTableCell sx={{ width: "15%" }}>Date</StyledTableCell>
+        <StyledTableCell sx={{ width: "20%" }}>Description</StyledTableCell>
+        <StyledTableCell sx={{ width: "15%" }}>Category</StyledTableCell>
+        <StyledTableCell sx={{ width: "10%" }} align="right">
+          Amount
+        </StyledTableCell>
+        {settings.payee && (
+          <StyledTableCell sx={{ width: "15%" }}>Payee</StyledTableCell>
+        )}
+        {settings.tag && (
+          <StyledTableCell sx={{ width: "10%" }}>Tag</StyledTableCell>
+        )}
+        <StyledTableCell sx={{ width: "10%" }}>Action</StyledTableCell>
       </>
     );
   };

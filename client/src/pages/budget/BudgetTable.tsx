@@ -10,11 +10,11 @@ import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useBudgets } from "../../hooks/budget/useBudgets";
-import { getMonth, getYear } from "../../utils/dateUtils";
+import { getMonth, getYear } from "../../utils/date";
 import type { BudgetItem } from "../../services/budget";
 import ProgressBar from "../../components/ProgressBar";
 import Typography from "@mui/material/Typography";
-import { formatCurrency } from "../../utils/currencyUtils";
+import { formatCurrency } from "../../utils/currency";
 import ChipFilled from "../../components/ChipFilled";
 import { red, green, amber, brown } from "@mui/material/colors";
 

@@ -6,7 +6,7 @@ import SelectInputField from "../../components/SelectInputField";
 import MenuItem from "@mui/material/MenuItem";
 import { type SelectChangeEvent } from "@mui/material/Select";
 import Button from "@mui/material/Button";
-import { formatDate } from "../../utils/dateUtils";
+import { formatDate } from "../../utils/date";
 import Divider from "@mui/material/Divider";
 import { useWallets } from "../../hooks/useWallets";
 import ErrorMessage from "../../components/ErrorMessage";
