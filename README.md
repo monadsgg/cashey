@@ -1,10 +1,8 @@
-## Cashey
+# Cashey
 
 Cashey is a **full-stack personal finance web application** that helps track income, expenses, budgets, and investment contributions in one platform.
 
-### Why I Built It
-
----
+## Why I Built It
 
 I’ve been tracking our finances in spreadsheets for years, but I wanted a tool that could automate entries, provide real-time analytics, and help answer questions like:
 
@@ -14,18 +12,14 @@ I’ve been tracking our finances in spreadsheets for years, but I wanted a tool
 
 Cashey combines my passion for personal finance with my skills in full-stack development, turning raw data into actionable insights.
 
-### Tech Stack
-
----
+## Tech Stack
 
 - **Frontend**: React, TypeScript, MUI (Material UI), React Query
 - **Backend**: Node.js, TypeScript, Prisma ORM
 - **Database**: PostgreSQL
 - **HTTP Client**: Axios
 
-### Key Features
-
----
+## Key Features
 
 - **Transactions**
 
@@ -50,9 +44,7 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
   - Create tags and payees directly from the transaction form
   - Use categories, tags, and payees for filtering and analysis
 
-### Cashey File structure
-
----
+## Cashey File structure
 
 ```
 cashey/
