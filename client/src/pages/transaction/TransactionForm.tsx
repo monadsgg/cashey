@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Stack from "@mui/material/Stack";
 import DatePickerField from "../../components/DatePickerField";
 import TextInputField from "../../components/TextInputField";
@@ -18,6 +18,10 @@ import TransactionTagField from "./TransactionTagField";
 import type { Tag } from "../../services/tags";
 import { useAddTransaction } from "../../hooks/transactions/useAddTransaction";
 import { useUpdateTransaction } from "../../hooks/transactions/useUpdateTransaction";
+import ListSubheader from "@mui/material/ListSubheader";
+import type { Category } from "../../services/categories";
+import { CategoryType } from "../../constants";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -53,10 +57,24 @@ function TransactionForm({
     selectedItem ?? initialFormData
   );
   const { mainWalletId, error } = useWallets();
-  const { categories } = useCategories();
-
+  const { categories, isCategoriesLoading } = useCategories();
   const addTransactionMutation = useAddTransaction();
   const updateTransactionMutation = useUpdateTransaction();
+
+  const { incomeCategories, expenseCategories } = useMemo(() => {
+    let incomeCategories: Category[] = [];
+    let expenseCategories: Category[] = [];
+
+    categories.forEach((category) => {
+      if (category.type === CategoryType.EXPENSE) {
+        expenseCategories.push(category);
+      } else if (category.type === CategoryType.INCOME) {
+        incomeCategories.push(category);
+      }
+    });
+
+    return { incomeCategories, expenseCategories };
+  }, [categories]);
 
   const handleSubmit = async () => {
     const { description, amount, date, categoryId, payee, tags } = formData;
@@ -119,6 +137,8 @@ function TransactionForm({
 
   const isDisabled = formData.description === "" || formData.amount <= 0;
 
+  if (isCategoriesLoading) return <CircularProgress />;
+
   if (error) return <ErrorMessage message={error.message} />;
 
   return (
@@ -139,8 +159,21 @@ function TransactionForm({
               value={formData.categoryId.toString()}
               onChange={handleFormSelectChange}
             >
-              {categories.map((category) => {
-                return <MenuItem value={category.id}>{category.name}</MenuItem>;
+              <ListSubheader>Income</ListSubheader>
+              {incomeCategories.map((c) => {
+                return (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
+                  </MenuItem>
+                );
+              })}
+              <ListSubheader>Expense</ListSubheader>
+              {expenseCategories.map((c) => {
+                return (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
+                  </MenuItem>
+                );
               })}
             </SelectInputField>
           )}
