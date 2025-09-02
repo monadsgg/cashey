@@ -76,6 +76,8 @@ function TransactionSummary({
   const { income, expense, savings, fundsFromSavings, remainingFunds } =
     financialSummary;
 
+  const overSpentAmount = remainingFunds + fundsFromSavings;
+
   return (
     <SummaryContainer>
       <SummaryTitle title={`${currentMonth} Summary`} />
@@ -91,8 +93,11 @@ function TransactionSummary({
         <SummaryListItem title="Savings" amount={savings} />
         <SummaryListItem
           title="Remaining from salary"
-          amount={remainingFunds}
+          amount={remainingFunds < 0 ? 0 : remainingFunds}
         />
+        {overSpentAmount < 0 && (
+          <SummaryListItem title="Overspent" amount={overSpentAmount} />
+        )}
       </Stack>
       <Stack spacing={1}>
         {categoryExpense.length > 0 && (
