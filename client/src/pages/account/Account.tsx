@@ -87,7 +87,6 @@ function Account() {
         spacing={2}
         sx={{
           height: "100%",
-          // border: "1px solid red",
         }}
       >
         <Paper
@@ -96,6 +95,7 @@ function Account() {
             padding: 4,
             height: "100%",
             width: "70%",
+            flexGrow: 1,
           }}
         >
           <Stack direction={"row"}>
