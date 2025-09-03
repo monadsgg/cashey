@@ -19,6 +19,9 @@ export function useUpdateCategory() {
       queryClient.invalidateQueries({
         queryKey: ["categories"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["user-categories"],
+      });
     },
   });
 }

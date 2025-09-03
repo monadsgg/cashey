@@ -40,3 +40,11 @@ export const getUserName = () => {
     return JSON.parse(user).name;
   }
 };
+
+export const getUserId = () => {
+  const user = localStorage.getItem("user");
+
+  if (user) {
+    return Number(JSON.parse(user).id);
+  }
+};

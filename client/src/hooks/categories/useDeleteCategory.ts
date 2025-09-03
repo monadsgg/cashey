@@ -10,6 +10,9 @@ export function useDeleteCategory() {
       queryClient.invalidateQueries({
         queryKey: ["categories"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["user-categories"],
+      });
     },
   });
 }

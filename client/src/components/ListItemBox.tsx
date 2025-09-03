@@ -7,13 +7,17 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import type { Category } from "../services/categories";
 import type { Tag } from "../services/tags";
 
-interface ListItemBoxProps {
-  item: Category | Tag;
-  onClickEdit: (item: Category | Tag) => void;
+interface ListItemBoxProps<T extends Category | Tag> {
+  item: T;
+  onClickEdit: (item: T) => void;
   onClickDelete: (id: number) => void;
 }
 
-function ListItemBox({ item, onClickEdit, onClickDelete }: ListItemBoxProps) {
+function ListItemBox<T extends Category | Tag>({
+  item,
+  onClickEdit,
+  onClickDelete,
+}: ListItemBoxProps<T>) {
   return (
     <Box
       key={item.id}

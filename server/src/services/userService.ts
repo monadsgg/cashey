@@ -66,3 +66,15 @@ export async function getUserById(id: number) {
 
   return user;
 }
+
+export async function getAllUserCategories(userId: number) {
+  const categories = await db.category.findMany({
+    where: {
+      userId: { equals: userId },
+    },
+    orderBy: { name: 'asc' },
+    omit: { userId: true },
+  });
+
+  return categories;
+}
