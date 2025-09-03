@@ -7,7 +7,6 @@ export function useAddBudget() {
   return useMutation({
     mutationFn: addBugdet,
     onSuccess: (data) => {
-      console.log("addMutate data:", data);
       queryClient.invalidateQueries({
         queryKey: ["budgets", data.month, data.year],
       });
