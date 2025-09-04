@@ -8,7 +8,7 @@ export function useAddCategory() {
     mutationFn: addCategory,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["categories"],
+        queryKey: ["user-categories"],
       });
     },
   });
