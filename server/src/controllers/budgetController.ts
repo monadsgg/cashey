@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import {
   addBudget,
+  copyBudgetFromLastMonth,
   editBudget,
   getAllBudgets,
   removeBudget,
@@ -63,6 +64,21 @@ export async function deleteBudget(req: Request, res: Response): Promise<void> {
   try {
     await removeBudget(Number(id), userId);
     res.status(204).json();
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export async function copyBudget(req: Request, res: Response): Promise<void> {
+  const userId = res.locals.user;
+  const { fromMonth, toMonth } = req.body;
+
+  try {
+    const budget = await copyBudgetFromLastMonth(fromMonth, toMonth, userId);
+    res.status(201).json({
+      inserted: budget.length,
+      message: `${budget.length} budgets has been successfully copied`,
+    });
   } catch (error: any) {
     res.status(500).json({ message: error.message });
   }
