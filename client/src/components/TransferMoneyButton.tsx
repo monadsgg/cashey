@@ -1,16 +1,17 @@
 import { useState } from "react";
-import Button from "@mui/material/Button";
 import FormDialog from "./FormDialog";
 import TransferMoneyForm from "./TransferMoneyForm";
 import { useWallets } from "../hooks/useWallets";
 import CircularProgress from "@mui/material/CircularProgress";
+import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 
 interface TransferMoneyButtonProps {
-  label: string;
   isAccounts?: boolean;
 }
 
-function TransferMoneyButton({ label, isAccounts }: TransferMoneyButtonProps) {
+function TransferMoneyButton({ isAccounts }: TransferMoneyButtonProps) {
   const [open, setOpen] = useState(false);
   const { accountWallets, isLoading } = useWallets();
 
@@ -28,9 +29,22 @@ function TransferMoneyButton({ label, isAccounts }: TransferMoneyButtonProps) {
 
   return (
     <>
-      <Button variant="outlined" onClick={handleClick} disabled={disabled}>
-        {label}
-      </Button>
+      <Tooltip title="Transfer funds">
+        <IconButton
+          aria-label="transfer button"
+          color="primary"
+          sx={{
+            border: "1px solid",
+            borderColor: "primary",
+            borderRadius: "6px",
+            p: "0 10px",
+          }}
+          disabled={disabled}
+          onClick={handleClick}
+        >
+          <CurrencyExchangeIcon />
+        </IconButton>
+      </Tooltip>
       <FormDialog title="Transfer Funds" open={open} onClose={handleClose}>
         <TransferMoneyForm onClose={handleClose} isAccounts={isAccounts} />
       </FormDialog>

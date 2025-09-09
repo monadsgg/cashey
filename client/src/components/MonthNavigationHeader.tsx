@@ -23,7 +23,7 @@ function MonthNavigationHeader({
         <NavigateBeforeIcon onClick={goToPrevMonth} />
       </Tooltip>
       <Typography variant="h4">
-        {getMonth(currentDate, "MMM")} {getYear(currentDate)}
+        {getMonth(currentDate)} {getYear(currentDate)}
       </Typography>
       <Tooltip title="Next month">
         <NavigateNextIcon onClick={goToNextMonth} />

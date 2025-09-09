@@ -109,7 +109,7 @@ function Account() {
               <Tab label="Investment" />
             </Tabs>
             <Stack direction={"row"} spacing={1}>
-              <TransferMoneyButton label="Transfer funds" isAccounts />
+              <TransferMoneyButton isAccounts />
               <Button variant="outlined" onClick={handleClickBtn}>
                 Add Accounts
               </Button>

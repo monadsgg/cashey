@@ -5,6 +5,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import theme from "./styles/theme.ts";
 import App from "./App.tsx";
+import { SnackbarProvider } from "notistack";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,9 +22,14 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <ThemeProvider theme={theme}>
-        <QueryClientProvider client={queryClient}>
-          <App />
-        </QueryClientProvider>
+        <SnackbarProvider
+          maxSnack={3}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <QueryClientProvider client={queryClient}>
+            <App />
+          </QueryClientProvider>
+        </SnackbarProvider>
       </ThemeProvider>
     </BrowserRouter>
   </StrictMode>

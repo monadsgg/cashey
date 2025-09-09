@@ -5,9 +5,10 @@ interface ToastProps {
   message: string;
   open: boolean;
   onClose: () => void;
+  severity?: "success" | "error";
 }
 
-function Toast({ message, open, onClose }: ToastProps) {
+function Toast({ message, open, onClose, severity = "success" }: ToastProps) {
   return (
     <Snackbar
       anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
@@ -17,7 +18,7 @@ function Toast({ message, open, onClose }: ToastProps) {
     >
       <Alert
         onClose={onClose}
-        severity="success"
+        severity={severity}
         variant="filled"
         sx={{ width: "100%" }}
       >

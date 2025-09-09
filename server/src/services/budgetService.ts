@@ -93,3 +93,48 @@ export async function editBudget(
 export async function removeBudget(id: number, userId: number) {
   return db.budget.delete({ where: { id, userId } });
 }
+
+export async function copyBudgetFromLastMonth(
+  fromMonth: string,
+  toMonth: string,
+  userId: number,
+) {
+  const [fromYear, fromMonthNum] = fromMonth.split('-').map(Number);
+  const [toYear, toMonthNum] = toMonth.split('-').map(Number);
+
+  const prevBudgets = await db.budget.findMany({
+    where: { userId, month: fromMonthNum, year: fromYear },
+    select: { categoryId: true, amountLimit: true },
+  });
+
+  const currentBudgets = await db.budget.findMany({
+    where: { userId, month: toMonthNum, year: toYear },
+    select: { categoryId: true },
+  });
+
+  const existingCategoryIds = new Set(currentBudgets.map((b) => b.categoryId));
+
+  const budgetsToCreate = prevBudgets.filter(
+    (b) => !existingCategoryIds.has(b.categoryId),
+  );
+
+  if (budgetsToCreate.length === 0) {
+    throw new Error('No copy was made. Budgets already exists');
+  }
+
+  const newBudgets = await db.$transaction(
+    budgetsToCreate.map((b) =>
+      db.budget.create({
+        data: {
+          userId,
+          month: toMonthNum,
+          year: toYear,
+          categoryId: b.categoryId,
+          amountLimit: b.amountLimit,
+        },
+      }),
+    ),
+  );
+
+  return newBudgets;
+}
