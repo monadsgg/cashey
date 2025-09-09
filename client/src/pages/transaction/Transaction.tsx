@@ -230,7 +230,7 @@ function Transaction() {
               </Stack>
               <Stack direction="row" spacing={1}>
                 <SearchInputField onChange={handleOnSearch} />
-                <TransferMoneyButton label="Save money" />
+                <TransferMoneyButton />
                 <Button variant="outlined" onClick={handleOpenForm}>
                   Add Transaction
                 </Button>
