@@ -17,6 +17,8 @@ import Typography from "@mui/material/Typography";
 import { formatCurrency } from "../../utils/currency";
 import ChipFilled from "../../components/ChipFilled";
 import { red, green, amber, brown } from "@mui/material/colors";
+import CircularProgress from "@mui/material/CircularProgress";
+import Stack from "@mui/material/Stack";
 
 const StyledTableCell = styled(TableCell)(() => ({
   [`&.${tableCellClasses.head}`]: {
@@ -30,10 +32,19 @@ const StyledTableCell = styled(TableCell)(() => ({
   },
 }));
 
+const paperSxProps = {
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
+  overflowY: "auto",
+};
+
 interface BudgetTableProps {
   currentDate: Date;
   onClickEditBtn: (item: BudgetItem) => void;
   onClickDeleteBtn: (id: number) => void;
+  isCopyProcessing: boolean;
 }
 
 type StatusKey = "overBudget" | "warning" | "onTrack";
@@ -42,6 +53,7 @@ function BudgetTable({
   currentDate,
   onClickEditBtn,
   onClickDeleteBtn,
+  isCopyProcessing,
 }: BudgetTableProps) {
   const month = Number(getMonth(currentDate, "M"));
   const year = Number(getYear(currentDate));
@@ -88,10 +100,23 @@ function BudgetTable({
   };
 
   const renderTableBody = () => {
+    if (isLoading || isCopyProcessing) {
+      return (
+        <TableRow>
+          <TableCell colSpan={7} align="center" sx={{ borderBottom: "none" }}>
+            <Stack alignItems="center" mt={4}>
+              <CircularProgress />
+              <Typography mt={2}>Loading...</Typography>
+            </Stack>
+          </TableCell>
+        </TableRow>
+      );
+    }
+
     if (!isLoading && budgets.length === 0)
       return (
         <TableRow>
-          <TableCell colSpan={6} align="center">
+          <TableCell colSpan={7} align="center">
             No budgets created yet.
           </TableCell>
         </TableRow>
@@ -145,14 +170,7 @@ function BudgetTable({
   };
 
   return (
-    <Paper
-      sx={{
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
-    >
+    <Paper sx={paperSxProps}>
       <TableContainer>
         <Table>
           <TableHead>
