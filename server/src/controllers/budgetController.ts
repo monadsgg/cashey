@@ -76,8 +76,8 @@ export async function copyBudget(req: Request, res: Response): Promise<void> {
   try {
     const budget = await copyBudgetFromLastMonth(fromMonth, toMonth, userId);
     res.status(201).json({
-      inserted: budget.length,
-      message: `${budget.length} budgets has been successfully copied`,
+      inserted: budget?.length,
+      message: `${budget?.length} budgets has been successfully copied`,
     });
   } catch (error: any) {
     res.status(500).json({ message: error.message });

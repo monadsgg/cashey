@@ -118,6 +118,10 @@ export async function copyBudgetFromLastMonth(
     (b) => !existingCategoryIds.has(b.categoryId),
   );
 
+  if (budgetsToCreate.length === 0) {
+    throw new Error('No copy was made. Budgets already exists');
+  }
+
   const newBudgets = await db.$transaction(
     budgetsToCreate.map((b) =>
       db.budget.create({
