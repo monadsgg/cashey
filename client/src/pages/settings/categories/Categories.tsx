@@ -107,44 +107,21 @@ function Categories() {
           </Button>
         </Stack>
 
-        <Stack>
-          <Typography variant="subtitle1" fontSize={16} color="primary">
-            Pre-defined Categories
-          </Typography>
-          <Typography variant="subtitle1">Income</Typography>
-          <Box sx={boxSxProps}>
-            {incomeCategories.map((category) => (
-              <ListItemBox
-                key={category.id}
-                item={category}
-                onClickDelete={handleOnClickDeleteBtn}
-                onClickEdit={handleOnClickEditBtn}
-              />
-            ))}
-          </Box>
-        </Stack>
-
-        <Stack>
-          <Typography variant="subtitle1">Expense</Typography>
-          <Box sx={boxSxProps}>
-            {expenseCategories.map((category) => (
-              <ListItemBox
-                key={category.id}
-                item={category}
-                onClickDelete={handleOnClickDeleteBtn}
-                onClickEdit={handleOnClickEditBtn}
-              />
-            ))}
-          </Box>
-        </Stack>
-
-        {userCategories.length > 0 && (
+        <Stack
+          spacing={3}
+          sx={{
+            height: "65vh",
+            overflowY: "auto",
+            pr: 1,
+          }}
+        >
           <Stack>
             <Typography variant="subtitle1" fontSize={16} color="primary">
-              My categories
+              Pre-defined Categories
             </Typography>
+            <Typography variant="subtitle1">Income</Typography>
             <Box sx={boxSxProps}>
-              {userCategories.map((category) => (
+              {incomeCategories.map((category) => (
                 <ListItemBox
                   key={category.id}
                   item={category}
@@ -154,7 +131,39 @@ function Categories() {
               ))}
             </Box>
           </Stack>
-        )}
+
+          <Stack>
+            <Typography variant="subtitle1">Expense</Typography>
+            <Box sx={boxSxProps}>
+              {expenseCategories.map((category) => (
+                <ListItemBox
+                  key={category.id}
+                  item={category}
+                  onClickDelete={handleOnClickDeleteBtn}
+                  onClickEdit={handleOnClickEditBtn}
+                />
+              ))}
+            </Box>
+          </Stack>
+
+          {userCategories.length > 0 && (
+            <Stack>
+              <Typography variant="subtitle1" fontSize={16} color="primary">
+                My categories
+              </Typography>
+              <Box sx={boxSxProps}>
+                {userCategories.map((category) => (
+                  <ListItemBox
+                    key={category.id}
+                    item={category}
+                    onClickDelete={handleOnClickDeleteBtn}
+                    onClickEdit={handleOnClickEditBtn}
+                  />
+                ))}
+              </Box>
+            </Stack>
+          )}
+        </Stack>
       </Stack>
 
       <FormDialog
