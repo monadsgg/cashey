@@ -85,6 +85,17 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
         header: true,
         skipEmptyLines: true,
         delimiter: ",",
+        transform: (value) => {
+          if (typeof value === "string") {
+            const cleaned = value.replace(/,/g, "");
+
+            if (!isNaN(Number(cleaned)) && cleaned.trim() !== "")
+              return parseFloat(cleaned);
+
+            return value;
+          }
+          return value;
+        },
         error: (error: Error) => {
           setError(error.message);
         },
