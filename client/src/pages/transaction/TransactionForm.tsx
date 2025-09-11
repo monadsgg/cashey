@@ -8,7 +8,7 @@ import { type SelectChangeEvent } from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { formatDate } from "../../utils/date";
 import Divider from "@mui/material/Divider";
-import { useWallets } from "../../hooks/useWallets";
+import { useWallets } from "../../hooks/wallets/useWallets";
 import ErrorMessage from "../../components/ErrorMessage";
 import { useCategories } from "../../hooks/categories/useCategories";
 import DialogContent from "@mui/material/DialogContent";

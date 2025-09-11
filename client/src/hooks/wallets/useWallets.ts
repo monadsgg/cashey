@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { getWallets, type Wallet } from "../services/wallet";
+import { getWallets, type Wallet } from "../../services/wallet";
 import { useMemo } from "react";
-import { WalletType } from "../constants";
+import { WalletType } from "../../constants";
 
 export const useWallets = () => {
   const {

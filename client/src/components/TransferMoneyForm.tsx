@@ -6,7 +6,7 @@ import DatePickerField from "./DatePickerField";
 import TextInputField from "./TextInputField";
 import SelectInputField from "./SelectInputField";
 import DialogContent from "@mui/material/DialogContent";
-import { useWallets } from "../hooks/useWallets";
+import { useWallets } from "../hooks/wallets/useWallets";
 import { type SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
