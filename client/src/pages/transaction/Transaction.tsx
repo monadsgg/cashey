@@ -29,13 +29,14 @@ import TransferMoneyButton from "../../components/TransferMoneyButton";
 import FormDialog from "../../components/FormDialog";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 import Typography from "@mui/material/Typography";
-import { useWallets } from "../../hooks/useWallets";
+import { useWallets } from "../../hooks/wallets/useWallets";
 import { formatCurrency } from "../../utils/currency";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useDeleteTransaction } from "../../hooks/transactions/useDeleteTransaction";
 import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
 
 import UploadFileDialog from "./UploadFileDialog";
+import MainWalletBox from "./MainWalletBox";
 
 type Pagination = {
   page: number;
@@ -80,7 +81,7 @@ function Transaction() {
   });
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
   const { transactions: allTransactions } = useAllTransactions(dateRange);
-  const { mainWallet } = useWallets();
+
   const deleteTransactionMutation = useDeleteTransaction();
 
   const paginatedQueryKey = useMemo(
@@ -249,20 +250,7 @@ function Transaction() {
             />
           </Stack>
           <Stack direction="column" spacing={1}>
-            <Stack
-              spacing={1}
-              sx={{
-                border: "1px solid #ccc",
-                p: 4,
-                borderRadius: 4,
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="subtitle1">Main Wallet Balance</Typography>
-              <Typography variant="h4">
-                {formatCurrency(mainWallet?.balance || 0)}
-              </Typography>
-            </Stack>
+            <MainWalletBox />
             <TransactionSummary
               currentMonth={getMonth(currentDate)}
               transactions={allTransactions}
