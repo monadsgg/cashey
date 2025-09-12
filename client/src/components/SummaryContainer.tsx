@@ -8,6 +8,7 @@ function SummaryContainer({ children }: SummaryContainerProps) {
   return (
     <Stack
       spacing={3}
+      flex={1}
       sx={{
         width: 400,
         border: "1px solid #ccc",

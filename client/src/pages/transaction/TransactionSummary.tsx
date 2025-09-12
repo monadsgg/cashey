@@ -1,11 +1,20 @@
-import Stack from "@mui/material/Stack";
 import { useMemo } from "react";
+import Stack from "@mui/material/Stack";
+import { styled } from "@mui/material/styles";
 import SummaryListItem from "../../components/SummaryListItem";
 import SummaryTitle from "../../components/SummaryTitle";
 import SummaryContainer from "../../components/SummaryContainer";
 import SummaryExpenseCategoryItem from "../../components/SummaryExpenseCategoryItem";
 import { transferCategory } from "../../constants";
 import type { TransactionItem } from "../../services/transactions";
+
+const ScrollableContainer = styled("div")(() => ({
+  maxHeight: "50vh",
+  overflowY: "hidden",
+  [`&:hover`]: {
+    overflowY: "auto",
+  },
+}));
 
 interface TransactionSummaryProps {
   currentMonth: string;
@@ -103,13 +112,15 @@ function TransactionSummary({
         {categoryExpense.length > 0 && (
           <>
             <SummaryTitle title="Expenses by Category" />
-            {categoryExpense.map((item) => (
-              <SummaryExpenseCategoryItem
-                key={item.category}
-                title={item.category}
-                amount={item.amount}
-              />
-            ))}
+            <ScrollableContainer>
+              {categoryExpense.map((item) => (
+                <SummaryExpenseCategoryItem
+                  key={item.category}
+                  title={item.category}
+                  amount={item.amount}
+                />
+              ))}
+            </ScrollableContainer>
           </>
         )}
       </Stack>

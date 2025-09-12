@@ -16,7 +16,7 @@ import type { Category } from "../../services/categories";
 import { useAccountTransactions } from "../../hooks/accounts/useAccountTransactions";
 
 const ScrollableContainer = styled("div")(() => ({
-  height: "40vh",
+  height: "52vh",
   overflowY: "hidden",
   [`&:hover`]: {
     overflowY: "auto",
