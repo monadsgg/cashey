@@ -28,14 +28,12 @@ import { useQuery } from "@tanstack/react-query";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
 import FormDialog from "../../components/FormDialog";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
-import Typography from "@mui/material/Typography";
-import { useWallets } from "../../hooks/useWallets";
-import { formatCurrency } from "../../utils/currency";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useDeleteTransaction } from "../../hooks/transactions/useDeleteTransaction";
 import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
 
 import UploadFileDialog from "./UploadFileDialog";
+import MainWalletBox from "./MainWalletBox";
 
 type Pagination = {
   page: number;
@@ -80,7 +78,7 @@ function Transaction() {
   });
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
   const { transactions: allTransactions } = useAllTransactions(dateRange);
-  const { mainWallet } = useWallets();
+
   const deleteTransactionMutation = useDeleteTransaction();
 
   const paginatedQueryKey = useMemo(
@@ -145,7 +143,8 @@ function Transaction() {
   };
 
   const handleOnClickEditBtn = (item: TransactionItem) => {
-    const { id, category, description, date, amount, tags, payee } = item;
+    const { id, category, description, date, amount, tags, payee, isRefund } =
+      item;
     handleOpenForm();
     setSelectedItem({
       id,
@@ -155,6 +154,7 @@ function Transaction() {
       categoryId: category.id,
       tags: tags || [],
       payee: payee || null,
+      isRefund: isRefund,
     });
   };
 
@@ -249,20 +249,7 @@ function Transaction() {
             />
           </Stack>
           <Stack direction="column" spacing={1}>
-            <Stack
-              spacing={1}
-              sx={{
-                border: "1px solid #ccc",
-                p: 4,
-                borderRadius: 4,
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="subtitle1">Main Wallet Balance</Typography>
-              <Typography variant="h4">
-                {formatCurrency(mainWallet?.balance || 0)}
-              </Typography>
-            </Stack>
+            <MainWalletBox />
             <TransactionSummary
               currentMonth={getMonth(currentDate)}
               transactions={allTransactions}

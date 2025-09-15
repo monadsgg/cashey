@@ -94,6 +94,7 @@ export async function getAllTransactions({
       date: true,
       amount: true,
       category: { omit: { userId: true, color: true } },
+      isRefund: true,
     },
   });
 }
@@ -107,6 +108,7 @@ export async function addTransaction(
   walletId: number,
   tagIds: number[],
   payeeId: number,
+  isRefund: boolean = false,
 ) {
   if (!description || !categoryId || !amount || !date)
     throw new Error('All fields are required');
@@ -119,55 +121,31 @@ export async function addTransaction(
   const category = await db.category.findUnique({ where: { id: categoryId } });
   if (!category) throw new Error('Category does not exist');
 
-  const result = await db.$transaction(async (tx) => {
-    // 1) create a new transaction
-    const newTransaction = await tx.transaction.create({
-      data: {
-        description,
-        categoryId,
-        amount,
-        date: new Date(date),
-        userId,
-        walletId,
-        tags: {
-          connect: tagIds.map((id) => ({ id })),
-        },
-        payeeId: payeeId ? payeeId : undefined,
+  return db.transaction.create({
+    data: {
+      description,
+      categoryId,
+      amount,
+      date: new Date(date),
+      userId,
+      walletId,
+      tags: {
+        connect: tagIds.map((id) => ({ id })),
       },
-      include: {
-        category: {
-          omit: { userId: true },
-        },
-        tags: { omit: { userId: true } },
-        payee: { omit: { userId: true } },
-      },
-      omit: {
-        categoryId: true,
-        userId: true,
-        walletId: true,
-        payeeId: true,
-      },
-    });
-
-    let balance = Number(wallet.balance);
-    let parsedAmount = Number(amount);
-
-    // 2) calculate new balance
-    const newBalance =
-      category.type === CategoryType.INCOME
-        ? balance + parsedAmount
-        : balance - parsedAmount;
-
-    // 3) update main wallet balance
-    await tx.wallet.update({
-      where: { id: walletId },
-      data: { balance: newBalance },
-    });
-
-    return newTransaction;
+      payeeId: payeeId || undefined,
+      isRefund,
+    },
+    include: {
+      category: { omit: { userId: true } },
+      tags: { omit: { userId: true } },
+      payee: { omit: { userId: true } },
+    },
+    omit: {
+      categoryId: true,
+      userId: true,
+      payeeId: true,
+    },
   });
-
-  return result;
 }
 
 export async function editTransaction(
@@ -179,117 +157,42 @@ export async function editTransaction(
   userId: number,
   tagIds: number[],
   payeeId: number | null,
+  isRefund: boolean,
 ) {
   if (!description || !categoryId || !amount || !date)
     throw new Error('All fields are required');
 
-  const result = await db.$transaction(async (tx) => {
-    // 1) Get the old transaction (with category)
-    const oldTransaction = await tx.transaction.findUniqueOrThrow({
-      where: { id, userId },
-      include: { category: true },
-    });
-
-    const wallet = await tx.wallet.findUniqueOrThrow({
-      where: { id: oldTransaction.walletId },
-    });
-
-    // 2) Get new category type to check if changed
-    const newCategory = await tx.category.findUniqueOrThrow({
-      where: { id: categoryId },
-    });
-
-    let balance = Number(wallet.balance);
-
-    // 3) Check if amount has changed
-    const oldAmount = Number(oldTransaction.amount);
-    const newAmount = Number(amount);
-
-    if (
-      oldAmount !== newAmount ||
-      oldTransaction.category.type !== newCategory.type
-    ) {
-      // Reverse old effect
-      if (oldTransaction.category.type === CategoryType.INCOME) {
-        balance -= oldAmount;
-      } else {
-        balance += oldAmount;
-      }
-
-      // Apply new effect
-      if (newCategory.type === CategoryType.INCOME) {
-        balance += newAmount;
-      } else {
-        balance -= newAmount;
-      }
-
-      // 4) Update wallet balance
-      await tx.wallet.update({
-        where: { id: oldTransaction.walletId },
-        data: { balance },
-      });
-    }
-
-    // 5) Update transaction
-    const updatedTransaction = await tx.transaction.update({
-      where: { id },
-      data: {
-        description,
-        categoryId,
-        amount,
-        date: new Date(date),
-        tags: {
-          set: tagIds.map((id) => ({ id })),
-        },
-        payeeId,
+  return db.transaction.update({
+    where: { id },
+    data: {
+      description,
+      categoryId,
+      amount,
+      date: new Date(date),
+      tags: {
+        set: tagIds.map((id) => ({ id })),
       },
-      include: {
-        category: {
-          omit: { userId: true },
-        },
-        tags: { omit: { userId: true } },
-        payee: { omit: { userId: true } },
+      payeeId,
+      isRefund,
+    },
+    include: {
+      category: {
+        omit: { userId: true },
       },
-      omit: {
-        categoryId: true,
-        userId: true,
-        walletId: true,
-        payeeId: true,
-      },
-    });
-
-    return updatedTransaction;
+      tags: { omit: { userId: true } },
+      payee: { omit: { userId: true } },
+    },
+    omit: {
+      categoryId: true,
+      userId: true,
+      walletId: true,
+      payeeId: true,
+    },
   });
-
-  return result;
 }
 
 export async function removeTransaction(id: number, userId: number) {
-  const transaction = await db.transaction.findUnique({
-    where: { id, userId },
-    include: { category: true },
-  });
-
-  const wallet = await db.wallet.findUnique({
-    where: { id: transaction?.walletId, userId },
-  });
-
-  // get main wallet balance and tx amount
-  let balance = Number(wallet?.balance);
-  let transactionAmount = transaction?.amount;
-
-  // if category type = expense increment balance; else decrement
-  if (transaction?.category.type === CategoryType.EXPENSE)
-    balance += Number(transactionAmount);
-  else balance -= Number(transactionAmount);
-
-  await db.$transaction([
-    db.transaction.delete({ where: { id, userId } }),
-    db.wallet.update({
-      where: { id: transaction?.walletId },
-      data: { balance },
-    }),
-  ]);
+  return db.transaction.delete({ where: { id, userId } });
 }
 
 export async function transferFunds(

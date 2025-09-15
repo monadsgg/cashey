@@ -8,7 +8,7 @@ import { type SelectChangeEvent } from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { formatDate } from "../../utils/date";
 import Divider from "@mui/material/Divider";
-import { useWallets } from "../../hooks/useWallets";
+import { useWallets } from "../../hooks/wallets/useWallets";
 import ErrorMessage from "../../components/ErrorMessage";
 import { useCategories } from "../../hooks/categories/useCategories";
 import DialogContent from "@mui/material/DialogContent";
@@ -22,6 +22,8 @@ import ListSubheader from "@mui/material/ListSubheader";
 import type { Category } from "../../services/categories";
 import { CategoryType } from "../../constants";
 import CircularProgress from "@mui/material/CircularProgress";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
 
 export type TransactionFormDataType = {
   id?: number;
@@ -31,6 +33,7 @@ export type TransactionFormDataType = {
   amount: number;
   payee: Payee | null;
   tags: Tag[] | [];
+  isRefund: boolean;
 };
 
 interface TransactionFormProps {
@@ -52,6 +55,7 @@ function TransactionForm({
     amount: 0,
     payee: null,
     tags: [],
+    isRefund: false,
   };
   const [formData, setFormData] = useState<TransactionFormDataType>(
     selectedItem ?? initialFormData
@@ -77,7 +81,8 @@ function TransactionForm({
   }, [categories]);
 
   const handleSubmit = async () => {
-    const { description, amount, date, categoryId, payee, tags } = formData;
+    const { description, amount, date, categoryId, payee, tags, isRefund } =
+      formData;
     const formattedDate = formatDate(date, "yyyy-MM-dd");
 
     if (!mainWalletId)
@@ -91,6 +96,7 @@ function TransactionForm({
       tagIds: tags.map((t) => t.id),
       date: formattedDate,
       walletId: mainWalletId,
+      isRefund,
     };
 
     if (formData?.id) {
@@ -107,6 +113,7 @@ function TransactionForm({
         amount: 0,
         payee: null,
         tags: [],
+        isRefund: false,
       });
     }
 
@@ -133,6 +140,11 @@ function TransactionForm({
 
   const handleTagChange = (values: Tag[]) => {
     setFormData({ ...formData, tags: values });
+  };
+
+  const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData({ ...formData, [name]: checked });
   };
 
   const isDisabled = formData.description === "" || formData.amount <= 0;
@@ -195,6 +207,18 @@ function TransactionForm({
             label="Tag"
             selectedValue={formData.tags}
             onChange={handleTagChange}
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={formData.isRefund}
+                onChange={handleSwitchChange}
+                name="isRefund"
+              />
+            }
+            label="Is it a refund?"
+            labelPlacement="start"
           />
         </Stack>
 

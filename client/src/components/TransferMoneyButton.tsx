@@ -1,7 +1,7 @@
 import { useState } from "react";
 import FormDialog from "./FormDialog";
 import TransferMoneyForm from "./TransferMoneyForm";
-import { useWallets } from "../hooks/useWallets";
+import { useWallets } from "../hooks/wallets/useWallets";
 import CircularProgress from "@mui/material/CircularProgress";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import IconButton from "@mui/material/IconButton";
