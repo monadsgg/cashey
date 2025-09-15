@@ -94,6 +94,7 @@ export async function getAllTransactions({
       date: true,
       amount: true,
       category: { omit: { userId: true, color: true } },
+      isRefund: true,
     },
   });
 }
