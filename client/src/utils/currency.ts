@@ -12,7 +12,7 @@ export function formatCurrency(
   }).format(amount);
 }
 
-export function getAmountSign(type: string) {
-  if (type === CategoryType.INCOME) return "+";
+export function getAmountSign(type: string, isRefund: boolean = false) {
+  if (type === CategoryType.INCOME || isRefund) return "+";
   else return "-";
 }

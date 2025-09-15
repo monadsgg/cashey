@@ -108,8 +108,10 @@ function TransactionTable({
               <StyledTableCell>{item.description}</StyledTableCell>
               <StyledTableCell>{item.category.name}</StyledTableCell>
               <StyledTableCell align="right">
-                {getAmountSign(item.category.type)}
-                {formatCurrency(item.amount)}
+                {`${getAmountSign(
+                  item.category.type,
+                  item.isRefund
+                )} ${formatCurrency(item.amount)} `}
               </StyledTableCell>
               {settings.payee && (
                 <StyledTableCell>
