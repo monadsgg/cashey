@@ -12,6 +12,7 @@ export interface TransactionPayload {
   tagIds: number[];
   payeeId?: number | null;
   walletId: number;
+  isRefund: boolean;
 }
 
 interface TransferPayload {
@@ -39,6 +40,7 @@ export interface TransactionItem {
   description: string;
   tags?: Tag[];
   payee?: Payee;
+  isRefund: boolean;
 }
 
 interface Pagination {
@@ -59,6 +61,7 @@ export interface AllTransactionsResponse {
   amount: number;
   date: string;
   description: string;
+  isRefund: boolean;
 }
 
 interface ImportedTransactionPayload {

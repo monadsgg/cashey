@@ -28,9 +28,6 @@ import { useQuery } from "@tanstack/react-query";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
 import FormDialog from "../../components/FormDialog";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
-import Typography from "@mui/material/Typography";
-import { useWallets } from "../../hooks/wallets/useWallets";
-import { formatCurrency } from "../../utils/currency";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useDeleteTransaction } from "../../hooks/transactions/useDeleteTransaction";
 import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
@@ -146,7 +143,8 @@ function Transaction() {
   };
 
   const handleOnClickEditBtn = (item: TransactionItem) => {
-    const { id, category, description, date, amount, tags, payee } = item;
+    const { id, category, description, date, amount, tags, payee, isRefund } =
+      item;
     handleOpenForm();
     setSelectedItem({
       id,
@@ -156,6 +154,7 @@ function Transaction() {
       categoryId: category.id,
       tags: tags || [],
       payee: payee || null,
+      isRefund: isRefund,
     });
   };
 
