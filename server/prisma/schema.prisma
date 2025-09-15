@@ -42,6 +42,7 @@ model Transaction {
   tags        Tag[]
   payeeId   Int?
   payee     Payee?   @relation(fields: [payeeId], references: [id])
+  isRefund  Boolean     @default(false)
 }
 
 model Budget {
