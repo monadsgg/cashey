@@ -61,7 +61,8 @@ export async function updateTransaction(
 ): Promise<void> {
   const userId = res.locals.user;
   const { id } = req.params;
-  const { description, categoryId, amount, date, tagIds, payeeId } = req.body;
+  const { description, categoryId, amount, date, tagIds, payeeId, isRefund } =
+    req.body;
 
   try {
     const transaction = await editTransaction(
@@ -73,6 +74,7 @@ export async function updateTransaction(
       userId,
       tagIds,
       payeeId,
+      isRefund,
     );
     res.status(200).json(transaction);
   } catch (error: any) {
