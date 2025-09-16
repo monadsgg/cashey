@@ -72,8 +72,11 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
       setIsProcessing(false);
       setIsCompleted(true);
       setToast({ message: result.message, open: true });
+
       queryClient.invalidateQueries({ queryKey: ["transaction"] });
       queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      queryClient.refetchQueries({ queryKey: ["user-categories"] });
     } catch (error: any) {
       setError(error.message);
     }
