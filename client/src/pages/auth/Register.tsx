@@ -9,6 +9,8 @@ import { useNavigate } from "react-router";
 import Paper from "@mui/material/Paper";
 import { register } from "../../services/auth";
 import { isValidEmail } from "../../utils/validators";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateUserQueries } from "../../utils/invalidateUserQueries";
 
 type User = {
   name: string;
@@ -29,7 +31,8 @@ function Register() {
     password: "",
   });
   const [errors, setErrors] = useState<Error>({});
-  let navigate = useNavigate();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,8 +69,12 @@ function Register() {
     try {
       const { name, email, password } = user;
       const { token, user: userData } = await register(name, email, password);
+
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", token);
+
+      invalidateUserQueries(queryClient);
+
       navigate("/dashboard");
     } catch (error: any) {
       setErrors({ password: error.response.data.error });

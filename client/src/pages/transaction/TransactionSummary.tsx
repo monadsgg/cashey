@@ -77,7 +77,9 @@ function TransactionSummary({
 
     const categoryExpense: CategoryExpenseType[] = Array.from(
       categoryMap.entries()
-    ).map(([category, amount]) => ({ category, amount }));
+    )
+      .map(([category, amount]) => ({ category, amount }))
+      .sort((a, b) => b.amount - a.amount);
 
     return { financialSummary, categoryExpense };
   }, [transactions]);
