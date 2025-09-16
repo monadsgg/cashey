@@ -119,11 +119,16 @@ function Transaction() {
     setPagination({ ...pagination, page });
   };
 
+  const resetPage = () => {
+    setPagination({ ...pagination, page: 1 });
+  };
+
   const goToPreviousMonth = () => {
     const startDate = getFirstDayOfPrevMonth(dateRange.startDate);
     const endDate = getLastDayOfPrevMonth(dateRange.startDate);
     setDateRange({ startDate, endDate });
     setCurrentDate(startDate);
+    resetPage();
   };
 
   const goToNextMonth = () => {
@@ -131,6 +136,7 @@ function Transaction() {
     const endDate = getLastDayOfNextMonth(dateRange.startDate);
     setDateRange({ startDate, endDate });
     setCurrentDate(startDate);
+    resetPage();
   };
 
   const handleOpenForm = () => {
