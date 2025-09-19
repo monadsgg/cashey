@@ -3,7 +3,6 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import SavingsIcon from "@mui/icons-material/Savings";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import CategoryIcon from "@mui/icons-material/Category";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
