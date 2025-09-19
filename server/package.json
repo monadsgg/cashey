@@ -1,13 +1,13 @@
 {
   "name": "server",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "",
   "main": "index.ts",
-  "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "NODE_ENV=production tsc",
+    "start": "NODE_ENV=production node dist/index.js",
     "dev": "tsx --watch src/index.ts",
+    "migrate:prod": "NODE_ENV=production npx prisma migrate deploy",
     "type-check": "tsc --noEmit",
     "lint": "eslint .'"
   },
