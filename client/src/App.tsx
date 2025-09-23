@@ -8,6 +8,7 @@ import Transaction from "./pages/transaction/Transaction";
 import Budget from "./pages/budget/Budget";
 import Account from "./pages/account/Account";
 import Settings from "./pages/settings/Settings";
+import Docs from "./pages/docs/Docs";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         </Route>
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="docs" element={<Docs />} />
       </Routes>
     </>
   );
