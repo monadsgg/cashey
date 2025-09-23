@@ -48,41 +48,39 @@ function FeatureCard({
 }: FeatureCardProps) {
   return (
     <Paper elevation={1} sx={{ p: 3 }}>
-      <Stack spacing={2}>
+      <Stack>
         <Stack
           direction="row"
           justifyContent="space-between"
           alignItems="flex-start"
         >
-          <Box>
-            <Typography
-              variant="subtitle1"
-              fontWeight={600}
-              sx={{ opacity: 1, color: "#000" }}
-            >
-              {title}
-            </Typography>
-            <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+          <Typography
+            variant="subtitle1"
+            fontWeight={600}
+            sx={{ color: "#000" }}
+          >
+            {title}
+          </Typography>
+          <Stack direction="row" spacing={1}>
+            <Chip
+              label={status}
+              size="small"
+              sx={{
+                backgroundColor: statusColor,
+                color: statusTextColor,
+                fontWeight: 500,
+              }}
+            />
+            {tags.map((tag) => (
               <Chip
-                label={status}
+                key={tag}
+                label={tag}
                 size="small"
-                sx={{
-                  backgroundColor: statusColor,
-                  color: statusTextColor,
-                  fontWeight: 500,
-                }}
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
               />
-              {tags.map((tag) => (
-                <Chip
-                  key={tag}
-                  label={tag}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontWeight: 500 }}
-                />
-              ))}
-            </Stack>
-          </Box>
+            ))}
+          </Stack>
         </Stack>
         <Typography variant="body2" sx={{ opacity: 0.8 }}>
           {description}
@@ -94,10 +92,12 @@ function FeatureCard({
 
 export default function FeaturesList() {
   function getIcon(status: Status, color: string) {
+    const iconSxProps = { mr: 1, color };
+
     const icons: Record<Status, ReactNode> = {
-      completed: <CheckCircleOutlineIcon sx={{ mr: 1, color }} />,
-      "in progress": <AccessAlarmIcon sx={{ mr: 1, color }} />,
-      "future enhancements": <CalendarMonthIcon sx={{ mr: 1, color }} />,
+      completed: <CheckCircleOutlineIcon sx={iconSxProps} />,
+      "in progress": <AccessAlarmIcon sx={iconSxProps} />,
+      "future enhancements": <CalendarMonthIcon sx={iconSxProps} />,
     };
 
     return icons[status];
