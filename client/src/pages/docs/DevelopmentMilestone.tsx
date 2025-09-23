@@ -6,8 +6,9 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import BuildIcon from "@mui/icons-material/Build";
 import { ChangelogSection } from "./ChangeLogSection";
+import data from "./data/milestone-logs.json";
 
-export interface Version {
+interface Version {
   version: string;
   milestoneType: "major" | "minor" | "patch";
   completionDate: string | null;
@@ -16,18 +17,13 @@ export interface Version {
   fixed: string[];
 }
 
-const getMilestoneTypeColor = (type: string) => {
-  switch (type) {
-    case "major":
-      return { bg: "#ffebee", color: "#c62828" };
-    case "minor":
-      return { bg: "#fff8e1", color: "#f57c00" };
-    case "patch":
-      return { bg: "#e8f5e9", color: "#2e7d32" };
-    default:
-      return { bg: "#f5f5f5", color: "#616161" };
-  }
-};
+interface MilestoneData {
+  projectName: string;
+  lastUpdated: string;
+  versions: Version[];
+}
+
+const milestoneData = data as MilestoneData;
 
 function DevelopmentMilestoneCard({
   version,
@@ -37,6 +33,19 @@ function DevelopmentMilestoneCard({
   improved,
   fixed,
 }: Version) {
+  const getMilestoneTypeColor = (type: string) => {
+    switch (type) {
+      case "major":
+        return { bg: "#ffebee", color: "#c62828" };
+      case "minor":
+        return { bg: "#fff8e1", color: "#f57c00" };
+      case "patch":
+        return { bg: "#e8f5e9", color: "#2e7d32" };
+      default:
+        return { bg: "#f5f5f5", color: "#616161" };
+    }
+  };
+
   const typeColors = getMilestoneTypeColor(milestoneType);
 
   return (
@@ -101,4 +110,22 @@ function DevelopmentMilestoneCard({
   );
 }
 
-export default DevelopmentMilestoneCard;
+function DevelopmentMilestone() {
+  return (
+    <Stack spacing={3}>
+      {milestoneData.versions.map((item: Version) => (
+        <DevelopmentMilestoneCard
+          key={item.version}
+          version={item.version}
+          milestoneType={item.milestoneType}
+          completionDate={item.completionDate}
+          added={item.added}
+          improved={item.improved}
+          fixed={item.fixed}
+        />
+      ))}
+    </Stack>
+  );
+}
+
+export default DevelopmentMilestone;
