@@ -1,0 +1,131 @@
+{
+  "projectName": "Cashey App",
+  "lastUpdated": "2025-09-22",
+  "versions": [
+    {
+      "version": "1.2.0",
+      "milestoneType": "minor",
+      "completionDate": "2025-09-16",
+      "added": [
+        "API endpoint to fetch user-specific categories",
+        "User custom categories functionality",
+        "API endpoint to copy budgets from previous month",
+        "Copy budget service for duplicating monthly budgets",
+        "Notistack package integration for snackbar notifications",
+        "Copy budget feature from last month in Budget page",
+        "API endpoint to update main wallet details",
+        "Zod library for robust data input validation",
+        "MainWalletBox component for updating wallet name and balance",
+        "Prisma transaction middleware for automatic wallet balance adjustments",
+        "Refund transaction support for accurate expense tracking",
+        "Automatic wallet balance adjustment for refunded transactions",
+        "Transaction monthly summary sorting from highest to lowest spending"
+      ],
+      "improved": [
+        "TransferMoneyButton refactored to icon-only design with label prop removed",
+        "Categories layout enhanced with scrollable bar for overflow content",
+        "Summary container made scrollable with fixed height for long lists",
+        "Import transaction logic refactored with helper functions for payees and tags",
+        "Wallet balance syncing moved to middleware for better consistency"
+      ],
+      "fixed": [
+        "Budget copy operation error handling when budgets already exist",
+        "Transaction pagination reset to first page on month change",
+        "Authentication query invalidation to prevent cross-user data display",
+        "Import transaction refund handling - now properly categorized as expenses",
+        "Duplicate payee and tag creation prevention in transaction imports",
+        "Cached user-specific queries cleared on login/signup for data integrity"
+      ]
+    },
+    {
+      "version": "1.1.0",
+      "milestoneType": "minor",
+      "completionDate": "2025-08-29",
+      "added": [
+        "Investment wallet type support",
+        "Reusable month navigation header component for budget and transaction pages",
+        "Confirm dialog component for delete operations",
+        "Monthly budget summary component",
+        "Budget table with status indicators and progress bars",
+        "Complete budget CRUD operations (add, update, delete)",
+        "Settings page for managing categories, tags, and payees",
+        "Category management with add functionality",
+        "HiddenCategory model for handling pre-defined category edits/deletions",
+        "Tags page in settings with full CRUD operations",
+        "Payee management in settings with edit/delete functionality",
+        "NoData component for empty states",
+        "Spending-by-category report API endpoint",
+        "Stats overview API implementation",
+        "CSV file uploader component for transactions",
+        "Drag and drop styling for file upload events",
+        "UploadFileDialog component with data preview functionality",
+        "Import transactions backend implementation",
+        "Main wallet balance display in transactions",
+        "Overspent value tracking in monthly summary"
+      ],
+      "improved": [
+        "Saving account model refactored to generic account model",
+        "API endpoints renamed from savingAccount to account for consistency",
+        "App layout padding standardized across all pages",
+        "Account responses now sorted alphabetically by name",
+        "Dashboard charts updated to use real spending-by-category data",
+        "Navigation header and spending category list code optimization",
+        "Transaction mutations converted to reusable hooks",
+        "Transaction action buttons changed from arrows to explicit edit/delete buttons",
+        "Add transaction and save money button positioning enhanced",
+        "Utility files renamed and reorganized (dateUtils.ts → date.ts, currencyUtils.ts → currency.ts)"
+      ],
+      "fixed": [
+        "App layout padding inconsistencies across pages",
+        "Payee creation logic moved from backend to frontend during transaction addition",
+        "Transaction tags field changed to array type for multiple values",
+        "Monthly and yearly budget period calculations",
+        "Wallet balance calculations when transactions are deleted",
+        "Transaction action buttons disabled for incoming transfer categories",
+        "Remaining funds display preventing negative values"
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "milestoneType": "major",
+      "completionDate": "2025-07-23",
+      "added": [
+        "Initial server and backend setup",
+        "Prisma database setup with complete data schema",
+        "User registration and login system with JWT authentication",
+        "Complete CRUD endpoints for core features (Category, Transaction, Savings, Budget, Wallet, Fund transfers, Payee, Tag)",
+        "Frontend application using React with TypeScript and Vite",
+        "Axios client with authentication service functions",
+        "React Router implementation for navigation",
+        "Date-fns library for date handling",
+        "Reusable form components",
+        "Transaction search functionality",
+        "Transaction table settings toggle feature",
+        "TanStack Query integration for caching",
+        "Transfer funds feature between accounts",
+        "Savings account creation and management",
+        "Savings transactions UI with type filtering (all, deposit, withdrawal)",
+        "Dashboard with account statistics overview",
+        "Dashboard charts and spending categorization",
+        "Color field support for categories",
+        "Real-time spending chart with category color indicators"
+      ],
+      "improved": [
+        "Transaction page and form code refactored to use TanStack Query",
+        "Monthly summary calculations for real-time updates",
+        "Wallet and categories implementation converted to hooks pattern",
+        "Main and savings wallet performance optimized with memoization",
+        "Wallet service enhanced with proper return types",
+        "Error handling implementation across wallet and category operations"
+      ],
+      "fixed": [
+        "CORS headers configuration to resolve client request blocking",
+        "API pagination handling when page and pageSize parameters are undefined",
+        "Page crash prevention when no savings account exists during transfers",
+        "Savings wallet select field visibility based on user account status",
+        "Monthly summary recalculation trigger after transaction additions",
+        "Transfer money button state management for accounts without savings wallets"
+      ]
+    }
+  ]
+}
