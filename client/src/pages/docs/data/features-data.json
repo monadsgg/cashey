@@ -1,0 +1,102 @@
+{
+  "projectName": "Cashey App",
+  "lastUpdated": "2025-09-22",
+  "sections": [
+    {
+      "title": "In Progress",
+      "icon": "AccessAlarmIcon",
+      "color": "#ff9800",
+      "status": "in progress",
+      "statusColor": "#fff3e0",
+      "statusTextColor": "#ef6c00",
+      "features": [
+        {
+          "title": "Recurring Transactions",
+          "description": "Automatic recurring transaction creation and management",
+          "tags": ["Features"]
+        }
+      ]
+    },
+    {
+      "title": "Completed",
+      "icon": "CheckCircleOutlineIcon",
+      "color": "#4caf50",
+      "status": "completed",
+      "statusColor": "#e8f5e9",
+      "statusTextColor": "#2e7d32",
+      "features": [
+        {
+          "title": "User Authentication",
+          "description": "Secure login and registration system with JWT tokens",
+          "tags": ["Core"]
+        },
+        {
+          "title": "Transaction Management",
+          "description": "Full CRUD operations for transactions with categories, tags, and payees",
+          "tags": ["Core"]
+        },
+        {
+          "title": "Refund Handling",
+          "description": "Proper refund transaction handling with expense reduction logic",
+          "tags": ["Features"]
+        },
+        {
+          "title": "Dashboard & Analytics",
+          "description": "Visual charts, spending insights, and financial overview",
+          "tags": ["Analytics"]
+        },
+        {
+          "title": "Budget Management",
+          "description": "Monthly budget creation, tracking, and copying between months",
+          "tags": ["Features"]
+        },
+        {
+          "title": "Wallet & Account Management",
+          "description": "Multiple wallet types and investment account support (TFSA, RRSP, FHSA)",
+          "tags": ["Core"]
+        },
+        {
+          "title": "Category Management",
+          "description": "Custom category creation with color coding and type management",
+          "tags": ["Core"]
+        },
+        {
+          "title": "Data Import/Export",
+          "description": "CSV transaction import and transfer system between wallets",
+          "tags": ["Utility"]
+        }
+      ]
+    },
+    {
+      "title": "Future enhancements",
+      "icon": "CalendarMonthIcon",
+      "color": "#2196f3",
+      "status": "future enhancements",
+      "statusColor": "#e3f2fd",
+      "statusTextColor": "#1976d2",
+      "features": [
+        {
+          "title": "Recurring Transactions",
+          "description": "Automatic recurring transaction creation and management",
+          "tags": ["Features"],
+          "progress": 25
+        },
+        {
+          "title": "Advanced Analytics",
+          "description": "Advanced financial insights, and trends",
+          "tags": ["Analytics"]
+        },
+        {
+          "title": "Receipt Upload & OCR",
+          "description": "Photo upload and OCR for receipt processing",
+          "tags": ["Features"]
+        },
+        {
+          "title": "Data Export & Backup",
+          "description": "Export data to CSV, PDF, and backup functionality",
+          "tags": ["Utility"]
+        }
+      ]
+    }
+  ]
+}
