@@ -14,6 +14,8 @@ import Typography from "@mui/material/Typography";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DatePickerField from "../../components/DatePickerField";
+import { useCategories } from "../../hooks/categories/useCategories";
+import { useTags } from "../../hooks/tags/useTags";
 
 interface TransactionFilterProps {
   onClose: () => void;
@@ -74,29 +76,28 @@ const RULE_OPERATORS: Record<string, { value: string; label: string }[]> = {
     { value: "lessThan", label: "less than" },
   ],
   expense: [
-    { value: "contains", label: "contains" },
+    { value: "exact", label: "exactly" },
     { value: "greaterThan", label: "greater than" },
     { value: "lessThan", label: "less than" },
   ],
 };
 
-// mock data
-const FILTER_VALUE_OPTIONS: Record<string, { value: string; label: string }[]> =
-  {
-    category: [
-      { value: "groceries", label: "Groceries" },
-      { value: "salary", label: "Salary" },
-    ],
-    tag: [
-      { value: "home", label: "Home" },
-      { value: "work", label: "Work" },
-    ],
-  };
-
 function getDefaultRuleForType(type: string) {
   const ops = RULE_OPERATORS[type];
   if (ops && ops.length > 0) return ops[0].value;
   return "contains";
+}
+
+function getFilterLabel(val: string | undefined) {
+  if (!val) return "";
+  if (val === "search") return "General search";
+
+  for (const [, group] of Object.entries(FILTER_GROUPS)) {
+    const found = group.options.find((o) => o.value === val);
+    if (found) return found.label;
+  }
+
+  return String(val);
 }
 
 // mock data
@@ -115,13 +116,11 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
   const [filters, setFilters] = useState<FilterCriteria[]>([
     {
       id: Date.now().toString(),
-      type: "Choose filter",
+      type: "",
       rule: "",
       value: "",
     },
   ]);
-
-  // timeframe state
   const [timeframe, setTimeframe] = useState<string>(
     TIMEFRAME_OPTIONS[0].value
   );
@@ -129,6 +128,20 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
     from: new Date(),
     to: new Date(),
   });
+
+  const { categories } = useCategories();
+  const { tags } = useTags();
+
+  const FILTER_VALUE_OPTIONS: Record<
+    string,
+    { value: string; label: string }[]
+  > = {
+    category: (categories ?? []).map((c) => ({
+      value: c.id.toString(),
+      label: c.name,
+    })),
+    tag: (tags ?? []).map((c) => ({ value: c.id.toString(), label: c.name })),
+  };
 
   const handleChangeFilter = (id: string, e: SelectChangeEvent) => {
     const value = e.target.value;
@@ -138,8 +151,8 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
           ? {
               ...f,
               type: value,
-              rule: getDefaultRuleForType(String(value)),
-              value: "",
+              rule: getDefaultRuleForType(value),
+              value: FILTER_VALUE_OPTIONS[value]?.[0]?.value ?? "",
             }
           : f
       )
@@ -151,7 +164,7 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
       ...filters,
       {
         id: Date.now().toString(),
-        type: "Choose filter",
+        type: "",
         rule: "",
         value: "",
       },
@@ -171,9 +184,7 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
 
   const handleChangeRule = (id: string, e: SelectChangeEvent) => {
     const rule = e.target.value;
-    setFilters((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, rule, value: "" } : f))
-    );
+    setFilters((prev) => prev.map((f) => (f.id === id ? { ...f, rule } : f)));
   };
 
   const handleChangeValue = (id: string, val: string) => {
@@ -237,7 +248,7 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
           <Divider />
           {filters.map((filter) => {
             const operators =
-              RULE_OPERATORS[filter.type] || RULE_OPERATORS["search"];
+              RULE_OPERATORS[filter.type] || RULE_OPERATORS["search"] || null;
             const valueOptions = FILTER_VALUE_OPTIONS[filter.type] || [];
 
             return (
@@ -251,16 +262,15 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
                 p={2}
               >
                 <Select
-                  value={filter.type}
+                  value={filter.type || ""}
                   onChange={(e) => handleChangeFilter(filter.id, e)}
                   size="small"
-                  sx={{ ml: 1, mr: 1, p: 0, fontSize: 16, width: 200 }}
+                  displayEmpty
+                  sx={{ ml: 1, mr: 1, p: 0, width: 200 }}
                   renderValue={(selected) => {
-                    if (selected.length === 0) {
-                      return <em>Choose filter</em>;
-                    }
-
-                    return selected;
+                    const s = String(selected || "");
+                    if (!s) return <em>Choose filter</em>;
+                    return getFilterLabel(s);
                   }}
                 >
                   <MenuItem disabled value="">
@@ -270,59 +280,57 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
                   {groupedOptions}
                 </Select>
 
-                {/* Rule selector */}
-                <Select
-                  value={filter.rule}
-                  onChange={(e) => handleChangeRule(filter.id, e)}
-                  size="small"
-                  sx={{ width: 220 }}
-                >
-                  {operators.map((op) => (
-                    <MenuItem key={op.value} value={op.value}>
-                      {op.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-
-                {/* Value input / select depending on rule */}
-                {filter.rule === "is" || filter.rule === "isNot" ? (
-                  <Select
-                    value={filter.value}
-                    onChange={(e) =>
-                      handleChangeValue(filter.id, String(e.target.value))
-                    }
-                    size="small"
-                    sx={{ width: 220 }}
-                  >
-                    <MenuItem value="">
-                      <em>Select</em>
-                    </MenuItem>
-                    {valueOptions.length > 0 ? (
-                      valueOptions.map((opt) => (
-                        <MenuItem key={opt.value} value={opt.value}>
-                          {opt.label}
+                {/* Only show the rules and value field if filter is selected */}
+                {filter.type && filter.type !== "Choose filter" && (
+                  <>
+                    {/* Rule selector */}
+                    <Select
+                      value={filter.rule}
+                      onChange={(e) => handleChangeRule(filter.id, e)}
+                      size="small"
+                      sx={{ width: 220 }}
+                    >
+                      {operators.map((op) => (
+                        <MenuItem key={op.value} value={op.value}>
+                          {op.label}
                         </MenuItem>
-                      ))
+                      ))}
+                    </Select>
+
+                    {/* Value input / select depending on rule */}
+                    {filter.rule === "is" || filter.rule === "isNot" ? (
+                      <Select
+                        value={filter.value || ""}
+                        onChange={(e) =>
+                          handleChangeValue(filter.id, String(e.target.value))
+                        }
+                        size="small"
+                        sx={{ width: 220 }}
+                      >
+                        {valueOptions.length > 0 ? (
+                          valueOptions.map((opt) => (
+                            <MenuItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem disabled value="">
+                            No options
+                          </MenuItem>
+                        )}
+                      </Select>
                     ) : (
-                      <MenuItem disabled value="">
-                        No options
-                      </MenuItem>
+                      <TextField
+                        size="small"
+                        value={filter.value}
+                        onChange={(e) =>
+                          handleChangeValue(filter.id, e.target.value)
+                        }
+                        placeholder="Enter value..."
+                        sx={{ width: 220 }}
+                      />
                     )}
-                  </Select>
-                ) : (
-                  <TextField
-                    size="small"
-                    value={filter.value}
-                    onChange={(e) =>
-                      handleChangeValue(filter.id, e.target.value)
-                    }
-                    placeholder={
-                      filter.rule === "exact"
-                        ? "Enter exact value"
-                        : "Enter value..."
-                    }
-                    sx={{ width: 260 }}
-                  />
+                  </>
                 )}
 
                 <Stack direction="row">
@@ -360,7 +368,7 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
                 value={timeframe}
                 onChange={(e) => setTimeframe(String(e.target.value))}
                 size="small"
-                sx={{ width: 200, fontSize: 16 }}
+                sx={{ width: 200 }}
               >
                 {TIMEFRAME_OPTIONS.map((opt) => (
                   <MenuItem key={opt.value} value={opt.value}>
