@@ -34,6 +34,7 @@ import { useAllTransactions } from "../../hooks/transactions/useAllTransactions"
 
 import UploadFileDialog from "./UploadFileDialog";
 import MainWalletBox from "./MainWalletBox";
+import TransactionFilter from "./TransactionFilter";
 
 type Pagination = {
   page: number;
@@ -77,6 +78,8 @@ function Transaction() {
     openDialog: false,
   });
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
+  const [openFilterDialog, setOpenFilterDialog] = useState(false);
+
   const { transactions: allTransactions } = useAllTransactions(dateRange);
 
   const deleteTransactionMutation = useDeleteTransaction();
@@ -230,7 +233,11 @@ function Transaction() {
                   settings={settings}
                   onChange={handleOnChangeTableSettings}
                 />
-                <Button variant="outlined" size="large">
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => setOpenFilterDialog(true)}
+                >
                   Filter
                 </Button>
               </Stack>
@@ -288,6 +295,15 @@ function Transaction() {
         onClose={handleCloseUploadDialog}
       >
         <UploadFileDialog onClose={handleCloseUploadDialog} />
+      </FormDialog>
+
+      <FormDialog
+        title="Transaction Filters"
+        open={openFilterDialog}
+        onClose={() => setOpenFilterDialog(false)}
+        paperSx={{ width: "60vw" }}
+      >
+        <TransactionFilter onClose={handleCloseUploadDialog} />
       </FormDialog>
     </>
   );
