@@ -199,6 +199,10 @@ function Transaction() {
     setOpenUploadDialog(false);
   };
 
+  const handleCloseFilterDialog = () => {
+    setOpenFilterDialog(false);
+  };
+
   const transactionData = paginatedData?.data || [];
 
   return (
@@ -300,10 +304,10 @@ function Transaction() {
       <FormDialog
         title="Transaction Filters"
         open={openFilterDialog}
-        onClose={() => setOpenFilterDialog(false)}
+        onClose={handleCloseFilterDialog}
         paperSx={{ width: "60vw" }}
       >
-        <TransactionFilter onClose={handleCloseUploadDialog} />
+        <TransactionFilter onClose={handleCloseFilterDialog} />
       </FormDialog>
     </>
   );
