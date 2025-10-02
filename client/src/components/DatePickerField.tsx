@@ -5,27 +5,36 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 interface DatePickerFieldProps {
+  name?: string;
+  label?: string;
   value: Date;
-  onChange: (newValue: Date) => void;
+  onChange: (newValue: Date, name?: string) => void;
   disabled?: boolean;
 }
 
-function DatePickerField({ value, onChange, disabled }: DatePickerFieldProps) {
+function DatePickerField({
+  name,
+  label = "Date",
+  value,
+  onChange,
+  disabled,
+}: DatePickerFieldProps) {
   return (
     <Stack sx={{ marginBottom: 2 }}>
-      <Typography variant="subtitle1">Date</Typography>
+      <Typography variant="subtitle1">{label}</Typography>
       <LocalizationProvider dateAdapter={AdapterDateFns}>
         <DesktopDatePicker
           disabled={disabled}
           value={value}
           onChange={(newValue) => {
-            if (newValue !== null) onChange(newValue);
+            if (newValue !== null) onChange(newValue, name);
           }}
           slotProps={{
             textField: {
               size: "small",
               fullWidth: true,
               variant: "outlined",
+              name,
             },
           }}
         />
