@@ -5,7 +5,10 @@ export const getZonedDate = (date: string | Date) => {
   return toZonedTime(date, "UTC");
 };
 
-export const formatDate = (dateStr: string | Date, formatStr: string) => {
+export const formatDate = (
+  dateStr: string | Date,
+  formatStr: string = "yyyy-MM-dd"
+) => {
   return format(getZonedDate(dateStr), formatStr);
 };
 

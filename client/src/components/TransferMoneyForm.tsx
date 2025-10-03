@@ -66,7 +66,7 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
 
   const handleSubmit = () => {
     const { description, date, amount, fromWalletId, toWalletId } = formData;
-    const formattedDate = formatDate(date, "yyyy-MM-dd");
+    const formattedDate = formatDate(date);
 
     if (!amount || !fromWalletId || !toWalletId) {
       setErrorForm("Amount, from/to account is required");

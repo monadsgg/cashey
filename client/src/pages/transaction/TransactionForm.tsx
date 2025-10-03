@@ -83,7 +83,7 @@ function TransactionForm({
   const handleSubmit = async () => {
     const { description, amount, date, categoryId, payee, tags, isRefund } =
       formData;
-    const formattedDate = formatDate(date, "yyyy-MM-dd");
+    const formattedDate = formatDate(date);
 
     if (!mainWalletId)
       return <ErrorMessage message="Main wallet is not found" />;
