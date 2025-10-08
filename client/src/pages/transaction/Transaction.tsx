@@ -3,11 +3,8 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { format, startOfMonth, lastDayOfMonth } from "date-fns";
 import TransactionTable from "./TransactionTable";
-import { useMemo, useState } from "react";
-import {
-  getTransactions,
-  type TransactionItem,
-} from "../../services/transactions";
+import { useState, useEffect } from "react";
+import { type TransactionItem } from "../../services/transactions";
 import {
   getFirstDayOfNextMonth,
   getFirstDayOfPrevMonth,
@@ -24,7 +21,6 @@ import TransactionTableSettings, {
   type TransactionTableSettingsType,
 } from "./TransactionTableSettings";
 import TransactionSummary from "./TransactionSummary";
-import { useQuery } from "@tanstack/react-query";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
 import FormDialog from "../../components/FormDialog";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
@@ -35,6 +31,7 @@ import { useAllTransactions } from "../../hooks/transactions/useAllTransactions"
 import UploadFileDialog from "./UploadFileDialog";
 import MainWalletBox from "./MainWalletBox";
 import TransactionFilter from "./TransactionFilter";
+import { useTransactions } from "../../hooks/transactions/useTransaction";
 
 type Pagination = {
   page: number;
@@ -80,36 +77,22 @@ function Transaction() {
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
   const [openFilterDialog, setOpenFilterDialog] = useState(false);
 
+  const { transactions: paginatedData } = useTransactions(
+    dateRange,
+    pagination.page,
+    searchValue
+  );
   const { transactions: allTransactions } = useAllTransactions(dateRange);
 
   const deleteTransactionMutation = useDeleteTransaction();
 
-  const paginatedQueryKey = useMemo(
-    () => [
-      "transaction",
-      pagination.page,
-      dateRange.startDate,
-      dateRange.endDate,
-      searchValue,
-    ],
-    [pagination.page, dateRange.startDate, dateRange.endDate, searchValue]
-  );
-
-  // query for paginated transactions
-  const { data: paginatedData } = useQuery({
-    queryKey: paginatedQueryKey,
-    queryFn: () =>
-      getTransactions(
-        pagination.pageSize,
-        pagination.page,
-        dateRange.startDate,
-        dateRange.endDate,
-        searchValue
-      ),
-  });
-
-  useMemo(() => {
-    if (paginatedData?.pagination) {
+  useEffect(() => {
+    if (
+      paginatedData &&
+      typeof paginatedData === "object" &&
+      "pagination" in paginatedData &&
+      paginatedData.pagination
+    ) {
       setPagination((prev) => ({
         ...prev,
         total: paginatedData.pagination.total,
@@ -203,7 +186,32 @@ function Transaction() {
     setOpenFilterDialog(false);
   };
 
-  const transactionData = paginatedData?.data || [];
+  const renderTable = () => {
+    let data: TransactionItem[] | [] = [];
+
+    if (
+      paginatedData &&
+      typeof paginatedData === "object" &&
+      "pagination" in paginatedData &&
+      paginatedData.pagination
+    ) {
+      data = paginatedData.data;
+    }
+
+    return (
+      <TransactionTable
+        transactions={data}
+        totalCount={pagination.total}
+        page={pagination.page}
+        pageSize={pagination.pageSize}
+        onPageChange={handlePageChange}
+        totalPages={pagination.totalPages}
+        onClickEditBtn={handleOnClickEditBtn}
+        onClickDeleteBtn={handleOnClickDeleteBtn}
+        settings={settings}
+      />
+    );
+  };
 
   return (
     <>
@@ -253,17 +261,7 @@ function Transaction() {
                 </Button>
               </Stack>
             </Stack>
-            <TransactionTable
-              transactions={transactionData}
-              totalCount={pagination.total}
-              page={pagination.page}
-              pageSize={pagination.pageSize}
-              onPageChange={handlePageChange}
-              totalPages={pagination.totalPages}
-              onClickEditBtn={handleOnClickEditBtn}
-              onClickDeleteBtn={handleOnClickDeleteBtn}
-              settings={settings}
-            />
+            {renderTable()}
           </Stack>
           <Stack direction="column" spacing={1}>
             <MainWalletBox />
