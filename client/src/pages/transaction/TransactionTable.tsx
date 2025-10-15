@@ -17,6 +17,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import type { TransactionTableSettingsType } from "./TransactionTableSettings";
 import { transferCategory } from "../../constants";
 import type { TransactionItem } from "../../services/transactions";
+import { Button, Typography } from "@mui/material";
 
 interface TransactionTableProps {
   transactions: TransactionItem[];
@@ -28,6 +29,8 @@ interface TransactionTableProps {
   onClickEditBtn: (item: TransactionItem) => void;
   onClickDeleteBtn: (id: number) => void;
   settings: TransactionTableSettingsType;
+  hasFilter: boolean;
+  onResetFilter: () => void;
 }
 
 const StyledTableCell = styled(TableCell)(() => ({
@@ -50,6 +53,8 @@ function TransactionTable({
   onClickEditBtn,
   onClickDeleteBtn,
   settings,
+  hasFilter,
+  onResetFilter,
 }: TransactionTableProps) {
   // console.log("transactions", transactions);
   // console.log("totalCount", totalCount);
@@ -88,13 +93,36 @@ function TransactionTable({
       return (
         <TableRow>
           <TableCell colSpan={7} align="center">
-            No transactions yet.
+            {hasFilter ? (
+              <Stack>
+                <Typography>
+                  You have no transaction matching this filter
+                </Typography>
+                <Button variant="text" onClick={onResetFilter}>
+                  Clear filter and show all transactions
+                </Button>
+              </Stack>
+            ) : (
+              "No transactions yet."
+            )}
           </TableCell>
         </TableRow>
       );
 
     return (
       <>
+        {hasFilter && (
+          <TableRow>
+            <TableCell colSpan={7} align="center">
+              <Stack>
+                <Button variant="text" onClick={onResetFilter}>
+                  Clear filter and show all transactions
+                </Button>
+              </Stack>
+            </TableCell>
+          </TableRow>
+        )}
+
         {transactions.map((item: TransactionItem) => {
           const isBtnDisabled =
             item.category.id === transferCategory.OUTGOING_TRANSFER ||
