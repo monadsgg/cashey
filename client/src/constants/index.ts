@@ -40,3 +40,12 @@ export const transferCategory = {
 
 // tag
 export const TAG_DEFAULT_COLOR = "#8cdbc4";
+
+export const FilterRuleType = {
+  contains: "contains",
+  exact: "exact",
+  is: "is",
+  isNot: "is_not",
+  greaterThan: "greater_than",
+  lessThan: "less_than",
+} as const;
