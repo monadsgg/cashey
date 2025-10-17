@@ -1,4 +1,10 @@
-import { addMonths, endOfMonth, startOfMonth, subMonths } from "date-fns";
+import {
+  addMonths,
+  endOfMonth,
+  lastDayOfMonth,
+  startOfMonth,
+  subMonths,
+} from "date-fns";
 import { toZonedTime, format } from "date-fns-tz";
 
 export const getZonedDate = (date: string | Date) => {
@@ -41,4 +47,11 @@ export const getMonth = (
 
 export const getYear = (dateStr: string | Date) => {
   return format(getZonedDate(dateStr), "yyyy");
+};
+
+export const getCurrentMonthDateRange = () => {
+  return {
+    startDate: format(startOfMonth(new Date()), "yyyy-MM-dd"),
+    endDate: format(lastDayOfMonth(new Date()), "yyyy-MM-dd"),
+  };
 };
