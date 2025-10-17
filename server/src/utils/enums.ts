@@ -19,3 +19,12 @@ export enum InvestmentAccountType {
   RRSP = 'Registered Retirement Savings Plan (RRSP)',
   FHSA = 'First Home Savings Account (FHSA)',
 }
+
+export enum FilterRuleType {
+  CONTAINS = 'contains',
+  EXACT = 'exact',
+  IS = 'is',
+  IS_NOT = 'is_not',
+  GREATER_THAN = 'greater_than',
+  LESS_THAN = 'less_than',
+}

@@ -7,21 +7,61 @@ import {
   removeTransaction,
   transferFunds,
 } from '../services/transactionService';
+import { z } from 'zod';
+import { FilterRuleType } from '../utils/enums';
+
+const filterConditionSchema = z.object({
+  rule: z.enum([
+    FilterRuleType.CONTAINS,
+    FilterRuleType.EXACT,
+    FilterRuleType.IS,
+    FilterRuleType.IS_NOT,
+    FilterRuleType.GREATER_THAN,
+    FilterRuleType.LESS_THAN,
+  ]),
+  value: z.union([z.string(), z.number()]),
+});
+
+const filtersSchema = z
+  .object({
+    search: filterConditionSchema.optional(),
+    payee: filterConditionSchema.optional(),
+    category: filterConditionSchema.optional(),
+    tag: filterConditionSchema.optional(),
+    income: filterConditionSchema.optional(),
+    expense: filterConditionSchema.optional(),
+  })
+  .optional();
 
 export async function getTransactions(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const { query, page, pageSize, start, end } = req.query;
+  const {
+    searchVal,
+    page,
+    pageSize,
+    start,
+    end,
+    filters: filtersParam,
+  } = req.query;
 
   try {
+    let filters = {};
+
+    if (filtersParam) {
+      const parsed = JSON.parse(filtersParam as string);
+      filters = filtersSchema.parse(parsed) || {};
+    }
+
     const transactions = await getAllTransactions({
       userId: res.locals.user,
-      query: query as string,
+      searchVal: searchVal as string,
       page: Number(page) || undefined,
       pageSize: Number(pageSize) || undefined,
       start: start as string,
       end: end as string,
+      ...filters,
     });
     res.status(200).json(transactions);
   } catch (error: any) {
