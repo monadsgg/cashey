@@ -8,125 +8,65 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import DialogActions from "@mui/material/DialogActions";
 import IconButton from "@mui/material/IconButton";
+import Alert from "@mui/material/Alert";
 import ListSubheader from "@mui/material/ListSubheader";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DatePickerField from "../../components/DatePickerField";
+import {
+  getTimeframeOptions,
+  type TimeframeOption,
+} from "../../utils/timeFrame";
 import { useCategories } from "../../hooks/categories/useCategories";
 import { useTags } from "../../hooks/tags/useTags";
+import type { FilterCriteria } from "./Transaction";
+import { formatDate, getZonedDate } from "../../utils/date";
+import {
+  FILTER_GROUPS,
+  RULE_OPERATORS,
+  getDefaultRuleForType,
+  getFilterLabel,
+} from "../../utils/filter";
 
 interface TransactionFilterProps {
+  filters: FilterCriteria[] | null;
   onClose: () => void;
+  onAddFilter: () => void;
+  onChangeFilter: (item: FilterCriteria) => void;
+  onChangeFilterRule: (id: string, e: SelectChangeEvent) => void;
+  onChangeFilterValue: (id: string, val: string) => void;
+  onDuplicateFilter: (id: string) => void;
+  onRemoveFilter: (id: string) => void;
+  onApplyFilters: (timeFrame: TimeframeOption) => void;
+  selectedTimeFrame: TimeframeOption | null;
 }
 
 type CustomDate = {
-  from: Date;
-  to: Date;
+  from: string | Date;
+  to: string | Date;
 };
 
-interface FilterCriteria {
-  id: string;
-  type: string;
-  rule: string;
-  value: string;
-}
-
-const FILTER_GROUPS = {
-  field: {
-    label: "BY FIELD",
-    options: [
-      { value: "payee", label: "Payee" },
-      { value: "category", label: "Category" },
-      { value: "description", label: "Description" },
-      { value: "tag", label: "Tag" },
-    ],
-  },
-  amount: {
-    label: "BY AMOUNT",
-    options: [
-      { value: "income", label: "Income" },
-      { value: "expense", label: "Expense" },
-    ],
-  },
-};
-
-const RULE_OPERATORS: Record<string, { value: string; label: string }[]> = {
-  search: [{ value: "contains", label: "contains" }],
-  payee: [
-    { value: "contains", label: "contains" },
-    { value: "exact", label: "matches exactly" },
-  ],
-  category: [
-    { value: "is", label: "is" },
-    { value: "isNot", label: "is not" },
-  ],
-  description: [
-    { value: "contains", label: "contains" },
-    { value: "exact", label: "matches exactly" },
-  ],
-  tag: [
-    { value: "is", label: "is" },
-    { value: "isNot", label: "is not" },
-  ],
-  income: [
-    { value: "exact", label: "exactly" },
-    { value: "greaterThan", label: "greater than" },
-    { value: "lessThan", label: "less than" },
-  ],
-  expense: [
-    { value: "exact", label: "exactly" },
-    { value: "greaterThan", label: "greater than" },
-    { value: "lessThan", label: "less than" },
-  ],
-};
-
-function getDefaultRuleForType(type: string) {
-  const ops = RULE_OPERATORS[type];
-  if (ops && ops.length > 0) return ops[0].value;
-  return "contains";
-}
-
-function getFilterLabel(val: string | undefined) {
-  if (!val) return "";
-  if (val === "search") return "General search";
-
-  for (const [, group] of Object.entries(FILTER_GROUPS)) {
-    const found = group.options.find((o) => o.value === val);
-    if (found) return found.label;
-  }
-
-  return String(val);
-}
-
-// mock data
-const TIMEFRAME_OPTIONS = [
-  { value: "august2025", label: "August 2025" },
-  { value: "september2025", label: "September 2025" },
-  { value: "october2025", label: "October 2025" },
-  { value: "2025", label: "2025" },
-  { value: "2024", label: "2024" },
-  { value: "allTime", label: "All Time" },
-  { value: "custom", label: "Custom" },
-];
-
-function TransactionFilter({ onClose }: TransactionFilterProps) {
-  const [matchType, setMatchType] = useState<number>(0);
-  const [filters, setFilters] = useState<FilterCriteria[]>([
-    {
-      id: Date.now().toString(),
-      type: "",
-      rule: "",
-      value: "",
-    },
-  ]);
-  const [timeframe, setTimeframe] = useState<string>(
-    TIMEFRAME_OPTIONS[0].value
+function TransactionFilter({
+  onClose,
+  onAddFilter,
+  filters,
+  onChangeFilter,
+  onChangeFilterRule,
+  onChangeFilterValue,
+  onApplyFilters,
+  onRemoveFilter,
+  onDuplicateFilter,
+  selectedTimeFrame,
+}: TransactionFilterProps) {
+  const timeframeOptions: TimeframeOption[] = getTimeframeOptions();
+  const [timeframe, setTimeframe] = useState<TimeframeOption>(
+    selectedTimeFrame ?? timeframeOptions[0]
   );
   const [customDate, setCustomDate] = useState<CustomDate>({
-    from: new Date(),
-    to: new Date(),
+    from: selectedTimeFrame?.from ?? new Date(),
+    to: selectedTimeFrame?.to ?? new Date(),
   });
 
   const { categories } = useCategories();
@@ -144,67 +84,36 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
   };
 
   const handleChangeFilter = (id: string, e: SelectChangeEvent) => {
-    const value = e.target.value;
-    setFilters((prev) =>
-      prev.map((f) =>
-        f.id === id
-          ? {
-              ...f,
-              type: value,
-              rule: getDefaultRuleForType(value),
-              value: FILTER_VALUE_OPTIONS[value]?.[0]?.value ?? "",
-            }
-          : f
-      )
-    );
-  };
+    const type = e.target.value;
 
-  const handleAddFilter = () => {
-    setFilters([
-      ...filters,
-      {
-        id: Date.now().toString(),
-        type: "",
-        rule: "",
-        value: "",
-      },
-    ]);
-  };
+    const filter = {
+      id,
+      type,
+      rule: getDefaultRuleForType(type),
+      value: FILTER_VALUE_OPTIONS[type]?.[0].value ?? "",
+    };
 
-  const handleDuplicateFilter = (id: string) => {
-    const target = filters.find((f) => f.id === id);
-    if (target) {
-      setFilters([...filters, { ...target, id: Date.now().toString() }]);
-    }
-  };
-
-  const handleDeleteFilter = (id: string) => {
-    setFilters(filters.filter((f) => f.id !== id));
-  };
-
-  const handleChangeRule = (id: string, e: SelectChangeEvent) => {
-    const rule = e.target.value;
-    setFilters((prev) => prev.map((f) => (f.id === id ? { ...f, rule } : f)));
-  };
-
-  const handleChangeValue = (id: string, val: string) => {
-    setFilters((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, value: val } : f))
-    );
+    onChangeFilter(filter);
   };
 
   const handleApplyFilters = () => {
-    // const payload = {
-    //   matchType,
-    //   filters,
-    //   timeframe,
-    //   custom:
-    //     timeframe === "custom"
-    //       ? { from: customDate.from, to: customDate.to }
-    //       : undefined,
-    // };
-    // console.log("apply filters", payload);
-    // onClose();
+    const selectedTimeFrame = { ...timeframe };
+
+    if (selectedTimeFrame.value === "custom") {
+      selectedTimeFrame.from = formatDate(customDate.from);
+      selectedTimeFrame.to = formatDate(customDate.to);
+    }
+
+    // TODO: handle ALL-TIME option (how to get startdate?)
+
+    onApplyFilters(selectedTimeFrame);
+    onClose();
+  };
+
+  const handleChangeTimeFrame = (e: SelectChangeEvent) => {
+    const selected = e.target.value;
+    const timeFrame = timeframeOptions.find((t) => t.value === selected);
+    if (timeFrame) setTimeframe(timeFrame);
   };
 
   const handleChangeCustomDate = (value: Date, name?: string) => {
@@ -233,123 +142,115 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
       <DialogContent>
         <Stack spacing={2} mt={2}>
           <Box component="div" fontSize={18}>
-            Match
-            <Select
-              value={matchType}
-              onChange={(e) => setMatchType(Number(e.target.value))}
-              size="small"
-              sx={{ ml: 1, mr: 1, p: 0, width: 80 }}
-            >
-              <MenuItem value={0}>all</MenuItem>
-              <MenuItem value={1}>any</MenuItem>
-            </Select>
-            of the following filters:
+            Match any of the following filters:
           </Box>
           <Divider />
-          {filters.map((filter) => {
-            const operators =
-              RULE_OPERATORS[filter.type] || RULE_OPERATORS["search"] || null;
-            const valueOptions = FILTER_VALUE_OPTIONS[filter.type] || [];
+          {filters &&
+            filters.map((filter) => {
+              const operators =
+                RULE_OPERATORS[filter.type] || RULE_OPERATORS["search"] || null;
+              const valueOptions = FILTER_VALUE_OPTIONS[filter.type] || [];
 
-            return (
-              <Stack
-                key={filter.id}
-                direction="row"
-                mt={2}
-                bgcolor="#efefefff"
-                spacing={1}
-                borderRadius={2}
-                p={2}
-              >
-                <Select
-                  value={filter.type || ""}
-                  onChange={(e) => handleChangeFilter(filter.id, e)}
-                  size="small"
-                  displayEmpty
-                  sx={{ ml: 1, mr: 1, p: 0, width: 200 }}
-                  renderValue={(selected) => {
-                    const s = String(selected || "");
-                    if (!s) return <em>Choose filter</em>;
-                    return getFilterLabel(s);
-                  }}
+              return (
+                <Stack
+                  key={filter.id}
+                  direction="row"
+                  mt={2}
+                  bgcolor="#efefefff"
+                  spacing={1}
+                  borderRadius={2}
+                  p={2}
                 >
-                  <MenuItem disabled value="">
-                    <em>Choose Filter</em>
-                  </MenuItem>
-                  <MenuItem value="search">General search</MenuItem>
-                  {groupedOptions}
-                </Select>
+                  <Select
+                    value={filter.type || ""}
+                    onChange={(e) => handleChangeFilter(filter.id, e)}
+                    size="small"
+                    displayEmpty
+                    sx={{ ml: 1, mr: 1, p: 0, width: 200 }}
+                    renderValue={(selected) => {
+                      const s = String(selected || "");
+                      if (!s) return <em>Choose filter</em>;
+                      return getFilterLabel(s);
+                    }}
+                  >
+                    <MenuItem disabled value="">
+                      <em>Choose Filter</em>
+                    </MenuItem>
+                    <MenuItem disabled={filters.length > 1} value="search">
+                      General search
+                    </MenuItem>
+                    {groupedOptions}
+                  </Select>
 
-                {/* Only show the rules and value field if filter is selected */}
-                {filter.type && filter.type !== "Choose filter" && (
-                  <>
-                    {/* Rule selector */}
-                    <Select
-                      value={filter.rule}
-                      onChange={(e) => handleChangeRule(filter.id, e)}
-                      size="small"
-                      sx={{ width: 220 }}
-                    >
-                      {operators.map((op) => (
-                        <MenuItem key={op.value} value={op.value}>
-                          {op.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-
-                    {/* Value input / select depending on rule */}
-                    {filter.rule === "is" || filter.rule === "isNot" ? (
+                  {/* Only show the rules and value field if filter is selected */}
+                  {filter.type && filter.type !== "Choose filter" && (
+                    <>
+                      {/* Rule selector */}
                       <Select
-                        value={filter.value || ""}
-                        onChange={(e) =>
-                          handleChangeValue(filter.id, String(e.target.value))
-                        }
+                        value={filter.rule}
+                        onChange={(e) => onChangeFilterRule(filter.id, e)}
                         size="small"
                         sx={{ width: 220 }}
                       >
-                        {valueOptions.length > 0 ? (
-                          valueOptions.map((opt) => (
-                            <MenuItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </MenuItem>
-                          ))
-                        ) : (
-                          <MenuItem disabled value="">
-                            No options
+                        {operators.map((op) => (
+                          <MenuItem key={op.value} value={op.value}>
+                            {op.label}
                           </MenuItem>
-                        )}
+                        ))}
                       </Select>
-                    ) : (
-                      <TextField
-                        size="small"
-                        value={filter.value}
-                        onChange={(e) =>
-                          handleChangeValue(filter.id, e.target.value)
-                        }
-                        placeholder="Enter value..."
-                        sx={{ width: 220 }}
-                      />
-                    )}
-                  </>
-                )}
 
-                <Stack direction="row">
-                  <IconButton onClick={() => handleDuplicateFilter(filter.id)}>
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton onClick={() => handleDeleteFilter(filter.id)}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                      {/* Value input / select depending on rule */}
+                      {filter.rule === "is" || filter.rule === "isNot" ? (
+                        <Select
+                          value={filter.value || ""}
+                          onChange={(e) =>
+                            onChangeFilterValue(
+                              filter.id,
+                              String(e.target.value)
+                            )
+                          }
+                          size="small"
+                          sx={{ width: 220 }}
+                        >
+                          {valueOptions.length > 0 ? (
+                            valueOptions.map((opt) => (
+                              <MenuItem key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </MenuItem>
+                            ))
+                          ) : (
+                            <MenuItem disabled value="">
+                              No options
+                            </MenuItem>
+                          )}
+                        </Select>
+                      ) : (
+                        <TextField
+                          size="small"
+                          value={filter.value}
+                          onChange={(e) =>
+                            onChangeFilterValue(filter.id, e.target.value)
+                          }
+                          placeholder="Enter value..."
+                          sx={{ width: 220 }}
+                        />
+                      )}
+                    </>
+                  )}
+
+                  <Stack direction="row">
+                    <IconButton onClick={() => onDuplicateFilter(filter.id)}>
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton onClick={() => onRemoveFilter(filter.id)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Stack>
                 </Stack>
-              </Stack>
-            );
-          })}
+              );
+            })}
 
-          <Button
-            variant="outlined"
-            onClick={handleAddFilter}
-            sx={{ width: 200 }}
-          >
+          <Button variant="outlined" onClick={onAddFilter} sx={{ width: 200 }}>
             + Add Filter
           </Button>
 
@@ -365,12 +266,12 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
                 Time frame:
               </Typography>
               <Select
-                value={timeframe}
-                onChange={(e) => setTimeframe(String(e.target.value))}
+                value={timeframe.value}
+                onChange={handleChangeTimeFrame}
                 size="small"
                 sx={{ width: 200 }}
               >
-                {TIMEFRAME_OPTIONS.map((opt) => (
+                {timeframeOptions.map((opt) => (
                   <MenuItem key={opt.value} value={opt.value}>
                     {opt.label}
                   </MenuItem>
@@ -378,23 +279,26 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
               </Select>
             </Stack>
 
-            {timeframe === "custom" && (
+            {timeframe.value === "custom" && (
               <Stack direction="row" mt={2} spacing={2}>
                 <DatePickerField
                   name="from"
                   label="from"
-                  value={customDate.from}
+                  value={getZonedDate(customDate.from)}
                   onChange={handleChangeCustomDate}
                 />
                 <DatePickerField
                   name="to"
                   label="to"
-                  value={customDate.to}
+                  value={getZonedDate(customDate.to)}
                   onChange={handleChangeCustomDate}
                 />
               </Stack>
             )}
           </Box>
+          <Alert severity="info">
+            Duplicate fields will be overridden by the latest selection.
+          </Alert>
         </Stack>
       </DialogContent>
 
@@ -406,6 +310,7 @@ function TransactionFilter({ onClose }: TransactionFilterProps) {
           onClick={handleApplyFilters}
           variant="contained"
           color="primary"
+          disabled={!filters?.[0]?.value}
         >
           Apply Filters
         </Button>

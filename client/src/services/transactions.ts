@@ -94,10 +94,10 @@ export interface TransactionFilters {
 }
 
 export interface TransactionParams {
-  pageSize: number;
   page: number;
-  start: string;
-  end: string;
+  pageSize?: number;
+  start?: string;
+  end?: string;
   searchVal?: string;
   filters?: string;
 }

@@ -4,15 +4,18 @@ import {
   getTransactions,
   type PagedTransactionResponse,
   type TransactionFilters,
+  type TransactionParams,
 } from "../../services/transactions";
 import type { DateRange } from "../../pages/transaction/Transaction";
 import { DEFAULT_PAGE_SIZE } from "../../constants";
+import type { TimeframeOption } from "../../utils/timeFrame";
 
 export const useTransactions = (
   dateRange: DateRange,
   page: number,
   searchVal: string,
-  filters?: TransactionFilters
+  filters: TransactionFilters | null,
+  filterTimeFrame: TimeframeOption | null
 ) => {
   const txQueryKey = useMemo(
     () => [
@@ -22,25 +25,37 @@ export const useTransactions = (
       page,
       searchVal,
       filters,
+      filterTimeFrame,
     ],
-    [dateRange.startDate, dateRange.endDate, page, searchVal]
+    [
+      dateRange.startDate,
+      dateRange.endDate,
+      page,
+      searchVal,
+      filters,
+      filterTimeFrame,
+    ]
   );
 
   const { data: transactions = [], isLoading } =
     useQuery<PagedTransactionResponse | null>({
       queryKey: txQueryKey,
       queryFn: async () => {
-        const params: any = { page, searchVal };
-
-        console.log("params", page, searchVal);
+        const params: TransactionParams = { page };
         params.pageSize = DEFAULT_PAGE_SIZE;
+
+        if (!!searchVal) params.searchVal = searchVal;
+        if (dateRange.startDate) params.start = dateRange.startDate;
+        if (dateRange.endDate) params.end = dateRange.endDate;
 
         if (filters && Object.keys(filters).length > 0) {
           params.filters = JSON.stringify(filters);
         }
 
-        if (dateRange.startDate) params.start = dateRange.startDate;
-        if (dateRange.endDate) params.end = dateRange.endDate;
+        if (filterTimeFrame) {
+          params.start = filterTimeFrame.from;
+          params.end = filterTimeFrame.to;
+        }
 
         return await getTransactions(params);
       },
