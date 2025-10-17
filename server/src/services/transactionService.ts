@@ -6,15 +6,21 @@ import {
   CATEGORY_DEFAULT_COLOR,
   TAG_DEFAULT_COLOR,
 } from '../constants';
-import { CategoryType, WalletType } from '../utils/enums';
+import { CategoryType, FilterRuleType, WalletType } from '../utils/enums';
 
 interface TransactionFilters {
   userId: number;
-  query?: string;
+  searchVal?: string;
   start?: string;
   end?: string;
   page?: number;
   pageSize?: number;
+  search?: ClientFilter;
+  payee?: ClientFilter;
+  category?: ClientFilter;
+  tag?: ClientFilter;
+  income?: ClientFilter;
+  expense?: ClientFilter;
 }
 
 interface ImportedTransaction {
@@ -26,21 +32,104 @@ interface ImportedTransaction {
   tags: string[];
 }
 
+type FilterRule =
+  | FilterRuleType.CONTAINS
+  | FilterRuleType.EXACT
+  | FilterRuleType.IS
+  | FilterRuleType.IS_NOT
+  | FilterRuleType.GREATER_THAN
+  | FilterRuleType.LESS_THAN;
+
+interface ClientFilter {
+  rule: FilterRule;
+  value: string;
+}
+
 export async function getAllTransactions({
   userId,
-  query,
+  searchVal,
   start,
   end,
   page,
   pageSize,
+  search,
+  payee,
+  category,
+  tag,
+  income,
+  expense,
 }: TransactionFilters) {
   const where: Prisma.TransactionWhereInput = { userId };
 
-  if (query) {
+  // search feature
+  if (searchVal) {
     where.description = {
-      contains: query,
+      contains: searchVal,
       mode: 'insensitive',
     };
+  }
+
+  // search filter
+  if (search) {
+    where.description = {
+      contains: search.value as string,
+      mode: 'insensitive',
+    };
+  }
+
+  // payee filter
+  if (payee) {
+    if (payee.rule === FilterRuleType.CONTAINS) {
+      where.payee = {
+        name: {
+          contains: payee.value as string,
+          mode: 'insensitive',
+        },
+      };
+    } else if (payee.rule === FilterRuleType.EXACT) {
+      where.payee = {
+        name: {
+          equals: payee.value as string,
+          mode: 'insensitive',
+        },
+      };
+    }
+  }
+
+  // category filter
+  if (category) {
+    if (category.rule === FilterRuleType.IS) {
+      where.categoryId = Number(category.value);
+    } else if (category.rule === FilterRuleType.IS_NOT) {
+      where.categoryId = { not: Number(category.value) };
+    }
+  }
+
+  // tag filter
+  if (tag) {
+    if (tag.rule === FilterRuleType.IS) {
+      where.tags = {
+        some: { id: Number(tag.value) },
+      };
+    } else if (tag.rule === FilterRuleType.IS_NOT) {
+      where.tags = {
+        none: { id: Number(tag.value) },
+      };
+    }
+  }
+
+  // income filter
+  if (income) {
+    const amount = Number(income.value);
+    where.category = { type: { equals: CategoryType.INCOME } };
+    where.amount = buildAmountFilter(income.rule, amount);
+  }
+
+  // expense filter
+  if (expense) {
+    const amount = Number(expense.value);
+    where.category = { type: { equals: CategoryType.EXPENSE } };
+    where.amount = buildAmountFilter(expense.rule, amount);
   }
 
   if (start && end) {
@@ -97,6 +186,23 @@ export async function getAllTransactions({
       isRefund: true,
     },
   });
+}
+
+// helper function for amount filters
+function buildAmountFilter(
+  rule: FilterRule,
+  amount: number,
+): Prisma.DecimalFilter {
+  switch (rule) {
+    case 'exact':
+      return { equals: amount };
+    case 'greater_than':
+      return { gte: amount };
+    case 'less_than':
+      return { lte: amount };
+    default:
+      throw new Error(`Unsupported rule: ${rule}`);
+  }
 }
 
 export async function addTransaction(

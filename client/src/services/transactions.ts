@@ -50,7 +50,7 @@ interface Pagination {
   totalPages: number;
 }
 
-interface PagedTransactionResponse {
+export interface PagedTransactionResponse {
   data: TransactionItem[];
   pagination: Pagination;
 }
@@ -79,18 +79,36 @@ interface ImportedTransactionResponse {
   count: number;
 }
 
+interface FilterCondition {
+  rule: "contains" | "exact" | "is" | "is_not" | "greater_than" | "less_than";
+  value: string | number;
+}
+
+export interface TransactionFilters {
+  search?: FilterCondition;
+  payee?: FilterCondition;
+  category?: FilterCondition;
+  tag?: FilterCondition;
+  income?: FilterCondition;
+  expense?: FilterCondition;
+}
+
+export interface TransactionParams {
+  page: number;
+  pageSize?: number;
+  start?: string;
+  end?: string;
+  searchVal?: string;
+  filters?: string;
+}
+
 export async function getTransactions(
-  pageSize: number = DEFAULT_PAGE_SIZE,
-  page: number = DEFAULT_PAGE,
-  start: string,
-  end: string,
-  query?: string
+  params: TransactionParams
 ): Promise<PagedTransactionResponse> {
-  const url = `/api/transactions?pageSize=${pageSize}&page=${page}&start=${start}&end=${end}`;
-  const urlWithQuery = `/api/transactions?pageSize=${pageSize}&page=${page}&start=${start}&end=${end}&query=${query}`;
-  const result = !query
-    ? await api.get<PagedTransactionResponse>(url)
-    : await api.get<PagedTransactionResponse>(urlWithQuery);
+  const result = await api.get<PagedTransactionResponse>("/api/transactions", {
+    params,
+  });
+
   return result.data;
 }
 

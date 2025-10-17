@@ -1,14 +1,15 @@
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-import { format, startOfMonth, lastDayOfMonth } from "date-fns";
+import Badge from "@mui/material/Badge";
 import TransactionTable from "./TransactionTable";
-import { useMemo, useState } from "react";
 import {
-  getTransactions,
+  type TransactionFilters,
   type TransactionItem,
 } from "../../services/transactions";
 import {
+  getCurrentMonthDateRange,
   getFirstDayOfNextMonth,
   getFirstDayOfPrevMonth,
   getLastDayOfNextMonth,
@@ -24,16 +25,18 @@ import TransactionTableSettings, {
   type TransactionTableSettingsType,
 } from "./TransactionTableSettings";
 import TransactionSummary from "./TransactionSummary";
-import { useQuery } from "@tanstack/react-query";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
 import FormDialog from "../../components/FormDialog";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useDeleteTransaction } from "../../hooks/transactions/useDeleteTransaction";
 import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
-
 import UploadFileDialog from "./UploadFileDialog";
 import MainWalletBox from "./MainWalletBox";
+import TransactionFilter from "./TransactionFilter";
+import { useTransactions } from "../../hooks/transactions/useTransaction";
+import type { SelectChangeEvent } from "@mui/material";
+import type { TimeframeOption } from "../../utils/timeFrame";
 
 type Pagination = {
   page: number;
@@ -52,18 +55,29 @@ export type ConfirmDeleteData = {
   openDialog: boolean;
 };
 
+export interface FilterCriteria {
+  id: string;
+  type: string;
+  rule: string;
+  value: string;
+}
+
+function hasAppliedFilters(filters: TransactionFilters | null) {
+  if (!filters) return false;
+  return Object.keys(filters).length > 0;
+}
+
 function Transaction() {
+  const thisMonthRange = getCurrentMonthDateRange();
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
     pageSize: 10,
     total: 0,
     totalPages: 0,
   });
-  const [dateRange, setDateRange] = useState<DateRange>({
-    startDate: format(startOfMonth(new Date()), "yyyy-MM-dd"),
-    endDate: format(lastDayOfMonth(new Date()), "yyyy-MM-dd"),
-  });
+  const [baseDateRange, setBaseDateRange] = useState<DateRange>(thisMonthRange);
   const [currentDate, setCurrentDate] = useState<Date | string>(new Date());
+
   const [openForm, setOpenForm] = useState(false);
   const [selectedItem, setSelectedItem] =
     useState<TransactionFormDataType | null>(null);
@@ -77,36 +91,39 @@ function Transaction() {
     openDialog: false,
   });
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
-  const { transactions: allTransactions } = useAllTransactions(dateRange);
 
-  const deleteTransactionMutation = useDeleteTransaction();
+  const [openFilterDialog, setOpenFilterDialog] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<FilterCriteria[] | null>([
+    {
+      id: Date.now().toString(),
+      type: "",
+      rule: "",
+      value: "",
+    },
+  ]);
+  const [appliedFilters, setAppliedFilters] =
+    useState<TransactionFilters | null>(null);
+  const [filterTimeFrame, setFilterTimeFrame] =
+    useState<TimeframeOption | null>(null);
 
-  const paginatedQueryKey = useMemo(
-    () => [
-      "transaction",
-      pagination.page,
-      dateRange.startDate,
-      dateRange.endDate,
-      searchValue,
-    ],
-    [pagination.page, dateRange.startDate, dateRange.endDate, searchValue]
+  const { transactions: paginatedData } = useTransactions(
+    baseDateRange,
+    pagination.page,
+    searchValue,
+    appliedFilters,
+    filterTimeFrame
   );
+  const { transactions: allTransactions } = useAllTransactions(baseDateRange);
+  const deleteTransactionMutation = useDeleteTransaction();
+  const hasFilters = hasAppliedFilters(appliedFilters);
 
-  // query for paginated transactions
-  const { data: paginatedData } = useQuery({
-    queryKey: paginatedQueryKey,
-    queryFn: () =>
-      getTransactions(
-        pagination.pageSize,
-        pagination.page,
-        dateRange.startDate,
-        dateRange.endDate,
-        searchValue
-      ),
-  });
-
-  useMemo(() => {
-    if (paginatedData?.pagination) {
+  useEffect(() => {
+    if (
+      paginatedData &&
+      typeof paginatedData === "object" &&
+      "pagination" in paginatedData &&
+      paginatedData.pagination
+    ) {
       setPagination((prev) => ({
         ...prev,
         total: paginatedData.pagination.total,
@@ -124,17 +141,19 @@ function Transaction() {
   };
 
   const goToPreviousMonth = () => {
-    const startDate = getFirstDayOfPrevMonth(dateRange.startDate);
-    const endDate = getLastDayOfPrevMonth(dateRange.startDate);
-    setDateRange({ startDate, endDate });
+    const startDate = getFirstDayOfPrevMonth(baseDateRange.startDate);
+    const endDate = getLastDayOfPrevMonth(baseDateRange.startDate);
+    setBaseDateRange({ startDate, endDate });
+    setFilterTimeFrame(null);
     setCurrentDate(startDate);
     resetPage();
   };
 
   const goToNextMonth = () => {
-    const startDate = getFirstDayOfNextMonth(dateRange.startDate);
-    const endDate = getLastDayOfNextMonth(dateRange.startDate);
-    setDateRange({ startDate, endDate });
+    const startDate = getFirstDayOfNextMonth(baseDateRange.startDate);
+    const endDate = getLastDayOfNextMonth(baseDateRange.startDate);
+    setBaseDateRange({ startDate, endDate });
+    setFilterTimeFrame(null);
     setCurrentDate(startDate);
     resetPage();
   };
@@ -166,6 +185,7 @@ function Transaction() {
 
   const handleOnSearch = (keyword: string) => {
     setSearchValue(keyword);
+    resetPage();
   };
 
   const handleOnChangeTableSettings = (
@@ -196,7 +216,120 @@ function Transaction() {
     setOpenUploadDialog(false);
   };
 
-  const transactionData = paginatedData?.data || [];
+  const handleCloseFilterDialog = () => {
+    setOpenFilterDialog(false);
+  };
+
+  const handleApplyFilter = (timeFrame: TimeframeOption) => {
+    if (!activeFilters || !timeFrame.from || !timeFrame.to) return;
+
+    const filterObj = Object.fromEntries(
+      activeFilters
+        .filter((item) => !!item.type || !!item.value)
+        .map((item) => [item.type, { rule: item.rule, value: item.value }])
+    );
+
+    setAppliedFilters(filterObj);
+    setFilterTimeFrame(timeFrame);
+  };
+
+  const handleAddFilter = () => {
+    if (!activeFilters) return;
+
+    setActiveFilters([
+      ...activeFilters,
+      { id: Date.now().toString(), type: "", rule: "", value: "" },
+    ]);
+  };
+
+  const handleRemoveFilter = (id: string) => {
+    if (!activeFilters) return;
+    setActiveFilters(activeFilters.filter((f) => f.id !== id));
+  };
+
+  const handleDuplicateFilter = (id: string) => {
+    if (!activeFilters) return;
+
+    const filter = activeFilters.find((f) => f.id === id);
+    if (filter) {
+      setActiveFilters([
+        ...activeFilters,
+        { ...filter, id: Date.now().toString() },
+      ]);
+    }
+  };
+
+  const handleChangeFilter = (item: FilterCriteria) => {
+    if (!activeFilters) return;
+
+    setActiveFilters(
+      activeFilters.map((filter) => (filter.id === item.id ? item : filter))
+    );
+  };
+
+  const handleChangeFilterValue = (id: string, val: string) => {
+    if (!activeFilters) return;
+
+    setActiveFilters(
+      activeFilters.map((filter) =>
+        filter.id === id ? { ...filter, value: val } : filter
+      )
+    );
+  };
+
+  const handleChangeFilterRule = (id: string, e: SelectChangeEvent) => {
+    if (!activeFilters) return;
+
+    const rule = e.target.value;
+
+    setActiveFilters(
+      activeFilters.map((filter) =>
+        filter.id === id ? { ...filter, rule } : filter
+      )
+    );
+  };
+
+  const handleResetFilter = () => {
+    setActiveFilters([
+      {
+        id: Date.now().toString(),
+        type: "",
+        rule: "",
+        value: "",
+      },
+    ]);
+    setAppliedFilters(null);
+    setFilterTimeFrame(null);
+  };
+
+  const renderTable = () => {
+    let data: TransactionItem[] | [] = [];
+
+    if (
+      paginatedData &&
+      typeof paginatedData === "object" &&
+      "pagination" in paginatedData &&
+      paginatedData.pagination
+    ) {
+      data = paginatedData.data;
+    }
+
+    return (
+      <TransactionTable
+        hasFilter={hasFilters}
+        onResetFilter={handleResetFilter}
+        transactions={data}
+        totalCount={pagination.total}
+        page={pagination.page}
+        pageSize={pagination.pageSize}
+        onPageChange={handlePageChange}
+        totalPages={pagination.totalPages}
+        onClickEditBtn={handleOnClickEditBtn}
+        onClickDeleteBtn={handleOnClickDeleteBtn}
+        settings={settings}
+      />
+    );
+  };
 
   return (
     <>
@@ -230,8 +363,21 @@ function Transaction() {
                   settings={settings}
                   onChange={handleOnChangeTableSettings}
                 />
-                <Button variant="outlined" size="large">
-                  Filter
+                <Button
+                  variant="outlined"
+                  size="large"
+                  onClick={() => setOpenFilterDialog(true)}
+                >
+                  {appliedFilters && Object.keys(appliedFilters).length > 0 ? (
+                    <Badge
+                      color="primary"
+                      badgeContent={Object.keys(appliedFilters).length}
+                    >
+                      Filter
+                    </Badge>
+                  ) : (
+                    "Filter"
+                  )}
                 </Button>
               </Stack>
               <Stack direction="row" spacing={1}>
@@ -242,17 +388,7 @@ function Transaction() {
                 </Button>
               </Stack>
             </Stack>
-            <TransactionTable
-              transactions={transactionData}
-              totalCount={pagination.total}
-              page={pagination.page}
-              pageSize={pagination.pageSize}
-              onPageChange={handlePageChange}
-              totalPages={pagination.totalPages}
-              onClickEditBtn={handleOnClickEditBtn}
-              onClickDeleteBtn={handleOnClickDeleteBtn}
-              settings={settings}
-            />
+            {renderTable()}
           </Stack>
           <Stack direction="column" spacing={1}>
             <MainWalletBox />
@@ -288,6 +424,26 @@ function Transaction() {
         onClose={handleCloseUploadDialog}
       >
         <UploadFileDialog onClose={handleCloseUploadDialog} />
+      </FormDialog>
+
+      <FormDialog
+        title="Transaction Filters"
+        open={openFilterDialog}
+        onClose={handleCloseFilterDialog}
+        paperSx={{ width: "60vw" }}
+      >
+        <TransactionFilter
+          filters={activeFilters}
+          onClose={handleCloseFilterDialog}
+          onAddFilter={handleAddFilter}
+          onRemoveFilter={handleRemoveFilter}
+          onDuplicateFilter={handleDuplicateFilter}
+          onChangeFilter={handleChangeFilter}
+          onChangeFilterValue={handleChangeFilterValue}
+          onChangeFilterRule={handleChangeFilterRule}
+          onApplyFilters={handleApplyFilter}
+          selectedTimeFrame={filterTimeFrame}
+        />
       </FormDialog>
     </>
   );
