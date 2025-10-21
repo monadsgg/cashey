@@ -1,5 +1,4 @@
 import api from "./api";
-import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../constants";
 import type { Category } from "./categories";
 import type { Tag } from "./tags";
 import type { Payee } from "./payees";
