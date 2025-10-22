@@ -9,6 +9,7 @@ export function useUpdateAccount() {
       updateAccount(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.refetchQueries({ queryKey: ["statsOverview"] });
     },
   });
 }
