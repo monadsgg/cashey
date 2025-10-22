@@ -29,7 +29,7 @@ const db = new PrismaClient().$extends({
         });
 
         const category = await db.category.findUniqueOrThrow({
-          where: { id: result.category?.id },
+          where: { id: result.category?.id ?? result.categoryId },
         });
 
         const newBalance = adjustBalance({
