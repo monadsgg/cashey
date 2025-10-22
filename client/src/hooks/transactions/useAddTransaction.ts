@@ -10,6 +10,7 @@ export function useAddTransaction() {
       queryClient.invalidateQueries({ queryKey: ["transaction"] });
       queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
       queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      queryClient.refetchQueries({ queryKey: ["statsOverview"] });
     },
   });
 }

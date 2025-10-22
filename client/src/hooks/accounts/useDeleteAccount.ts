@@ -8,6 +8,7 @@ export function useDeleteAccount() {
     mutationFn: deleteAccount,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.refetchQueries({ queryKey: ["statsOverview"] });
     },
   });
 }
