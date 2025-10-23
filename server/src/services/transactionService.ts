@@ -197,9 +197,9 @@ function buildAmountFilter(
     case 'exact':
       return { equals: amount };
     case 'greater_than':
-      return { gte: amount };
+      return { gt: amount };
     case 'less_than':
-      return { lte: amount };
+      return { lt: amount };
     default:
       throw new Error(`Unsupported rule: ${rule}`);
   }
