@@ -147,7 +147,7 @@ export async function getAllTransactions({
         take: pageSize,
         include: {
           category: {
-            omit: { userId: true },
+            omit: { userId: true, color: true },
           },
           tags: { omit: { userId: true } },
           payee: { omit: { userId: true } },
@@ -216,7 +216,7 @@ export async function addTransaction(
   payeeId: number,
   isRefund: boolean = false,
 ) {
-  if (!description || !categoryId || !amount || !date)
+  if (!categoryId || !amount || !date)
     throw new Error('All fields are required');
 
   const wallet = await db.wallet.findUnique({
@@ -242,7 +242,7 @@ export async function addTransaction(
       isRefund,
     },
     include: {
-      category: { omit: { userId: true } },
+      category: { omit: { userId: true, color: true } },
       tags: { omit: { userId: true } },
       payee: { omit: { userId: true } },
     },
@@ -265,7 +265,7 @@ export async function editTransaction(
   payeeId: number | null,
   isRefund: boolean,
 ) {
-  if (!description || !categoryId || !amount || !date)
+  if (!categoryId || !amount || !date)
     throw new Error('All fields are required');
 
   return db.transaction.update({
@@ -283,7 +283,7 @@ export async function editTransaction(
     },
     include: {
       category: {
-        omit: { userId: true },
+        omit: { userId: true, color: true },
       },
       tags: { omit: { userId: true } },
       payee: { omit: { userId: true } },
