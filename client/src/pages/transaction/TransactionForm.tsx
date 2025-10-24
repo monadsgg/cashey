@@ -24,43 +24,39 @@ import { CategoryType } from "../../constants";
 import CircularProgress from "@mui/material/CircularProgress";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
-
-export type TransactionFormDataType = {
-  id?: number;
-  description: string;
-  date: Date;
-  categoryId: number;
-  amount: number;
-  payee: Payee | null;
-  tags: Tag[] | [];
-  isRefund: boolean;
-};
+import Box from "@mui/material/Box";
+import z from "zod";
+import { getZodIssueObj } from "../../utils/validators";
+import { TransactionFormSchema } from "../../schemas/transactionSchema";
 
 interface TransactionFormProps {
-  formData?: TransactionFormDataType;
   onClose: () => void;
   isLoading?: boolean;
-  selectedItem: TransactionFormDataType | null;
+  selectedItem: TransactionFormData | null;
 }
+
+export type TransactionFormData = z.infer<typeof TransactionFormSchema>;
 
 function TransactionForm({
   onClose,
   isLoading,
   selectedItem,
 }: TransactionFormProps) {
-  const initialFormData: TransactionFormDataType = {
+  const initialFormData: TransactionFormData = {
     description: "",
     date: new Date(),
     categoryId: 1,
-    amount: 0,
+    amount: "",
     payee: null,
     tags: [],
     isRefund: false,
   };
-  const [formData, setFormData] = useState<TransactionFormDataType>(
+  const [formData, setFormData] = useState<TransactionFormData>(
     selectedItem ?? initialFormData
   );
-  const { mainWalletId, error } = useWallets();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { mainWalletId, error: mainWalletError } = useWallets();
   const { categories, isCategoriesLoading } = useCategories();
   const addTransactionMutation = useAddTransaction();
   const updateTransactionMutation = useUpdateTransaction();
@@ -81,43 +77,51 @@ function TransactionForm({
   }, [categories]);
 
   const handleSubmit = async () => {
-    const { description, amount, date, categoryId, payee, tags, isRefund } =
-      formData;
-    const formattedDate = formatDate(date);
-
-    if (!mainWalletId)
-      return <ErrorMessage message="Main wallet is not found" />;
-
-    const payloadData = {
-      description,
-      amount,
-      categoryId,
-      payeeId: typeof payee === "object" && payee !== null ? payee.id : null,
-      tagIds: tags.map((t) => t.id),
-      date: formattedDate,
-      walletId: mainWalletId,
-      isRefund,
-    };
-
-    if (formData?.id) {
-      updateTransactionMutation.mutate({
-        id: formData.id,
-        payload: payloadData,
+    // validate data
+    const result = TransactionFormSchema.safeParse(formData);
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        const newError = getZodIssueObj(issue);
+        setErrors({ ...errors, ...newError });
       });
     } else {
-      addTransactionMutation.mutate(payloadData);
+      const { description, amount, date, categoryId, payee, tags, isRefund } =
+        result.data;
 
-      setFormData({
-        ...formData,
-        description: "",
-        amount: 0,
-        payee: null,
-        tags: [],
-        isRefund: false,
-      });
+      if (!mainWalletId)
+        return <ErrorMessage message="Main wallet not found" />;
+
+      const payloadData = {
+        description,
+        amount: Number(amount),
+        categoryId,
+        payeeId: payee?.id ?? null,
+        tagIds: tags.map((t) => t.id),
+        date: formatDate(date),
+        walletId: mainWalletId,
+        isRefund,
+      };
+
+      if (formData?.id) {
+        updateTransactionMutation.mutate({
+          id: formData.id,
+          payload: payloadData,
+        });
+      } else {
+        addTransactionMutation.mutate(payloadData);
+        setFormData({
+          ...formData,
+          description: "",
+          amount: "",
+          payee: null,
+          tags: [],
+          isRefund: false,
+        });
+      }
+
+      onClose();
+      setErrors({});
     }
-
-    onClose();
   };
 
   const handleDateChange = (value: Date) => {
@@ -127,6 +131,7 @@ function TransactionForm({
   const handleFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    setErrors({});
   };
 
   const handleFormSelectChange = (e: SelectChangeEvent) => {
@@ -147,11 +152,21 @@ function TransactionForm({
     setFormData({ ...formData, [name]: checked });
   };
 
-  const isDisabled = formData.description === "" || formData.amount <= 0;
+  if (isCategoriesLoading)
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          alignContent: "center",
+          justifyContent: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
 
-  if (isCategoriesLoading) return <CircularProgress />;
-
-  if (error) return <ErrorMessage message={error.message} />;
+  if (mainWalletError)
+    return <ErrorMessage message={mainWalletError.message} />;
 
   return (
     <DialogContent>
@@ -195,6 +210,8 @@ function TransactionForm({
             name="amount"
             value={formData.amount}
             onChange={handleFormDataChange}
+            error={!!errors.amount}
+            helperText={errors.amount}
           />
 
           <TransactionPayeeField
@@ -237,7 +254,7 @@ function TransactionForm({
             color="primary"
             variant="contained"
             onClick={handleSubmit}
-            disabled={isDisabled}
+            disabled={Object.keys(errors).length > 0}
           >
             {!selectedItem ? "Add " : "Save "}
             Transaction

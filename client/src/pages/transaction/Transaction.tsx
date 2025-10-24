@@ -17,9 +17,7 @@ import {
   getMonth,
   getZonedDate,
 } from "../../utils/date";
-import TransactionForm, {
-  type TransactionFormDataType,
-} from "./TransactionForm";
+import TransactionForm, { type TransactionFormData } from "./TransactionForm";
 import SearchInputField from "../../components/SearchInputField";
 import TransactionTableSettings, {
   type TransactionTableSettingsType,
@@ -79,8 +77,9 @@ function Transaction() {
   const [currentDate, setCurrentDate] = useState<Date | string>(new Date());
 
   const [openForm, setOpenForm] = useState(false);
-  const [selectedItem, setSelectedItem] =
-    useState<TransactionFormDataType | null>(null);
+  const [selectedItem, setSelectedItem] = useState<TransactionFormData | null>(
+    null
+  );
   const [searchValue, setSearchValue] = useState("");
   const [settings, setSettings] = useState<TransactionTableSettingsType>({
     tag: false,
@@ -175,7 +174,7 @@ function Transaction() {
       id,
       description,
       date: getZonedDate(date),
-      amount,
+      amount: amount.toString(),
       categoryId: category.id,
       tags: tags || [],
       payee: payee || null,
