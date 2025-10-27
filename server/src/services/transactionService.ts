@@ -343,9 +343,15 @@ export async function transferFunds(
         walletId: fromWalletId,
         userId,
       },
+      include: {
+        category: {
+          omit: { userId: true, color: true },
+        },
+      },
       omit: {
         userId: true,
         payeeId: true,
+        categoryId: true,
       },
     });
 
