@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
+import { useTransferFunds } from "../hooks/transactions/useTransferFunds";
 import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import Stack from "@mui/material/Stack";
@@ -6,84 +7,76 @@ import DatePickerField from "./DatePickerField";
 import TextInputField from "./TextInputField";
 import SelectInputField from "./SelectInputField";
 import DialogContent from "@mui/material/DialogContent";
-import { useWallets } from "../hooks/wallets/useWallets";
-import { type SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import { formatDate } from "../utils/date";
-import CircularProgress from "@mui/material/CircularProgress";
-import ErrorMessage from "./ErrorMessage";
-import { useTransferFunds } from "../hooks/transactions/useTransferFunds";
+import { type SelectChangeEvent } from "@mui/material/Select";
+import type { Wallet } from "../services/wallet";
+import { TransferMoneyFormSchema } from "../schemas/transactionSchema";
+import { getZodIssueObj } from "../utils/validators";
+import z from "zod";
 
 interface TransferMoneyFormProps {
+  mainWallet: Wallet;
+  accountWallets: Wallet[];
   onClose: () => void;
   isAccounts?: boolean;
 }
 
-type TransferMoneyFormData = {
-  description: string;
-  date: Date;
-  amount: number;
-  fromWalletId: number | null;
-  toWalletId: number | null;
-};
+export type TransferMoneyData = z.infer<typeof TransferMoneyFormSchema>;
 
-function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
-  const { mainWalletId, accountWallets, isLoading, error } = useWallets();
-  const initialFormData: TransferMoneyFormData = {
+function TransferMoneyForm({
+  mainWallet,
+  accountWallets,
+  onClose,
+  isAccounts,
+}: TransferMoneyFormProps) {
+  const initialFormData: TransferMoneyData = {
     description: "",
     date: new Date(),
-    amount: 0,
-    fromWalletId: null,
-    toWalletId: null,
+    amount: "",
+    fromWalletId: isAccounts ? accountWallets[0].id : mainWallet.id,
+    toWalletId: isAccounts ? mainWallet.id : accountWallets[0].id,
   };
-  const [formData, setFormData] =
-    useState<TransferMoneyFormData>(initialFormData);
-  const [errorForm, setErrorForm] = useState("");
-  const [accountWalletsList, setaccountWalletsList] = useState(accountWallets);
-
-  useEffect(() => {
-    if (!isLoading) {
-      setFormData((prev) => ({
-        ...prev,
-        fromWalletId: isAccounts ? accountWallets[0].id : mainWalletId,
-        toWalletId: isAccounts ? mainWalletId : accountWallets[0].id,
-      }));
-      setaccountWalletsList(accountWallets);
-    }
-  }, [isLoading, mainWalletId]);
-
-  useEffect(() => {
-    if (isAccounts) {
-      const newAccounts = accountWallets.filter(
-        (s) => s.id !== formData.fromWalletId
-      );
-      setaccountWalletsList(newAccounts);
-    }
-  }, [formData.fromWalletId]);
+  const [formData, setFormData] = useState<TransferMoneyData>(initialFormData);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const transferFundsMutation = useTransferFunds();
 
+  const fromWalletOptions = useMemo(() => {
+    return isAccounts ? accountWallets : [mainWallet];
+  }, [isAccounts, accountWallets, mainWallet]);
+
+  const toWalletOptions = useMemo(() => {
+    const filteredWallets = [mainWallet, ...accountWallets].filter(
+      (w) => w.id !== formData.fromWalletId
+    );
+    return isAccounts ? filteredWallets : accountWallets;
+  }, [isAccounts, formData.fromWalletId, accountWallets, mainWallet]);
+
   const handleSubmit = () => {
-    const { description, date, amount, fromWalletId, toWalletId } = formData;
-    const formattedDate = formatDate(date);
+    // validate data
+    const result = TransferMoneyFormSchema.safeParse(formData);
 
-    if (!amount || !fromWalletId || !toWalletId) {
-      setErrorForm("Amount, from/to account is required");
-      return;
+    if (result.success) {
+      const { description, fromWalletId, toWalletId, amount, date } =
+        result.data;
+      const payloadData = {
+        description,
+        amount: Number(amount),
+        date: formatDate(date),
+        fromWalletId,
+        toWalletId,
+      };
+      transferFundsMutation.mutate(payloadData);
+      setFormData({ ...formData, amount: "", description: "" });
+      onClose();
+    } else {
+      result.error.issues.forEach((issue) => {
+        const newError = getZodIssueObj(issue);
+        setErrors({ ...errors, ...newError });
+      });
     }
-
-    const payloadData = {
-      description,
-      amount: Number(amount),
-      date: formattedDate,
-      fromWalletId,
-      toWalletId,
-    };
-
-    transferFundsMutation.mutate(payloadData);
-
-    setFormData({ ...formData, amount: 0, description: "" });
   };
 
   const handleDateChange = (value: Date) => {
@@ -93,22 +86,13 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
   const handleFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setErrorForm("");
+    setErrors({});
   };
 
   const handleFormSelectChange = (e: SelectChangeEvent) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
-  if (isLoading) return <CircularProgress />;
-  if (!mainWalletId) return <ErrorMessage message="Main wallet is not found" />;
-
-  const isDisabled =
-    accountWallets?.length === 0 ||
-    formData.amount === 0 ||
-    !!error ||
-    transferFundsMutation.isPending;
 
   return (
     <DialogContent>
@@ -133,13 +117,13 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
               value={formData.fromWalletId?.toString()}
               onChange={handleFormSelectChange}
             >
-              {!isAccounts && (
-                <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
-              )}
-              {isAccounts &&
-                accountWallets.map((item) => {
-                  return <MenuItem value={item.id}>{item.name}</MenuItem>;
-                })}
+              {fromWalletOptions.map((item) => {
+                return (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.name}
+                  </MenuItem>
+                );
+              })}
             </SelectInputField>
           )}
 
@@ -150,11 +134,12 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
               value={formData.toWalletId?.toString()}
               onChange={handleFormSelectChange}
             >
-              {isAccounts && (
-                <MenuItem value={mainWalletId}>Main Wallet</MenuItem>
-              )}
-              {accountWalletsList.map((item) => {
-                return <MenuItem value={item.id}>{item.name}</MenuItem>;
+              {toWalletOptions.map((item) => {
+                return (
+                  <MenuItem key={item.id} value={item.id}>
+                    {item.name}
+                  </MenuItem>
+                );
               })}
             </SelectInputField>
           )}
@@ -164,6 +149,8 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
             name="amount"
             value={formData.amount}
             onChange={handleFormDataChange}
+            error={!!errors.amount}
+            helperText={errors.amount}
           />
         </Stack>
 
@@ -176,28 +163,17 @@ function TransferMoneyForm({ onClose, isAccounts }: TransferMoneyFormProps) {
           </Stack>
         )}
 
-        {error && (
-          <Stack>
-            <Alert severity="error">{errorForm}</Alert>
-          </Stack>
-        )}
-
         <Divider />
 
         <Stack direction="row" spacing={2} sx={{ justifyContent: "flex-end" }}>
-          <Button
-            variant="outlined"
-            onClick={onClose}
-            color="primary"
-            disabled={isLoading}
-          >
+          <Button variant="outlined" onClick={onClose} color="primary">
             Close
           </Button>
           <Button
             color="primary"
             variant="contained"
             onClick={handleSubmit}
-            disabled={isDisabled}
+            disabled={!!errors.amount || !accountWallets.length}
           >
             Transfer
           </Button>
