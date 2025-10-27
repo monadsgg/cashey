@@ -43,7 +43,8 @@ export async function addAccount(data: accountInput, userId: number) {
     contributionLimit,
   } = data;
 
-  if (!name || !balance) throw new Error('All fields are required');
+  // TODO: handle balance validation
+  if (!name) throw new Error('Name is required');
 
   const newAccount = await db.wallet.create({
     data: {
