@@ -84,8 +84,8 @@ export async function editBudget(
   if (!categoryId || !amountLimit) throw new Error('All fields are required');
 
   return db.budget.update({
-    where: { id, userId, categoryId, month, year },
-    data: { amountLimit },
+    where: { id, userId, month, year },
+    data: { categoryId, amountLimit },
     omit: { userId: true },
   });
 }
