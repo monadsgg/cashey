@@ -7,85 +7,95 @@ import SelectInputField from "../../components/SelectInputField";
 import { type SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { INVESTMENT_TYPE, InvestmentType, WalletType } from "../../constants";
-import Alert from "@mui/material/Alert";
-import { type AccountPayload } from "../../services/accounts";
 import DialogContent from "@mui/material/DialogContent";
 import { useAddAccount } from "../../hooks/accounts/useAddAccount";
 import { useUpdateAccount } from "../../hooks/accounts/useUpdateAccount";
+import { AccountFormSchema } from "../../schemas/accountSchema";
+import type z from "zod";
+import { getZodIssueObj } from "../../utils/validators";
 
 interface AccountFormProps {
   onClose: () => void;
-  selectedAccount?: AccountFormDataType | null;
+  selectedAccount?: AccountFormData | null;
 }
 
-export type AccountFormDataType = AccountPayload & {
-  id?: number;
-};
+export type AccountFormData = z.infer<typeof AccountFormSchema>;
 
 function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
-  const initialFormData: AccountFormDataType = {
+  const initialFormData: AccountFormData = {
     name: "",
-    balance: 0,
+    balance: "",
     owner: "",
-    targetAmt: 0,
+    targetAmt: "",
     accountType: WalletType.SAVINGS,
     investmentType: InvestmentType.TFSA,
     contributionLimit: null,
   };
-  const [formData, setFormData] = useState<AccountFormDataType>(
+  const [formData, setFormData] = useState<AccountFormData>(
     selectedAccount ?? initialFormData
   );
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const addAccountMutation = useAddAccount();
   const updateAccountMutation = useUpdateAccount();
 
   const handleSubmit = () => {
-    const {
-      name,
-      balance,
-      owner,
-      targetAmt,
-      accountType,
-      investmentType,
-      contributionLimit,
-    } = formData;
+    // validate form data
+    const result = AccountFormSchema.safeParse(formData);
 
-    if (!name || !owner || !targetAmt || !accountType) {
-      setError("Name, owner, target amount and account type is required");
-      return;
-    }
+    if (result.success) {
+      const {
+        name,
+        balance,
+        owner,
+        targetAmt,
+        accountType,
+        investmentType,
+        contributionLimit,
+      } = result.data;
 
-    const payload = {
-      name,
-      balance,
-      owner,
-      targetAmt,
-      accountType,
-      investmentType:
-        accountType === WalletType.SAVINGS ? null : investmentType,
-      contributionLimit: contributionLimit || null,
-    };
+      const payload = {
+        name,
+        balance: Number(balance),
+        owner,
+        targetAmt: Number(targetAmt),
+        accountType,
+        investmentType:
+          accountType === WalletType.SAVINGS ? null : investmentType,
+        contributionLimit: Number(contributionLimit) || null,
+      };
 
-    if (formData.id) {
-      updateAccountMutation.mutate({ id: formData.id, payload: payload });
+      if (formData.id) {
+        updateAccountMutation.mutate({ id: formData.id, payload: payload });
+      } else {
+        addAccountMutation.mutate(payload);
+        setFormData({
+          ...formData,
+          name: "",
+          balance: "",
+          owner: "",
+          targetAmt: "",
+        });
+      }
+
+      onClose();
     } else {
-      addAccountMutation.mutate(payload);
-      setFormData({
-        ...formData,
-        name: "",
-        balance: 0,
-        owner: "",
-        targetAmt: 0,
+      result.error.issues.forEach((issue) => {
+        const newError = getZodIssueObj(issue);
+        setErrors((prev) => ({ ...prev, ...newError }));
       });
     }
-
-    onClose();
   };
 
   const handleFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setError("");
+
+    // remove error text by curr field
+    setErrors((prev) => {
+      const { [name]: _, ...rest } = prev; // destructure and get other error obj exc curr field
+      return rest;
+    });
   };
 
   const handleFormSelectChange = (e: SelectChangeEvent) => {
@@ -102,24 +112,32 @@ function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
             name="name"
             value={formData.name}
             onChange={handleFormDataChange}
+            error={!!errors.name}
+            helperText={errors.name}
           />
           <TextInputField
             label="Balance"
             name="balance"
             value={formData.balance}
             onChange={handleFormDataChange}
+            error={!!errors.balance}
+            helperText={errors.balance}
           />
           <TextInputField
             label="Owner"
             name="owner"
             value={formData.owner}
             onChange={handleFormDataChange}
+            error={!!errors.owner}
+            helperText={errors.owner}
           />
           <TextInputField
             label="Target Amount"
             name="targetAmt"
             value={formData.targetAmt}
             onChange={handleFormDataChange}
+            error={!!errors.targetAmt}
+            helperText={errors.targetAmt}
           />
           <SelectInputField
             label="Account Type"
@@ -155,11 +173,6 @@ function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
             </>
           )}
         </Stack>
-        {error && (
-          <Stack>
-            <Alert severity="error">{error}</Alert>
-          </Stack>
-        )}
 
         <Divider />
 
@@ -171,7 +184,7 @@ function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
             color="primary"
             variant="contained"
             onClick={handleSubmit}
-            disabled={!!error}
+            disabled={Object.keys(errors).length > 0}
           >
             {!selectedAccount ? "Add " : "Save "}
           </Button>
