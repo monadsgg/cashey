@@ -26,7 +26,7 @@ function SelectInputField({
   return (
     <Stack sx={{ marginBottom: 2 }}>
       <Typography variant="subtitle1">{label}</Typography>
-      <FormControl hiddenLabel fullWidth size="small">
+      <FormControl hiddenLabel fullWidth size="small" error={!!error}>
         <Select
           variant="outlined"
           name={name}
