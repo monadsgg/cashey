@@ -43,7 +43,6 @@ export async function addAccount(data: accountInput, userId: number) {
     contributionLimit,
   } = data;
 
-  // TODO: handle balance validation
   if (!name) throw new Error('Name is required');
 
   const newAccount = await db.wallet.create({
@@ -62,8 +61,9 @@ export async function addAccount(data: accountInput, userId: number) {
       },
     },
     include: {
-      account: true,
+      account: { omit: { walletId: true } },
     },
+    omit: { userId: true },
   });
 
   return newAccount;
@@ -102,8 +102,9 @@ export async function editAccount(
       },
     },
     include: {
-      account: true,
+      account: { omit: { walletId: true } },
     },
+    omit: { userId: true },
   });
 }
 
