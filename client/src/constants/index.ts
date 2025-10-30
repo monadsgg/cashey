@@ -1,6 +1,6 @@
 // pagination
 export const DEFAULT_PAGE = 1;
-export const DEFAULT_PAGE_SIZE = 15;
+export const DEFAULT_PAGE_SIZE = 10;
 
 // wallet
 export const WalletType = {
