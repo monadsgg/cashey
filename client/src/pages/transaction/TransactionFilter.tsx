@@ -157,9 +157,10 @@ function TransactionFilter({
                   direction="row"
                   mt={2}
                   bgcolor="#efefefff"
-                  spacing={1}
+                  spacing={2}
                   borderRadius={2}
                   p={2}
+                  alignItems="center"
                 >
                   <Select
                     value={filter.type || ""}
