@@ -17,14 +17,14 @@ function adjustBalance({
 }: BalanceAdjustmentParams): number {
   const multiplier = reverse ? -1 : 1;
 
-  if (type === CategoryType.INCOME) {
-    balance += amount * multiplier;
-  } else if (type === CategoryType.EXPENSE) {
-    balance -= amount * multiplier;
-  }
-
   if (isRefund) {
     balance += amount * multiplier;
+  } else {
+    if (type === CategoryType.INCOME) {
+      balance += amount * multiplier;
+    } else if (type === CategoryType.EXPENSE) {
+      balance -= amount * multiplier;
+    }
   }
 
   return balance;
