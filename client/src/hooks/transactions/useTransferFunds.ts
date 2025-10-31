@@ -11,6 +11,7 @@ export function useTransferFunds() {
       queryClient.refetchQueries({ queryKey: ["all-transactions"] });
       queryClient.refetchQueries({ queryKey: ["accounts"] });
       queryClient.refetchQueries({ queryKey: ["accounts-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
     },
   });
 }

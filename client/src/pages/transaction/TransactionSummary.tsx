@@ -1,11 +1,20 @@
-import Stack from "@mui/material/Stack";
 import { useMemo } from "react";
+import Stack from "@mui/material/Stack";
+import { styled } from "@mui/material/styles";
 import SummaryListItem from "../../components/SummaryListItem";
 import SummaryTitle from "../../components/SummaryTitle";
 import SummaryContainer from "../../components/SummaryContainer";
 import SummaryExpenseCategoryItem from "../../components/SummaryExpenseCategoryItem";
 import { transferCategory } from "../../constants";
 import type { TransactionItem } from "../../services/transactions";
+
+const ScrollableContainer = styled("div")(() => ({
+  maxHeight: "50vh",
+  overflowY: "hidden",
+  [`&:hover`]: {
+    overflowY: "auto",
+  },
+}));
 
 interface TransactionSummaryProps {
   currentMonth: string;
@@ -68,13 +77,17 @@ function TransactionSummary({
 
     const categoryExpense: CategoryExpenseType[] = Array.from(
       categoryMap.entries()
-    ).map(([category, amount]) => ({ category, amount }));
+    )
+      .map(([category, amount]) => ({ category, amount }))
+      .sort((a, b) => b.amount - a.amount);
 
     return { financialSummary, categoryExpense };
   }, [transactions]);
 
   const { income, expense, savings, fundsFromSavings, remainingFunds } =
     financialSummary;
+
+  const overSpentAmount = remainingFunds + fundsFromSavings;
 
   return (
     <SummaryContainer>
@@ -91,20 +104,25 @@ function TransactionSummary({
         <SummaryListItem title="Savings" amount={savings} />
         <SummaryListItem
           title="Remaining from salary"
-          amount={remainingFunds}
+          amount={remainingFunds < 0 ? 0 : remainingFunds}
         />
+        {overSpentAmount < 0 && (
+          <SummaryListItem title="Overspent" amount={overSpentAmount} />
+        )}
       </Stack>
       <Stack spacing={1}>
         {categoryExpense.length > 0 && (
           <>
             <SummaryTitle title="Expenses by Category" />
-            {categoryExpense.map((item) => (
-              <SummaryExpenseCategoryItem
-                key={item.category}
-                title={item.category}
-                amount={item.amount}
-              />
-            ))}
+            <ScrollableContainer>
+              {categoryExpense.map((item) => (
+                <SummaryExpenseCategoryItem
+                  key={item.category}
+                  title={item.category}
+                  amount={item.amount}
+                />
+              ))}
+            </ScrollableContainer>
           </>
         )}
       </Stack>

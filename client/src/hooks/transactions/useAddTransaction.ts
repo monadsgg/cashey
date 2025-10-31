@@ -9,6 +9,9 @@ export function useAddTransaction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transaction"] });
       queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      queryClient.refetchQueries({ queryKey: ["budgets"] });
+      queryClient.refetchQueries({ queryKey: ["statsOverview"] });
     },
   });
 }

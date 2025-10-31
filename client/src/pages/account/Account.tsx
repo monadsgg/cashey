@@ -8,7 +8,7 @@ import Box from "@mui/material/Box";
 import AccountCard from "./AccountCard";
 import Button from "@mui/material/Button";
 import FormDialog from "../../components/FormDialog";
-import AccountForm, { type AccountFormDataType } from "./AccountForm";
+import AccountForm, { type AccountFormData } from "./AccountForm";
 import AccountSummary from "./AccountSummary";
 import AccountTransactions from "./AccountTransactions";
 import TransferMoneyButton from "../../components/TransferMoneyButton";
@@ -25,7 +25,7 @@ function Account() {
   const { personalAccounts, investmentAccounts } = useAccounts();
   const [open, setOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] =
-    useState<AccountFormDataType | null>(null);
+    useState<AccountFormData | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<ConfirmDeleteData>({
     id: null,
     openDialog: false,
@@ -47,7 +47,6 @@ function Account() {
   };
 
   const handleOnClickEdit = (acc: AccountItem) => {
-    console.log(acc);
     const {
       id,
       name,
@@ -55,16 +54,17 @@ function Account() {
       type,
       account: { owner, targetAmt, investmentType, contributionLimit },
     } = acc;
+
     setOpen(true);
     setSelectedAccount({
       id,
       name,
-      balance,
+      balance: balance.toString(),
       owner,
-      targetAmt,
+      targetAmt: targetAmt.toString(),
       accountType: type,
       investmentType: investmentType ?? null,
-      contributionLimit: contributionLimit ?? null,
+      contributionLimit: contributionLimit?.toString() ?? null,
     });
   };
 
@@ -184,7 +184,7 @@ function Account() {
               <Tab label="Investment" />
             </Tabs>
             <Stack direction={"row"} spacing={1}>
-              <TransferMoneyButton label="Transfer funds" isAccounts />
+              <TransferMoneyButton isAccounts />
               <Button variant="outlined" onClick={handleClickBtn}>
                 Add Accounts
               </Button>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Stack from "@mui/material/Stack";
 import DatePickerField from "../../components/DatePickerField";
 import TextInputField from "../../components/TextInputField";
@@ -8,7 +8,7 @@ import { type SelectChangeEvent } from "@mui/material/Select";
 import Button from "@mui/material/Button";
 import { formatDate } from "../../utils/date";
 import Divider from "@mui/material/Divider";
-import { useWallets } from "../../hooks/useWallets";
+import { useWallets } from "../../hooks/wallets/useWallets";
 import ErrorMessage from "../../components/ErrorMessage";
 import { useCategories } from "../../hooks/categories/useCategories";
 import DialogContent from "@mui/material/DialogContent";
@@ -18,81 +18,110 @@ import TransactionTagField from "./TransactionTagField";
 import type { Tag } from "../../services/tags";
 import { useAddTransaction } from "../../hooks/transactions/useAddTransaction";
 import { useUpdateTransaction } from "../../hooks/transactions/useUpdateTransaction";
-
-export type TransactionFormDataType = {
-  id?: number;
-  description: string;
-  date: Date;
-  categoryId: number;
-  amount: number;
-  payee: Payee | null;
-  tags: Tag[] | [];
-};
+import ListSubheader from "@mui/material/ListSubheader";
+import type { Category } from "../../services/categories";
+import { CategoryType } from "../../constants";
+import CircularProgress from "@mui/material/CircularProgress";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
+import Box from "@mui/material/Box";
+import z from "zod";
+import { getZodIssueObj } from "../../utils/validators";
+import { TransactionFormSchema } from "../../schemas/transactionSchema";
 
 interface TransactionFormProps {
-  formData?: TransactionFormDataType;
   onClose: () => void;
   isLoading?: boolean;
-  selectedItem: TransactionFormDataType | null;
+  selectedItem: TransactionFormData | null;
 }
+
+export type TransactionFormData = z.infer<typeof TransactionFormSchema>;
 
 function TransactionForm({
   onClose,
   isLoading,
   selectedItem,
 }: TransactionFormProps) {
-  const initialFormData: TransactionFormDataType = {
+  const initialFormData: TransactionFormData = {
     description: "",
     date: new Date(),
     categoryId: 1,
-    amount: 0,
+    amount: "",
     payee: null,
     tags: [],
+    isRefund: false,
   };
-  const [formData, setFormData] = useState<TransactionFormDataType>(
+  const [formData, setFormData] = useState<TransactionFormData>(
     selectedItem ?? initialFormData
   );
-  const { mainWalletId, error } = useWallets();
-  const { categories } = useCategories();
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const { mainWalletId, error: mainWalletError } = useWallets();
+  const { categories, isCategoriesLoading } = useCategories();
   const addTransactionMutation = useAddTransaction();
   const updateTransactionMutation = useUpdateTransaction();
 
+  const { incomeCategories, expenseCategories } = useMemo(() => {
+    let incomeCategories: Category[] = [];
+    let expenseCategories: Category[] = [];
+
+    categories.forEach((category) => {
+      if (category.type === CategoryType.EXPENSE) {
+        expenseCategories.push(category);
+      } else if (category.type === CategoryType.INCOME) {
+        incomeCategories.push(category);
+      }
+    });
+
+    return { incomeCategories, expenseCategories };
+  }, [categories]);
+
   const handleSubmit = async () => {
-    const { description, amount, date, categoryId, payee, tags } = formData;
-    const formattedDate = formatDate(date, "yyyy-MM-dd");
-
-    if (!mainWalletId)
-      return <ErrorMessage message="Main wallet is not found" />;
-
-    const payloadData = {
-      description,
-      amount,
-      categoryId,
-      payeeId: typeof payee === "object" && payee !== null ? payee.id : null,
-      tagIds: tags.map((t) => t.id),
-      date: formattedDate,
-      walletId: mainWalletId,
-    };
-
-    if (formData?.id) {
-      updateTransactionMutation.mutate({
-        id: formData.id,
-        payload: payloadData,
+    // validate data
+    const result = TransactionFormSchema.safeParse(formData);
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        const newError = getZodIssueObj(issue);
+        setErrors({ ...errors, ...newError });
       });
     } else {
-      addTransactionMutation.mutate(payloadData);
+      const { description, amount, date, categoryId, payee, tags, isRefund } =
+        result.data;
 
-      setFormData({
-        ...formData,
-        description: "",
-        amount: 0,
-        payee: null,
-        tags: [],
-      });
+      if (!mainWalletId)
+        return <ErrorMessage message="Main wallet not found" />;
+
+      const payloadData = {
+        description,
+        amount: Number(amount),
+        categoryId,
+        payeeId: payee?.id ?? null,
+        tagIds: tags.map((t) => t.id),
+        date: formatDate(date),
+        walletId: mainWalletId,
+        isRefund,
+      };
+
+      if (formData?.id) {
+        updateTransactionMutation.mutate({
+          id: formData.id,
+          payload: payloadData,
+        });
+      } else {
+        addTransactionMutation.mutate(payloadData);
+        setFormData({
+          ...formData,
+          description: "",
+          amount: "",
+          payee: null,
+          tags: [],
+          isRefund: false,
+        });
+      }
+
+      onClose();
+      setErrors({});
     }
-
-    onClose();
   };
 
   const handleDateChange = (value: Date) => {
@@ -102,6 +131,7 @@ function TransactionForm({
   const handleFormDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    setErrors({});
   };
 
   const handleFormSelectChange = (e: SelectChangeEvent) => {
@@ -117,9 +147,26 @@ function TransactionForm({
     setFormData({ ...formData, tags: values });
   };
 
-  const isDisabled = formData.description === "" || formData.amount <= 0;
+  const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData({ ...formData, [name]: checked });
+  };
 
-  if (error) return <ErrorMessage message={error.message} />;
+  if (isCategoriesLoading)
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          alignContent: "center",
+          justifyContent: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+
+  if (mainWalletError)
+    return <ErrorMessage message={mainWalletError.message} />;
 
   return (
     <DialogContent>
@@ -139,8 +186,21 @@ function TransactionForm({
               value={formData.categoryId.toString()}
               onChange={handleFormSelectChange}
             >
-              {categories.map((category) => {
-                return <MenuItem value={category.id}>{category.name}</MenuItem>;
+              <ListSubheader>Income</ListSubheader>
+              {incomeCategories.map((c) => {
+                return (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
+                  </MenuItem>
+                );
+              })}
+              <ListSubheader>Expense</ListSubheader>
+              {expenseCategories.map((c) => {
+                return (
+                  <MenuItem key={c.id} value={c.id}>
+                    {c.name}
+                  </MenuItem>
+                );
               })}
             </SelectInputField>
           )}
@@ -150,6 +210,8 @@ function TransactionForm({
             name="amount"
             value={formData.amount}
             onChange={handleFormDataChange}
+            error={!!errors.amount}
+            helperText={errors.amount}
           />
 
           <TransactionPayeeField
@@ -162,6 +224,18 @@ function TransactionForm({
             label="Tag"
             selectedValue={formData.tags}
             onChange={handleTagChange}
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={formData.isRefund}
+                onChange={handleSwitchChange}
+                name="isRefund"
+              />
+            }
+            label="Is it a refund?"
+            labelPlacement="start"
           />
         </Stack>
 
@@ -180,7 +254,7 @@ function TransactionForm({
             color="primary"
             variant="contained"
             onClick={handleSubmit}
-            disabled={isDisabled}
+            disabled={Object.keys(errors).length > 0}
           >
             {!selectedItem ? "Add " : "Save "}
             Transaction

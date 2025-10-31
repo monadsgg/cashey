@@ -1,5 +1,10 @@
 import { Request, Response } from 'express';
-import { getUserById, loginUser, registerUser } from '../services/userService';
+import {
+  getAllUserCategories,
+  getUserById,
+  loginUser,
+  registerUser,
+} from '../services/userService';
 
 export async function register(req: Request, res: Response): Promise<void> {
   const { name, email, password } = req.body;
@@ -31,5 +36,19 @@ export async function getUser(req: Request, res: Response) {
     res.status(200).json(user);
   } catch (error: any) {
     res.status(404).json({ message: error.message });
+  }
+}
+
+export async function getUserCategories(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  const userId = res.locals.user;
+
+  try {
+    const categories = await getAllUserCategories(userId);
+    res.status(200).json(categories);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Failed to fetch user categories' });
   }
 }

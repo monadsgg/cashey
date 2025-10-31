@@ -1,6 +1,6 @@
 // pagination
 export const DEFAULT_PAGE = 1;
-export const DEFAULT_PAGE_SIZE = 15;
+export const DEFAULT_PAGE_SIZE = 10;
 
 // wallet
 export const WalletType = {
@@ -40,3 +40,12 @@ export const transferCategory = {
 
 // tag
 export const TAG_DEFAULT_COLOR = "#8cdbc4";
+
+export const FilterRuleType = {
+  contains: "contains",
+  exact: "exact",
+  is: "is",
+  isNot: "is_not",
+  greaterThan: "greater_than",
+  lessThan: "less_than",
+} as const;

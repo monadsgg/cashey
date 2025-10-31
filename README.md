@@ -14,7 +14,7 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
 
 ## Tech Stack
 
-- **Frontend**: React, TypeScript, MUI (Material UI), React Query
+- **Frontend**: React, TypeScript, MUI (Material UI), React Query, Zod (form & data validation)
 - **Backend**: Node.js, TypeScript, Prisma ORM
 - **Database**: PostgreSQL
 - **HTTP Client**: Axios

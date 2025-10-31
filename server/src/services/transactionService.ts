@@ -6,15 +6,21 @@ import {
   CATEGORY_DEFAULT_COLOR,
   TAG_DEFAULT_COLOR,
 } from '../constants';
-import { CategoryType, WalletType } from '../utils/enums';
+import { CategoryType, FilterRuleType, WalletType } from '../utils/enums';
 
 interface TransactionFilters {
   userId: number;
-  query?: string;
+  searchVal?: string;
   start?: string;
   end?: string;
   page?: number;
   pageSize?: number;
+  search?: ClientFilter;
+  payee?: ClientFilter;
+  category?: ClientFilter;
+  tag?: ClientFilter;
+  income?: ClientFilter;
+  expense?: ClientFilter;
 }
 
 interface ImportedTransaction {
@@ -26,21 +32,104 @@ interface ImportedTransaction {
   tags: string[];
 }
 
+type FilterRule =
+  | FilterRuleType.CONTAINS
+  | FilterRuleType.EXACT
+  | FilterRuleType.IS
+  | FilterRuleType.IS_NOT
+  | FilterRuleType.GREATER_THAN
+  | FilterRuleType.LESS_THAN;
+
+interface ClientFilter {
+  rule: FilterRule;
+  value: string;
+}
+
 export async function getAllTransactions({
   userId,
-  query,
+  searchVal,
   start,
   end,
   page,
   pageSize,
+  search,
+  payee,
+  category,
+  tag,
+  income,
+  expense,
 }: TransactionFilters) {
   const where: Prisma.TransactionWhereInput = { userId };
 
-  if (query) {
+  // search feature
+  if (searchVal) {
     where.description = {
-      contains: query,
+      contains: searchVal,
       mode: 'insensitive',
     };
+  }
+
+  // search filter
+  if (search) {
+    where.description = {
+      contains: search.value as string,
+      mode: 'insensitive',
+    };
+  }
+
+  // payee filter
+  if (payee) {
+    if (payee.rule === FilterRuleType.CONTAINS) {
+      where.payee = {
+        name: {
+          contains: payee.value as string,
+          mode: 'insensitive',
+        },
+      };
+    } else if (payee.rule === FilterRuleType.EXACT) {
+      where.payee = {
+        name: {
+          equals: payee.value as string,
+          mode: 'insensitive',
+        },
+      };
+    }
+  }
+
+  // category filter
+  if (category) {
+    if (category.rule === FilterRuleType.IS) {
+      where.categoryId = Number(category.value);
+    } else if (category.rule === FilterRuleType.IS_NOT) {
+      where.categoryId = { not: Number(category.value) };
+    }
+  }
+
+  // tag filter
+  if (tag) {
+    if (tag.rule === FilterRuleType.IS) {
+      where.tags = {
+        some: { id: Number(tag.value) },
+      };
+    } else if (tag.rule === FilterRuleType.IS_NOT) {
+      where.tags = {
+        none: { id: Number(tag.value) },
+      };
+    }
+  }
+
+  // income filter
+  if (income) {
+    const amount = Number(income.value);
+    where.category = { type: { equals: CategoryType.INCOME } };
+    where.amount = buildAmountFilter(income.rule, amount);
+  }
+
+  // expense filter
+  if (expense) {
+    const amount = Number(expense.value);
+    where.category = { type: { equals: CategoryType.EXPENSE } };
+    where.amount = buildAmountFilter(expense.rule, amount);
   }
 
   if (start && end) {
@@ -58,7 +147,7 @@ export async function getAllTransactions({
         take: pageSize,
         include: {
           category: {
-            omit: { userId: true },
+            omit: { userId: true, color: true },
           },
           tags: { omit: { userId: true } },
           payee: { omit: { userId: true } },
@@ -94,8 +183,26 @@ export async function getAllTransactions({
       date: true,
       amount: true,
       category: { omit: { userId: true, color: true } },
+      isRefund: true,
     },
   });
+}
+
+// helper function for amount filters
+function buildAmountFilter(
+  rule: FilterRule,
+  amount: number,
+): Prisma.DecimalFilter {
+  switch (rule) {
+    case 'exact':
+      return { equals: amount };
+    case 'greater_than':
+      return { gt: amount };
+    case 'less_than':
+      return { lt: amount };
+    default:
+      throw new Error(`Unsupported rule: ${rule}`);
+  }
 }
 
 export async function addTransaction(
@@ -107,8 +214,9 @@ export async function addTransaction(
   walletId: number,
   tagIds: number[],
   payeeId: number,
+  isRefund: boolean = false,
 ) {
-  if (!description || !categoryId || !amount || !date)
+  if (!categoryId || !amount || !date)
     throw new Error('All fields are required');
 
   const wallet = await db.wallet.findUnique({
@@ -119,55 +227,31 @@ export async function addTransaction(
   const category = await db.category.findUnique({ where: { id: categoryId } });
   if (!category) throw new Error('Category does not exist');
 
-  const result = await db.$transaction(async (tx) => {
-    // 1) create a new transaction
-    const newTransaction = await tx.transaction.create({
-      data: {
-        description,
-        categoryId,
-        amount,
-        date: new Date(date),
-        userId,
-        walletId,
-        tags: {
-          connect: tagIds.map((id) => ({ id })),
-        },
-        payeeId: payeeId ? payeeId : undefined,
+  return db.transaction.create({
+    data: {
+      description,
+      categoryId,
+      amount,
+      date: new Date(date),
+      userId,
+      walletId,
+      tags: {
+        connect: tagIds.map((id) => ({ id })),
       },
-      include: {
-        category: {
-          omit: { userId: true },
-        },
-        tags: { omit: { userId: true } },
-        payee: { omit: { userId: true } },
-      },
-      omit: {
-        categoryId: true,
-        userId: true,
-        walletId: true,
-        payeeId: true,
-      },
-    });
-
-    let balance = Number(wallet.balance);
-    let parsedAmount = Number(amount);
-
-    // 2) calculate new balance
-    const newBalance =
-      category.type === CategoryType.INCOME
-        ? balance + parsedAmount
-        : balance - parsedAmount;
-
-    // 3) update main wallet balance
-    await tx.wallet.update({
-      where: { id: walletId },
-      data: { balance: newBalance },
-    });
-
-    return newTransaction;
+      payeeId: payeeId || undefined,
+      isRefund,
+    },
+    include: {
+      category: { omit: { userId: true, color: true } },
+      tags: { omit: { userId: true } },
+      payee: { omit: { userId: true } },
+    },
+    omit: {
+      categoryId: true,
+      userId: true,
+      payeeId: true,
+    },
   });
-
-  return result;
 }
 
 export async function editTransaction(
@@ -179,117 +263,42 @@ export async function editTransaction(
   userId: number,
   tagIds: number[],
   payeeId: number | null,
+  isRefund: boolean,
 ) {
-  if (!description || !categoryId || !amount || !date)
+  if (!categoryId || !amount || !date)
     throw new Error('All fields are required');
 
-  const result = await db.$transaction(async (tx) => {
-    // 1) Get the old transaction (with category)
-    const oldTransaction = await tx.transaction.findUniqueOrThrow({
-      where: { id, userId },
-      include: { category: true },
-    });
-
-    const wallet = await tx.wallet.findUniqueOrThrow({
-      where: { id: oldTransaction.walletId },
-    });
-
-    // 2) Get new category type to check if changed
-    const newCategory = await tx.category.findUniqueOrThrow({
-      where: { id: categoryId },
-    });
-
-    let balance = Number(wallet.balance);
-
-    // 3) Check if amount has changed
-    const oldAmount = Number(oldTransaction.amount);
-    const newAmount = Number(amount);
-
-    if (
-      oldAmount !== newAmount ||
-      oldTransaction.category.type !== newCategory.type
-    ) {
-      // Reverse old effect
-      if (oldTransaction.category.type === CategoryType.INCOME) {
-        balance -= oldAmount;
-      } else {
-        balance += oldAmount;
-      }
-
-      // Apply new effect
-      if (newCategory.type === CategoryType.INCOME) {
-        balance += newAmount;
-      } else {
-        balance -= newAmount;
-      }
-
-      // 4) Update wallet balance
-      await tx.wallet.update({
-        where: { id: oldTransaction.walletId },
-        data: { balance },
-      });
-    }
-
-    // 5) Update transaction
-    const updatedTransaction = await tx.transaction.update({
-      where: { id },
-      data: {
-        description,
-        categoryId,
-        amount,
-        date: new Date(date),
-        tags: {
-          set: tagIds.map((id) => ({ id })),
-        },
-        payeeId,
+  return db.transaction.update({
+    where: { id },
+    data: {
+      description,
+      categoryId,
+      amount,
+      date: new Date(date),
+      tags: {
+        set: tagIds.map((id) => ({ id })),
       },
-      include: {
-        category: {
-          omit: { userId: true },
-        },
-        tags: { omit: { userId: true } },
-        payee: { omit: { userId: true } },
+      payeeId,
+      isRefund,
+    },
+    include: {
+      category: {
+        omit: { userId: true, color: true },
       },
-      omit: {
-        categoryId: true,
-        userId: true,
-        walletId: true,
-        payeeId: true,
-      },
-    });
-
-    return updatedTransaction;
+      tags: { omit: { userId: true } },
+      payee: { omit: { userId: true } },
+    },
+    omit: {
+      categoryId: true,
+      userId: true,
+      walletId: true,
+      payeeId: true,
+    },
   });
-
-  return result;
 }
 
 export async function removeTransaction(id: number, userId: number) {
-  const transaction = await db.transaction.findUnique({
-    where: { id, userId },
-    include: { category: true },
-  });
-
-  const wallet = await db.wallet.findUnique({
-    where: { id: transaction?.walletId, userId },
-  });
-
-  // get main wallet balance and tx amount
-  let balance = Number(wallet?.balance);
-  let transactionAmount = transaction?.amount;
-
-  // if category type = expense increment balance; else decrement
-  if (transaction?.category.type === CategoryType.EXPENSE)
-    balance += Number(transactionAmount);
-  else balance -= Number(transactionAmount);
-
-  await db.$transaction([
-    db.transaction.delete({ where: { id, userId } }),
-    db.wallet.update({
-      where: { id: transaction?.walletId },
-      data: { balance },
-    }),
-  ]);
+  return db.transaction.delete({ where: { id, userId } });
 }
 
 export async function transferFunds(
@@ -334,9 +343,15 @@ export async function transferFunds(
         walletId: fromWalletId,
         userId,
       },
+      include: {
+        category: {
+          omit: { userId: true, color: true },
+        },
+      },
       omit: {
         userId: true,
         payeeId: true,
+        categoryId: true,
       },
     });
 
@@ -370,6 +385,37 @@ export async function transferFunds(
   return result;
 }
 
+async function getOrCreatePayee(userId: number, name: string) {
+  const existingPayee = await db.payee.findFirst({
+    where: {
+      name: { equals: name, mode: 'insensitive' },
+      userId,
+    },
+  });
+
+  if (existingPayee) return existingPayee;
+  else
+    return await db.payee.create({
+      data: { name, userId },
+    });
+}
+
+async function getOrCreateTag(userId: number, name: string) {
+  const existingTag = await db.tag.findFirst({
+    where: {
+      name: { equals: name, mode: 'insensitive' },
+      userId,
+    },
+  });
+
+  if (existingTag) return existingTag;
+  else {
+    return await db.tag.create({
+      data: { name, userId, color: TAG_DEFAULT_COLOR },
+    });
+  }
+}
+
 export async function addTransactions(
   transactions: ImportedTransaction[],
   userId: number,
@@ -382,65 +428,51 @@ export async function addTransactions(
   });
   if (!wallet) throw new Error('Wallet does not exist');
 
+  // pre-load categories
+  let existingCategories = await db.category.findMany({
+    where: { OR: [{ userId }, { userId: { equals: null } }] },
+  });
+
+  const categoryMap = new Map(
+    existingCategories.map((c) => [c.name.trim().toLowerCase(), c]),
+  );
+
   for (const t of transactions) {
-    // check if category exist else create a new one
     const isRefund = t.description.toLowerCase().includes('refund');
 
-    let category = await db.category.findFirst({
-      where: {
-        OR: [{ userId }, { userId: { equals: null } }],
-        name: t.category,
-      },
-    });
-
-    if (category && category.type === CategoryType.EXPENSE && isRefund) {
-      category = await db.category.create({
-        data: {
-          userId,
-          name: t.category,
-          type: CategoryType.INCOME,
-          color: CATEGORY_DEFAULT_COLOR,
-        },
-      });
-    }
-
+    // 1) Check if category exist else create a new one
+    const categoryKey = t.category.trim().toLowerCase();
+    let category = categoryMap.get(categoryKey);
     if (!category) {
       category = await db.category.create({
         data: {
           userId,
           name: t.category,
-          type: isRefund ? CategoryType.INCOME : CategoryType.EXPENSE,
+          type: CategoryType.EXPENSE,
           color: CATEGORY_DEFAULT_COLOR,
         },
       });
+
+      categoryMap.set(categoryKey, category);
     }
 
-    // check if payee exist else create a new one
+    // 2) Check if payee exist else create a new one
     let payeeId: number | null = null;
     if (t.payee) {
-      const payee = await db.payee.upsert({
-        where: { name_userId: { name: t.payee, userId } },
-        update: {},
-        create: { name: t.payee, userId },
-      });
-
+      const payee = await getOrCreatePayee(userId, t.payee);
       payeeId = payee.id;
     }
 
-    // check if tags exist else create a new one
+    // 3) Check if tags exist else create a new one
     let tagIds: number[] = [];
     if (t.tags && t.tags.length > 0) {
       for (const tagName of t.tags) {
-        const tag = await db.tag.upsert({
-          where: { name_userId: { name: tagName, userId } },
-          update: {},
-          create: { name: tagName, userId, color: TAG_DEFAULT_COLOR },
-        });
+        const tag = await getOrCreateTag(userId, tagName);
         tagIds.push(tag.id);
       }
     }
 
-    // creata a new transaction
+    // 4) Creata a new transaction
     const transaction = await db.transaction.create({
       data: {
         description: t.description,
@@ -451,19 +483,18 @@ export async function addTransactions(
         categoryId: category.id,
         payeeId,
         tags: { connect: tagIds.map((id) => ({ id })) },
+        isRefund: isRefund,
       },
-      include: {
-        category: {
-          omit: { userId: true },
-        },
+      select: {
+        id: true,
+        description: true,
+        amount: true,
+        date: true,
+        isRefund: true,
+        walletId: true,
+        category: { omit: { userId: true } },
         tags: { omit: { userId: true } },
         payee: { omit: { userId: true } },
-      },
-      omit: {
-        categoryId: true,
-        userId: true,
-        walletId: true,
-        payeeId: true,
       },
     });
 

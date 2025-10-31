@@ -72,8 +72,11 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
       setIsProcessing(false);
       setIsCompleted(true);
       setToast({ message: result.message, open: true });
+
       queryClient.invalidateQueries({ queryKey: ["transaction"] });
       queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
+      queryClient.invalidateQueries({ queryKey: ["wallets"] });
+      queryClient.refetchQueries({ queryKey: ["user-categories"] });
     } catch (error: any) {
       setError(error.message);
     }
@@ -85,6 +88,17 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
         header: true,
         skipEmptyLines: true,
         delimiter: ",",
+        transform: (value) => {
+          if (typeof value === "string") {
+            const cleaned = value.replace(/,/g, "");
+
+            if (!isNaN(Number(cleaned)) && cleaned.trim() !== "")
+              return parseFloat(cleaned);
+
+            return value;
+          }
+          return value;
+        },
         error: (error: Error) => {
           setError(error.message);
         },

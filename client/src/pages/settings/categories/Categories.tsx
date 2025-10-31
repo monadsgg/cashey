@@ -1,16 +1,18 @@
+import { useMemo, useState } from "react";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { useCategories } from "../../../hooks/categories/useCategories";
 import FormDialog from "../../../components/FormDialog";
 import CategoryForm, { type CategoryFormData } from "./CategoryForm";
-import { useState } from "react";
 import { CategoryType } from "../../../constants";
 import type { Category } from "../../../services/categories";
 import ListItemBox from "../../../components/ListItemBox";
 import Box from "@mui/material/Box";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import { useDeleteCategory } from "../../../hooks/categories/useDeleteCategory";
+import { useUserCategories } from "../../../hooks/categories/useUserCategories";
+import { getUserId } from "../../../utils/auth";
 
 const boxSxProps = {
   width: "100%",
@@ -33,16 +35,29 @@ function Categories() {
     id: null,
     openDialog: false,
   });
+
+  const userId = getUserId();
   const { categories } = useCategories();
+  const { userCategories } = useUserCategories(userId!);
   const deleteMutation = useDeleteCategory();
 
-  const incomeCategories = categories.filter(
-    (c) => c.type === CategoryType.INCOME
-  );
+  const { incomeCategories, expenseCategories } = useMemo(() => {
+    const incomeCategories: Category[] = [];
+    const expenseCategories: Category[] = [];
 
-  const expenseCategories = categories.filter(
-    (c) => c.type === CategoryType.EXPENSE
-  );
+    categories.forEach((category) => {
+      const isUserCategory = userCategories.some((u) => u.id === category.id);
+      if (isUserCategory) return;
+
+      if (category.type === CategoryType.INCOME) {
+        incomeCategories.push(category);
+      } else if (category.type === CategoryType.EXPENSE) {
+        expenseCategories.push(category);
+      }
+    });
+
+    return { incomeCategories, expenseCategories };
+  }, [categories, userCategories]);
 
   const handleOpenForm = () => {
     setOpenForm(true);
@@ -92,32 +107,62 @@ function Categories() {
           </Button>
         </Stack>
 
-        <Stack>
-          <Typography variant="subtitle1">Income</Typography>
-          <Box sx={boxSxProps}>
-            {incomeCategories.map((category: Category) => (
-              <ListItemBox
-                key={category.id}
-                item={category}
-                onClickDelete={handleOnClickDeleteBtn}
-                onClickEdit={handleOnClickEditBtn}
-              />
-            ))}
-          </Box>
-        </Stack>
+        <Stack
+          spacing={3}
+          sx={{
+            height: "65vh",
+            overflowY: "auto",
+            pr: 1,
+          }}
+        >
+          <Stack>
+            <Typography variant="subtitle1" fontSize={16} color="primary">
+              Pre-defined Categories
+            </Typography>
+            <Typography variant="subtitle1">Income</Typography>
+            <Box sx={boxSxProps}>
+              {incomeCategories.map((category) => (
+                <ListItemBox
+                  key={category.id}
+                  item={category}
+                  onClickDelete={handleOnClickDeleteBtn}
+                  onClickEdit={handleOnClickEditBtn}
+                />
+              ))}
+            </Box>
+          </Stack>
 
-        <Stack>
-          <Typography variant="subtitle1">Expense</Typography>
-          <Box sx={boxSxProps}>
-            {expenseCategories.map((category: Category) => (
-              <ListItemBox
-                key={category.id}
-                item={category}
-                onClickDelete={handleOnClickDeleteBtn}
-                onClickEdit={handleOnClickEditBtn}
-              />
-            ))}
-          </Box>
+          <Stack>
+            <Typography variant="subtitle1">Expense</Typography>
+            <Box sx={boxSxProps}>
+              {expenseCategories.map((category) => (
+                <ListItemBox
+                  key={category.id}
+                  item={category}
+                  onClickDelete={handleOnClickDeleteBtn}
+                  onClickEdit={handleOnClickEditBtn}
+                />
+              ))}
+            </Box>
+          </Stack>
+
+          {userCategories.length > 0 && (
+            <Stack>
+              <Typography variant="subtitle1" fontSize={16} color="primary">
+                My categories
+              </Typography>
+              <Box sx={boxSxProps}>
+                {userCategories.map((category) => (
+                  <ListItemBox
+                    key={category.id}
+                    item={category}
+                    onClickDelete={handleOnClickDeleteBtn}
+                    onClickEdit={handleOnClickEditBtn}
+                  />
+                ))}
+              </Box>
+            </Stack>
+          )}
         </Stack>
       </Stack>
 

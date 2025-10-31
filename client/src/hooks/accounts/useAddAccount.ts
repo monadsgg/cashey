@@ -9,6 +9,7 @@ export function useAddAccount() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       queryClient.refetchQueries({ queryKey: ["wallets"] });
+      queryClient.refetchQueries({ queryKey: ["statsOverview"] });
     },
   });
 }

@@ -1,44 +1,46 @@
 import { useState } from "react";
-import { useCategories } from "../../hooks/categories/useCategories";
 import { getMonth, getYear } from "../../utils/date";
 import Stack from "@mui/material/Stack";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import DialogContent from "@mui/material/DialogContent";
-import Alert from "@mui/material/Alert";
 import type { SelectChangeEvent } from "@mui/material/Select";
 import SelectInputField from "../../components/SelectInputField";
 import TextInputField from "../../components/TextInputField";
 import { useBudgets } from "../../hooks/budget/useBudgets";
 import { useAddBudget } from "../../hooks/budget/useAddBudget";
 import { useUpdateBudget } from "../../hooks/budget/useUpdateBudget";
+import type { Category } from "../../services/categories";
+import { BudgetFormSchema } from "../../schemas/budgetSchema";
+import type z from "zod";
+import { getZodIssueObj } from "../../utils/validators";
 
 interface BudgetFormProps {
   currentDate: Date;
   selectedItem: BudgetFormData | null;
+  categories: Category[];
   onClose: () => void;
 }
 
-export interface BudgetFormData {
-  id?: number;
-  categoryId: number;
-  amountLimit: number;
-  month: number;
-  year: number;
-}
+export type BudgetFormData = z.infer<typeof BudgetFormSchema>;
 
-function BudgetForm({ currentDate, selectedItem, onClose }: BudgetFormProps) {
+function BudgetForm({
+  currentDate,
+  selectedItem,
+  categories,
+  onClose,
+}: BudgetFormProps) {
   const initialFormData: BudgetFormData = {
-    categoryId: 3,
-    amountLimit: 0,
+    categoryId: categories[0].id,
+    amountLimit: "",
     month: Number(getMonth(currentDate, "M")),
     year: Number(getYear(currentDate)),
   };
   const [formData, setFormData] = useState<BudgetFormData>(
     selectedItem ?? initialFormData
   );
-  const [error, setError] = useState("");
-  const { categories } = useCategories();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const { budgets } = useBudgets(formData.month, formData.year);
   const existingBudgets = budgets.map((b) => b.category.id);
 
@@ -46,35 +48,39 @@ function BudgetForm({ currentDate, selectedItem, onClose }: BudgetFormProps) {
   const updateMutation = useUpdateBudget();
 
   const handleSubmit = () => {
-    const { categoryId, amountLimit, month, year } = formData;
+    // validate data
+    const result = BudgetFormSchema.safeParse(formData);
 
-    // check if the selected category is already existed
-    if (existingBudgets.includes(categoryId)) {
-      setError("Category already exists.");
-      return;
-    }
+    if (result.success) {
+      const { categoryId, amountLimit, month, year } = result.data;
 
-    if (Number(amountLimit) <= 0) {
-      setError("Amount should be greater than 0");
-      return;
-    }
+      // check if the selected category is already existed
+      if (existingBudgets.includes(categoryId)) {
+        setErrors({ categoryId: "Category already exists" });
+        return;
+      }
 
-    const payload = {
-      categoryId: Number(categoryId),
-      amountLimit: Number(amountLimit),
-      month,
-      year,
-    };
+      const payload = {
+        categoryId: Number(categoryId),
+        amountLimit: Number(amountLimit),
+        month,
+        year,
+      };
 
-    if (formData?.id) {
-      console.log("handleSubmit update");
-      updateMutation.mutate({ id: formData.id, payload });
+      if (formData?.id) {
+        updateMutation.mutate({ id: formData.id, payload });
+      } else {
+        addMutation.mutate(payload);
+      }
+
+      setFormData({ ...formData, amountLimit: "" });
+      onClose();
     } else {
-      addMutation.mutate(payload);
+      result.error.issues.forEach((issue) => {
+        const newError = getZodIssueObj(issue);
+        setErrors({ ...errors, ...newError });
+      });
     }
-
-    setFormData({ ...formData, amountLimit: 0 });
-    onClose();
   };
 
   const handleFormChange = (
@@ -82,11 +88,8 @@ function BudgetForm({ currentDate, selectedItem, onClose }: BudgetFormProps) {
   ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setError("");
+    setErrors({});
   };
-
-  const isDisabled =
-    !formData.categoryId || formData.amountLimit <= 0 || !!error;
 
   return (
     <>
@@ -99,6 +102,8 @@ function BudgetForm({ currentDate, selectedItem, onClose }: BudgetFormProps) {
                 name="categoryId"
                 value={formData.categoryId.toString()}
                 onChange={handleFormChange}
+                error={errors.categoryId}
+                disabled={!!formData?.id}
               >
                 {categories.map((category) => {
                   return (
@@ -112,14 +117,9 @@ function BudgetForm({ currentDate, selectedItem, onClose }: BudgetFormProps) {
               name="amountLimit"
               value={formData.amountLimit}
               onChange={handleFormChange}
-              type="number"
+              error={!!errors.amountLimit}
+              helperText={errors.amountLimit}
             />
-
-            {error && (
-              <Stack>
-                <Alert severity="error">{error}</Alert>
-              </Stack>
-            )}
           </Stack>
 
           <Stack
@@ -134,7 +134,7 @@ function BudgetForm({ currentDate, selectedItem, onClose }: BudgetFormProps) {
               color="primary"
               variant="contained"
               onClick={handleSubmit}
-              disabled={isDisabled}
+              disabled={Object.keys(errors).length > 0}
             >
               {!selectedItem ? "Add " : "Save "}
               Budget

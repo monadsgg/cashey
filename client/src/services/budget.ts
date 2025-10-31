@@ -30,6 +30,11 @@ export interface BudgetResponse {
   updatedAt: string;
 }
 
+export interface CopiedBudgetResponse {
+  inserted: number;
+  message: string;
+}
+
 export async function getBudgets(
   month: number,
   year: number
@@ -55,4 +60,15 @@ export async function updateBugdet(
 
 export async function deleteBugdet(id: number): Promise<void> {
   await api.delete(`/api/budgets/${id}`);
+}
+
+export async function copyBudget(payload: {
+  fromMonth: string;
+  toMonth: string;
+}): Promise<CopiedBudgetResponse> {
+  const result = await api.post<CopiedBudgetResponse>(
+    `/api/budgets/copy`,
+    payload
+  );
+  return result.data;
 }

@@ -72,7 +72,7 @@ function Tags() {
 
     return (
       <Box sx={boxSxProps}>
-        {tags.map((tag: Tag) => (
+        {tags.map((tag) => (
           <ListItemBox
             key={tag.id}
             item={tag}

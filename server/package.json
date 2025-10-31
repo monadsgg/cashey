@@ -1,13 +1,13 @@
 {
   "name": "server",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "",
   "main": "index.ts",
-  "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "NODE_ENV=production tsc",
+    "start": "NODE_ENV=production node dist/index.js",
     "dev": "tsx --watch src/index.ts",
+    "migrate:prod": "NODE_ENV=production npx prisma migrate deploy",
     "type-check": "tsc --noEmit",
     "lint": "eslint .'"
   },
@@ -22,7 +22,8 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.0",
-    "prisma": "^6.8.2"
+    "prisma": "^6.8.2",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

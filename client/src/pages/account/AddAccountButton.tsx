@@ -17,7 +17,7 @@ function AddAccountButton() {
       <Button variant="outlined" onClick={handleClick}>
         Add Accounts
       </Button>
-      <FormDialog open={open} onClose={handleClose}>
+      <FormDialog title="Account" open={open} onClose={handleClose}>
         <AccountForm onClose={handleClose} />
       </FormDialog>
     </>
