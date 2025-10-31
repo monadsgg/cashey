@@ -17,6 +17,8 @@ import { useAccounts } from "../../hooks/accounts/useAccounts";
 import { useDeleteAccount } from "../../hooks/accounts/useDeleteAccount";
 import type { ConfirmDeleteData } from "../transaction/Transaction";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import Typography from "@mui/material/Typography";
+import { getAccountProgress } from "../../utils/account";
 
 function Account() {
   const [tab, setTab] = useState(0);
@@ -80,6 +82,79 @@ function Account() {
     handleCloseConfirmDialog();
   };
 
+  const displayNoData = () => {
+    return (
+      <Typography variant="body1" sx={{ mt: "10px" }}>
+        No accounts created yet.
+      </Typography>
+    );
+  };
+
+  const renderPersonalAccounts = () => {
+    if (!personalAccounts.length) {
+      return displayNoData();
+    }
+
+    return personalAccounts.map((acc) => {
+      const {
+        name,
+        balance,
+        account: { owner, targetAmt },
+      } = acc;
+
+      const { percentage, remaining } = getAccountProgress(balance, targetAmt);
+
+      return (
+        <AccountCard
+          key={acc.id}
+          title={name}
+          chipLabel={owner}
+          currentAmt={balance}
+          targetAmt={targetAmt}
+          remainingAmt={remaining}
+          percentage={percentage}
+          onClickEdit={() => handleOnClickEdit(acc)}
+          onClickDelete={() => handleOnClickDeleteBtn(acc.id)}
+          showDeleteBtn={!acc.transactions.length}
+        />
+      );
+    });
+  };
+
+  const renderInvestmentAccounts = () => {
+    if (!investmentAccounts.length) {
+      return displayNoData();
+    }
+
+    return investmentAccounts.map((acc) => {
+      const {
+        name,
+        balance,
+        type,
+        account: { owner, targetAmt, contributionLimit },
+      } = acc;
+
+      const { percentage, remaining } = getAccountProgress(balance, targetAmt);
+
+      return (
+        <AccountCard
+          key={acc.id}
+          title={name}
+          chipLabel={owner}
+          accountType={type}
+          currentAmt={balance}
+          targetAmt={targetAmt}
+          remainingAmt={remaining}
+          contributionLimit={contributionLimit}
+          percentage={percentage}
+          onClickEdit={() => handleOnClickEdit(acc)}
+          onClickDelete={() => handleOnClickDeleteBtn(acc.id)}
+          showDeleteBtn={!acc.transactions.length}
+        />
+      );
+    });
+  };
+
   return (
     <>
       <Stack
@@ -117,64 +192,10 @@ function Account() {
           </Stack>
           <Box mt={2}>
             <TabPanel index={0} value={tab}>
-              <Stack spacing={2}>
-                {personalAccounts.map((acc) => {
-                  const {
-                    name,
-                    balance,
-                    account: { owner, targetAmt },
-                  } = acc;
-                  const percentage = Math.ceil((balance / targetAmt) * 100);
-                  const remaining = targetAmt - balance;
-
-                  return (
-                    <AccountCard
-                      key={acc.id}
-                      title={name}
-                      chipLabel={owner}
-                      currentAmt={balance}
-                      targetAmt={targetAmt}
-                      remainingAmt={remaining}
-                      percentage={percentage}
-                      onClickEdit={() => handleOnClickEdit(acc)}
-                      onClickDelete={() => handleOnClickDeleteBtn(acc.id)}
-                      showDeleteBtn={!acc.transactions.length}
-                    />
-                  );
-                })}
-              </Stack>
+              <Stack spacing={2}>{renderPersonalAccounts()}</Stack>
             </TabPanel>
             <TabPanel index={1} value={tab}>
-              <Stack spacing={2}>
-                {investmentAccounts.map((acc) => {
-                  const {
-                    name,
-                    balance,
-                    type,
-                    account: { owner, targetAmt, contributionLimit },
-                  } = acc;
-
-                  const percentage = Math.ceil((balance / targetAmt) * 100);
-                  const remaining = targetAmt - balance;
-
-                  return (
-                    <AccountCard
-                      key={acc.id}
-                      title={name}
-                      chipLabel={owner}
-                      accountType={type}
-                      currentAmt={balance}
-                      targetAmt={targetAmt}
-                      remainingAmt={remaining}
-                      contributionLimit={contributionLimit}
-                      percentage={percentage}
-                      onClickEdit={() => handleOnClickEdit(acc)}
-                      onClickDelete={() => handleOnClickDeleteBtn(acc.id)}
-                      showDeleteBtn={!acc.transactions.length}
-                    />
-                  );
-                })}
-              </Stack>
+              <Stack spacing={2}>{renderInvestmentAccounts()}</Stack>
             </TabPanel>
           </Box>
         </Paper>
