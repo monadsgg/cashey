@@ -4,7 +4,7 @@ import { createTheme } from "@mui/material/styles";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#26CA99",
+      main: "#000",
       contrastText: "#ffffff",
     },
     secondary: {
@@ -45,7 +45,6 @@ const theme = createTheme({
     },
     button: {
       fontSize: "1rem",
-      fontWeight: 600,
     },
     subtitle1: {
       fontSize: 15,
@@ -59,6 +58,12 @@ const theme = createTheme({
       defaultProps: {
         disableFocusRipple: true,
         disableRipple: true,
+      },
+      styleOverrides: {
+        root: {
+          textTransform: "none",
+          borderRadius: 8,
+        },
       },
     },
     MuiFormHelperText: {
