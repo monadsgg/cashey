@@ -103,7 +103,7 @@ function SideBar() {
                 to={item.path}
                 key={item.text}
                 style={({ isActive }) => ({
-                  color: isActive ? "#26CA99" : "unset",
+                  color: isActive ? "#000" : "unset",
                   textDecoration: "none",
                 })}
               >
@@ -114,12 +114,18 @@ function SideBar() {
                       borderRadius: 2,
                     }}
                   >
-                    <ListItemIcon
-                      sx={{ color: isActive ? "#26CA99" : "unset" }}
-                    >
+                    <ListItemIcon sx={{ color: isActive ? "#000" : "#4f4f4f" }}>
                       {item.icon}
                     </ListItemIcon>
-                    <ListItemText>{item.text}</ListItemText>
+                    <ListItemText
+                      slotProps={{
+                        primary: {
+                          sx: { fontWeight: isActive ? "600" : "unset" },
+                        },
+                      }}
+                    >
+                      {item.text}
+                    </ListItemText>
                   </ListItem>
                 )}
               </NavLink>
