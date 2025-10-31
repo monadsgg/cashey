@@ -103,6 +103,7 @@ function BudgetForm({
                 value={formData.categoryId.toString()}
                 onChange={handleFormChange}
                 error={errors.categoryId}
+                disabled={!!formData?.id}
               >
                 {categories.map((category) => {
                   return (
