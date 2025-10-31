@@ -88,7 +88,7 @@ function BudgetTable({
 
   const getBudgetStatus = (percentage: number): StatusKey => {
     if (percentage > 100) return "overBudget";
-    if (percentage >= 80) return "warning";
+    if (percentage >= 80 && percentage < 100) return "warning";
     return "onTrack";
   };
 
