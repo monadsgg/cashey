@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import Stack from "@mui/material/Stack";
 import { styled } from "@mui/material/styles";
 import SummaryListItem from "../../components/SummaryListItem";
@@ -6,7 +6,8 @@ import SummaryTitle from "../../components/SummaryTitle";
 import SummaryContainer from "../../components/SummaryContainer";
 import SummaryExpenseCategoryItem from "../../components/SummaryExpenseCategoryItem";
 import { transferCategory } from "../../constants";
-import type { TransactionItem } from "../../services/transactions";
+import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
+import type { DateRange } from "./Transaction";
 
 const ScrollableContainer = styled("div")(() => ({
   maxHeight: "50vh",
@@ -18,7 +19,7 @@ const ScrollableContainer = styled("div")(() => ({
 
 interface TransactionSummaryProps {
   currentMonth: string;
-  transactions: TransactionItem[];
+  dateRange: DateRange;
 }
 
 type FinancialSummary = {
@@ -34,10 +35,12 @@ type CategoryExpenseType = {
   amount: number;
 };
 
-function TransactionSummary({
+const TransactionSummary = memo(function TransactionSummary({
   currentMonth,
-  transactions,
+  dateRange,
 }: TransactionSummaryProps) {
+  const { transactions } = useAllTransactions(dateRange);
+
   const { financialSummary, categoryExpense } = useMemo(() => {
     const summary = { income: 0, expense: 0, savings: 0, fundsFromSavings: 0 };
 
@@ -128,6 +131,6 @@ function TransactionSummary({
       </Stack>
     </SummaryContainer>
   );
-}
+});
 
 export default TransactionSummary;
