@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getTransactions,
@@ -17,29 +16,17 @@ export const useTransactions = (
   filters: TransactionFilters | null,
   filterTimeFrame: TimeframeOption | null
 ) => {
-  const txQueryKey = useMemo(
-    () => [
-      "transaction",
-      dateRange.startDate,
-      dateRange.endDate,
-      page,
-      searchVal,
-      filters,
-      filterTimeFrame,
-    ],
-    [
-      dateRange.startDate,
-      dateRange.endDate,
-      page,
-      searchVal,
-      filters,
-      filterTimeFrame,
-    ]
-  );
-
-  const { data: transactions = [], isLoading } =
-    useQuery<PagedTransactionResponse | null>({
-      queryKey: txQueryKey,
+  const { data: transactions = null, isLoading } =
+    useQuery<PagedTransactionResponse>({
+      queryKey: [
+        "transaction",
+        dateRange.startDate,
+        dateRange.endDate,
+        page,
+        searchVal,
+        filters,
+        filterTimeFrame,
+      ],
       queryFn: async () => {
         const params: TransactionParams = { page };
         params.pageSize = DEFAULT_PAGE_SIZE;

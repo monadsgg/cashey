@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
@@ -28,20 +28,13 @@ import FormDialog from "../../components/FormDialog";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useDeleteTransaction } from "../../hooks/transactions/useDeleteTransaction";
-import { useAllTransactions } from "../../hooks/transactions/useAllTransactions";
 import UploadFileDialog from "./UploadFileDialog";
 import MainWalletBox from "./MainWalletBox";
 import TransactionFilter from "./TransactionFilter";
 import { useTransactions } from "../../hooks/transactions/useTransaction";
 import type { SelectChangeEvent } from "@mui/material";
 import type { TimeframeOption } from "../../utils/timeFrame";
-
-type Pagination = {
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-};
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../../constants";
 
 export type DateRange = {
   startDate: string;
@@ -67,14 +60,10 @@ function hasAppliedFilters(filters: TransactionFilters | null) {
 
 function Transaction() {
   const thisMonthRange = getCurrentMonthDateRange();
-  const [pagination, setPagination] = useState<Pagination>({
-    page: 1,
-    pageSize: 10,
-    total: 0,
-    totalPages: 0,
-  });
+
   const [baseDateRange, setBaseDateRange] = useState<DateRange>(thisMonthRange);
   const [currentDate, setCurrentDate] = useState<Date | string>(new Date());
+  const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE);
 
   const [openForm, setOpenForm] = useState(false);
   const [selectedItem, setSelectedItem] = useState<TransactionFormData | null>(
@@ -94,7 +83,7 @@ function Transaction() {
   const [openFilterDialog, setOpenFilterDialog] = useState(false);
   const [activeFilters, setActiveFilters] = useState<FilterCriteria[] | null>([
     {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       type: "",
       rule: "",
       value: "",
@@ -107,36 +96,21 @@ function Transaction() {
 
   const { transactions: paginatedData } = useTransactions(
     baseDateRange,
-    pagination.page,
+    currentPage,
     searchValue,
     appliedFilters,
     filterTimeFrame
   );
-  const { transactions: allTransactions } = useAllTransactions(baseDateRange);
+
   const deleteTransactionMutation = useDeleteTransaction();
   const hasFilters = hasAppliedFilters(appliedFilters);
 
-  useEffect(() => {
-    if (
-      paginatedData &&
-      typeof paginatedData === "object" &&
-      "pagination" in paginatedData &&
-      paginatedData.pagination
-    ) {
-      setPagination((prev) => ({
-        ...prev,
-        total: paginatedData.pagination.total,
-        totalPages: paginatedData.pagination.totalPages,
-      }));
-    }
-  }, [paginatedData]);
-
   const handlePageChange = (page: number) => {
-    setPagination({ ...pagination, page });
+    setCurrentPage(page);
   };
 
   const resetPage = () => {
-    setPagination({ ...pagination, page: 1 });
+    setCurrentPage(1);
   };
 
   const goToPreviousMonth = () => {
@@ -302,27 +276,18 @@ function Transaction() {
   };
 
   const renderTable = () => {
-    let data: TransactionItem[] | [] = [];
-
-    if (
-      paginatedData &&
-      typeof paginatedData === "object" &&
-      "pagination" in paginatedData &&
-      paginatedData.pagination
-    ) {
-      data = paginatedData.data;
-    }
+    let data: TransactionItem[] | [] = paginatedData?.data ?? [];
 
     return (
       <TransactionTable
         hasFilter={hasFilters}
         onResetFilter={handleResetFilter}
         transactions={data}
-        totalCount={pagination.total}
-        page={pagination.page}
-        pageSize={pagination.pageSize}
+        totalCount={paginatedData?.pagination.total || 0}
+        page={currentPage}
+        pageSize={paginatedData?.pagination.pageSize || DEFAULT_PAGE_SIZE}
         onPageChange={handlePageChange}
-        totalPages={pagination.totalPages}
+        totalPages={paginatedData?.pagination.totalPages || 0}
         onClickEditBtn={handleOnClickEditBtn}
         onClickDeleteBtn={handleOnClickDeleteBtn}
         settings={settings}
@@ -393,7 +358,7 @@ function Transaction() {
             <MainWalletBox />
             <TransactionSummary
               currentMonth={getMonth(currentDate)}
-              transactions={allTransactions}
+              dateRange={baseDateRange}
             />
           </Stack>
         </Stack>
