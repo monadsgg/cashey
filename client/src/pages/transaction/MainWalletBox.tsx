@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { z, ZodError } from "zod";
+import { useState } from "react";
 import { useUpdateWallet } from "../../hooks/wallets/useUpdateWallet";
 import { useWallets } from "../../hooks/wallets/useWallets";
 import { formatCurrency } from "../../utils/currency";
@@ -12,48 +11,29 @@ import EditIcon from "@mui/icons-material/Edit";
 import DoneIcon from "@mui/icons-material/Done";
 import CloseIcon from "@mui/icons-material/Close";
 import CircularProgress from "@mui/material/CircularProgress";
-
-const WalletSchema = z.object({
-  name: z.string().min(1, "Wallet Name is required"),
-  balance: z
-    .string()
-    .min(1, "Balance is required") // keep as string for form input
-    .refine((val) => !isNaN(Number(val)), {
-      message: "Balance must be a number",
-    })
-    .refine((val) => Number(val) >= 0, {
-      message: "Balance must be a positive number",
-    }),
-});
+import { WalletSchema } from "../../schemas/walletSchema";
+import { getZodIssueObj } from "../../utils/validators";
 
 type ErrorMsg = { name?: string; balance?: string };
 
 type WalletFormData = { name: string; balance: number };
 
 function MainWalletBox() {
-  const { mainWallet, isLoading } = useWallets();
-  const updateMainWallet = useUpdateWallet();
-
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<ErrorMsg>({});
   const [walletData, setWalletData] = useState<WalletFormData>({
     name: "Main Wallet Balance",
     balance: 0,
   });
 
-  useEffect(() => {
-    if (mainWallet) {
-      setWalletData({ name: mainWallet.name, balance: mainWallet.balance });
-    }
-  }, [mainWallet]);
+  const { mainWallet, isLoading } = useWallets();
+  const updateMainWallet = useUpdateWallet();
 
   const handleEditBtnClick = () => {
-    setEditing(true);
+    if (!mainWallet) return;
 
-    if (mainWallet) {
-      setWalletData({ name: mainWallet.name, balance: mainWallet.balance });
-    }
+    setEditing(true);
+    setWalletData({ name: mainWallet.name, balance: mainWallet.balance });
   };
 
   const handleCancel = () => {
@@ -69,22 +49,7 @@ function MainWalletBox() {
     // validate with zod
     const result = WalletSchema.safeParse({ name, balance });
 
-    if (result.error instanceof ZodError) {
-      const errors: ErrorMsg = {};
-
-      result.error.issues.forEach((err) => {
-        if (err.path[0] === "name") errors.name = err.message;
-        if (err.path[0] === "balance") errors.balance = err.message;
-      });
-
-      setErrors(errors);
-      return;
-    }
-
-    setErrors({});
-    setLoading(true);
-
-    try {
+    if (result.success) {
       const resultWallet = await updateMainWallet.mutateAsync({
         id: mainWallet.id,
         payload: { name, balance: Number(balance) },
@@ -92,14 +57,17 @@ function MainWalletBox() {
 
       setWalletData({ name: resultWallet.name, balance: resultWallet.balance });
       setEditing(false);
-    } finally {
-      setLoading(false);
+    } else {
+      result.error.issues.forEach((issue) => {
+        const newError = getZodIssueObj(issue);
+        setErrors({ ...errors, ...newError });
+      });
     }
   };
 
-  if (isLoading) return <CircularProgress />;
-
   const renderContent = () => {
+    if (isLoading) return <CircularProgress />;
+
     return (
       <>
         <Typography variant="subtitle1">{mainWallet?.name}</Typography>
@@ -151,7 +119,6 @@ function MainWalletBox() {
           <Button
             size="small"
             onClick={handleUpdate}
-            disabled={loading}
             variant="text"
             startIcon={<DoneIcon />}
           >
