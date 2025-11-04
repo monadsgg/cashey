@@ -8,76 +8,56 @@ import Box from "@mui/material/Box";
 import { useNavigate } from "react-router";
 import Paper from "@mui/material/Paper";
 import { register } from "../../services/auth";
-import { isValidEmail } from "../../utils/validators";
+import { getZodIssueObj } from "../../utils/validators";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateUserQueries } from "../../utils/invalidateUserQueries";
+import { UserRegisterSchema } from "../../schemas/userSchema";
+import type z from "zod";
 
-type User = {
-  name: string;
-  email: string;
-  password: string;
-};
-
-type Error = {
-  name?: string;
-  email?: string;
-  password?: string;
-};
+export type UserFormData = z.infer<typeof UserRegisterSchema>;
 
 function Register() {
-  const [user, setUser] = useState<User>({
+  const [user, setUser] = useState<UserFormData>({
     name: "",
     email: "",
     password: "",
   });
-  const [errors, setErrors] = useState<Error>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setUser({ ...user, [name]: value });
-  };
-
-  const isValidated = () => {
-    const { name, email, password } = user;
-    const newErrors: Error = {
-      name: name.trim() ? "" : "Name is required",
-      email: email.trim()
-        ? isValidEmail(email)
-          ? ""
-          : "Enter a valid email address"
-        : "Email is required",
-      password: password.trim() ? "" : "Password is required",
-    };
-
-    setErrors(newErrors);
-
-    const isValid = Object.values(newErrors).every((err) => err === "");
-
-    return isValid;
+    setErrors({});
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const isValid = isValidated();
-    if (!isValid) {
-      return;
-    }
+    // validate data
+    const result = UserRegisterSchema.safeParse(user);
 
-    try {
+    if (result.success) {
       const { name, email, password } = user;
-      const { token, user: userData } = await register(name, email, password);
 
-      localStorage.setItem("user", JSON.stringify(userData));
-      localStorage.setItem("token", token);
+      try {
+        const { token, user: userData } = await register(name, email, password);
 
-      invalidateUserQueries(queryClient);
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("token", token);
 
-      navigate("/dashboard");
-    } catch (error: any) {
-      setErrors({ password: error.response.data.error });
+        invalidateUserQueries(queryClient);
+
+        navigate("/dashboard");
+      } catch (error: any) {
+        setErrors({ password: error.response.data.error });
+      }
+    } else {
+      result.error.issues.forEach((issue) => {
+        const newError = getZodIssueObj(issue);
+        setErrors({ ...errors, ...newError });
+      });
     }
   };
 
