@@ -7,7 +7,7 @@ import SummaryContainer from "../../components/SummaryContainer";
 import { useAccounts } from "../../hooks/accounts/useAccounts";
 
 function AccountSummary() {
-  const { accounts, personalAccounts, investmentAccounts } = useAccounts();
+  const { personalAccounts, investmentAccounts } = useAccounts();
 
   const accountSummary = useMemo(() => {
     const accountStat = { personal: 0, investments: 0, total: 0 };
@@ -15,6 +15,7 @@ function AccountSummary() {
     personalAccounts.forEach(
       (acc) => (accountStat.personal += Number(acc.balance))
     );
+
     investmentAccounts.forEach(
       (acc) => (accountStat.investments += Number(acc.balance))
     );
@@ -25,7 +26,7 @@ function AccountSummary() {
     };
 
     return finalAccountStat;
-  }, [accounts]);
+  }, [personalAccounts, investmentAccounts]);
 
   const { personal, investments, total } = accountSummary;
 
