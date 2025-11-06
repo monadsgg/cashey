@@ -2,6 +2,7 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { formatCurrency } from "../utils/currency";
 import Dot from "./Dot";
+import { memo } from "react";
 
 export interface SummaryListItemProps {
   title: string;
@@ -15,7 +16,7 @@ const textSxProps = {
   fontSize: "18px",
 };
 
-function SummaryListItem({
+const SummaryListItem = memo(function SummaryListItem({
   title,
   amount,
   textColor = "secondary",
@@ -33,6 +34,6 @@ function SummaryListItem({
       <Typography sx={textSxProps}>{formatCurrency(amount)}</Typography>
     </Stack>
   );
-}
+});
 
 export default SummaryListItem;

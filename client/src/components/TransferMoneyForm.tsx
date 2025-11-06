@@ -43,16 +43,12 @@ function TransferMoneyForm({
 
   const transferFundsMutation = useTransferFunds();
 
-  const fromWalletOptions = useMemo(() => {
-    return isAccounts ? accountWallets : [mainWallet];
-  }, [isAccounts, accountWallets, mainWallet]);
-
-  const toWalletOptions = useMemo(() => {
-    const filteredWallets = [mainWallet, ...accountWallets].filter(
-      (w) => w.id !== formData.fromWalletId
-    );
-    return isAccounts ? filteredWallets : accountWallets;
-  }, [isAccounts, formData.fromWalletId, accountWallets, mainWallet]);
+  const fromWalletOptions = isAccounts ? accountWallets : [mainWallet];
+  const toWalletOptions = !isAccounts
+    ? accountWallets
+    : [mainWallet, ...accountWallets].filter(
+        (w) => w.id !== formData.fromWalletId
+      );
 
   const handleSubmit = () => {
     // validate data

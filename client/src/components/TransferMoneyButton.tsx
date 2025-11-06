@@ -5,8 +5,8 @@ import { useWallets } from "../hooks/wallets/useWallets";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import ErrorMessage from "./ErrorMessage";
 import Loading from "./Loading";
+import type { Wallet } from "../services/wallet";
 
 interface TransferMoneyButtonProps {
   isAccounts?: boolean;
@@ -24,9 +24,6 @@ function TransferMoneyButton({ isAccounts }: TransferMoneyButtonProps) {
     setOpen(true);
   };
 
-  if (!mainWallet) return <ErrorMessage message="Main wallet is not found" />;
-  const disabled = accountWallets.length === 0;
-
   return (
     <>
       <Tooltip title="Transfer funds">
@@ -39,7 +36,7 @@ function TransferMoneyButton({ isAccounts }: TransferMoneyButtonProps) {
             borderRadius: "6px",
             p: "0 10px",
           }}
-          disabled={disabled}
+          disabled={accountWallets.length === 0}
           onClick={handleClick}
         >
           <CurrencyExchangeIcon />
@@ -49,7 +46,7 @@ function TransferMoneyButton({ isAccounts }: TransferMoneyButtonProps) {
         <FormDialog title="Transfer Funds" open={open} onClose={handleClose}>
           <TransferMoneyForm
             isAccounts={isAccounts}
-            mainWallet={mainWallet}
+            mainWallet={mainWallet as Wallet}
             accountWallets={accountWallets}
             onClose={handleClose}
           />
