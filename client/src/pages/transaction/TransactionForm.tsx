@@ -9,7 +9,6 @@ import Button from "@mui/material/Button";
 import { formatDate } from "../../utils/date";
 import Divider from "@mui/material/Divider";
 import { useWallets } from "../../hooks/wallets/useWallets";
-import ErrorMessage from "../../components/ErrorMessage";
 import { useCategories } from "../../hooks/categories/useCategories";
 import DialogContent from "@mui/material/DialogContent";
 import type { Payee } from "../../services/payees";
@@ -56,7 +55,7 @@ function TransactionForm({
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { mainWalletId, error: mainWalletError } = useWallets();
+  const { mainWallet } = useWallets();
   const { categories, isCategoriesLoading } = useCategories();
   const addTransactionMutation = useAddTransaction();
   const updateTransactionMutation = useUpdateTransaction();
@@ -88,9 +87,6 @@ function TransactionForm({
       const { description, amount, date, categoryId, payee, tags, isRefund } =
         result.data;
 
-      if (!mainWalletId)
-        return <ErrorMessage message="Main wallet not found" />;
-
       const payloadData = {
         description,
         amount: Number(amount),
@@ -98,7 +94,7 @@ function TransactionForm({
         payeeId: payee?.id ?? null,
         tagIds: tags.map((t) => t.id),
         date: formatDate(date),
-        walletId: mainWalletId,
+        walletId: mainWallet?.id as number,
         isRefund,
       };
 
@@ -164,9 +160,6 @@ function TransactionForm({
         <CircularProgress />
       </Box>
     );
-
-  if (mainWalletError)
-    return <ErrorMessage message={mainWalletError.message} />;
 
   return (
     <DialogContent>
