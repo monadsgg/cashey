@@ -28,6 +28,15 @@ export interface AccountPayload {
   contributionLimit?: number | null;
 }
 
+export interface AccountTransaction {
+  id: number;
+  amount: number;
+  date: string;
+  description: string;
+  wallet: { id: number; name: string };
+  category: { id: number; name: string; type: string };
+}
+
 export async function getAccounts(): Promise<AccountItem[]> {
   const result = await api.get<AccountItem[]>("/api/accounts");
   return result.data;

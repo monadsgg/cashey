@@ -7,10 +7,7 @@ interface accountInput {
   balance: number;
   targetAmt?: number;
   owner?: string;
-  investmentType?:
-    | InvestmentAccountType.TFSA
-    | InvestmentAccountType.RRSP
-    | InvestmentAccountType.FHSA;
+  investmentType?: InvestmentAccountType.TFSA | InvestmentAccountType.RRSP | InvestmentAccountType.FHSA;
   contributionLimit?: number;
 }
 
@@ -33,15 +30,7 @@ export async function getAllAccounts(userId: number) {
 }
 
 export async function addAccount(data: accountInput, userId: number) {
-  const {
-    name,
-    balance,
-    targetAmt,
-    owner,
-    accountType,
-    investmentType,
-    contributionLimit,
-  } = data;
+  const { name, balance, targetAmt, owner, accountType, investmentType, contributionLimit } = data;
 
   if (!name) throw new Error('Name is required');
 
@@ -69,20 +58,8 @@ export async function addAccount(data: accountInput, userId: number) {
   return newAccount;
 }
 
-export async function editAccount(
-  id: number,
-  data: accountInput,
-  userId: number,
-) {
-  const {
-    name,
-    balance,
-    targetAmt,
-    owner,
-    accountType,
-    investmentType,
-    contributionLimit,
-  } = data;
+export async function editAccount(id: number, data: accountInput, userId: number) {
+  const { name, balance, targetAmt, owner, accountType, investmentType, contributionLimit } = data;
 
   if (!name || !balance) throw new Error('All fields are required');
 
@@ -112,11 +89,7 @@ export async function removeAccount(id: number, userId: number) {
   return db.wallet.delete({ where: { id, userId } });
 }
 
-export async function getAllAccountsTransactions(
-  userId: number,
-  start: string,
-  end: string,
-) {
+export async function getAllAccountsTransactions(userId: number, start: string, end: string) {
   return db.transaction.findMany({
     where: {
       userId,
@@ -127,13 +100,14 @@ export async function getAllAccountsTransactions(
     },
     include: {
       wallet: { omit: { userId: true, type: true, balance: true } },
-      category: { omit: { userId: true } },
+      category: { omit: { userId: true, color: true } },
     },
     omit: {
       userId: true,
       categoryId: true,
       payeeId: true,
       walletId: true,
+      isRefund: true,
     },
     orderBy: [{ date: 'desc' }, { id: 'desc' }],
   });
