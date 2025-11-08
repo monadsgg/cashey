@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import featuresData from "./data/features-data.json";
 import milestoneData from "./data/milestone-logs.json";
 import { styled } from "@mui/material/styles";
@@ -72,21 +71,19 @@ function Section({
 }
 
 function Overview() {
-  const meta = useMemo(
-    () => ({
-      version: "v1.2.0",
-      overallProgress: 85,
-      startedOn: "2024-01-01",
-      lastUpdate: "2024-12-19",
-      stats: {
-        completed: featuresData.sections[1].features.length,
-        inProgress: featuresData.sections[0].features.length,
-        futureEnhancement: featuresData.sections[2].features.length,
-        milestones: milestoneData.versions.length,
-      },
-    }),
-    []
-  );
+  const meta = {
+    version: "v1.2.0",
+    overallProgress: 85,
+    startedOn: "2024-01-01",
+    lastUpdate: "2024-12-19",
+    stats: {
+      completed: featuresData.sections[1].features.length,
+      inProgress: featuresData.sections[0].features.length,
+      futureEnhancement: featuresData.sections[2].features.length,
+      milestones: milestoneData.versions.length,
+    },
+  };
+
   return (
     <Stack spacing={2}>
       <CardGrid>
