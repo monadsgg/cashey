@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 import BudgetTable from "./BudgetTable";
 import { addMonths, subMonths } from "date-fns";
@@ -19,8 +19,6 @@ import Tooltip from "@mui/material/Tooltip";
 import { useSnackbar } from "notistack";
 import { getErrorMessage } from "../../utils/errorMessage";
 import { useCategories } from "../../hooks/categories/useCategories";
-import type { Category } from "../../services/categories";
-import { CategoryType } from "../../constants";
 
 function Budget() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -29,21 +27,11 @@ function Budget() {
   const [selectedItem, setSelectedItem] = useState<BudgetFormData | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const { categories } = useCategories();
+  const { expenseCategories } = useCategories();
   const deleteMutation = useDeleteBudget();
   const { mutation: copyBudgetMutation } = useCopyBudget();
 
   const { enqueueSnackbar } = useSnackbar();
-
-  const expenseCategories = useMemo(() => {
-    let expenseCategoryArr: Category[] = [];
-
-    categories.forEach((c) => {
-      if (c.type === CategoryType.EXPENSE) expenseCategoryArr.push(c);
-    });
-
-    return expenseCategoryArr;
-  }, [categories]);
 
   const goToPrevMonth = () => {
     const prevDate = subMonths(currentDate, 1);
