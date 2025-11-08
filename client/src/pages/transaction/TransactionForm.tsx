@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Stack from "@mui/material/Stack";
 import DatePickerField from "../../components/DatePickerField";
 import TextInputField from "../../components/TextInputField";
@@ -18,15 +18,12 @@ import type { Tag } from "../../services/tags";
 import { useAddTransaction } from "../../hooks/transactions/useAddTransaction";
 import { useUpdateTransaction } from "../../hooks/transactions/useUpdateTransaction";
 import ListSubheader from "@mui/material/ListSubheader";
-import type { Category } from "../../services/categories";
-import { CategoryType } from "../../constants";
-import CircularProgress from "@mui/material/CircularProgress";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
-import Box from "@mui/material/Box";
 import z from "zod";
 import { getZodIssueObj } from "../../utils/validators";
 import { TransactionFormSchema } from "../../schemas/transactionSchema";
+import Loading from "../../components/Loading";
 
 interface TransactionFormProps {
   onClose: () => void;
@@ -56,24 +53,10 @@ function TransactionForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { mainWallet } = useWallets();
-  const { categories, isCategoriesLoading } = useCategories();
+  const { incomeCategories, expenseCategories, isCategoriesLoading } =
+    useCategories();
   const addTransactionMutation = useAddTransaction();
   const updateTransactionMutation = useUpdateTransaction();
-
-  const { incomeCategories, expenseCategories } = useMemo(() => {
-    let incomeCategories: Category[] = [];
-    let expenseCategories: Category[] = [];
-
-    categories.forEach((category) => {
-      if (category.type === CategoryType.EXPENSE) {
-        expenseCategories.push(category);
-      } else if (category.type === CategoryType.INCOME) {
-        incomeCategories.push(category);
-      }
-    });
-
-    return { incomeCategories, expenseCategories };
-  }, [categories]);
 
   const handleSubmit = async () => {
     // validate data
@@ -148,88 +131,85 @@ function TransactionForm({
     setFormData({ ...formData, [name]: checked });
   };
 
-  if (isCategoriesLoading)
+  const renderForm = () => {
+    if (isCategoriesLoading) return <Loading />;
+
     return (
-      <Box
-        sx={{
-          display: "flex",
-          alignContent: "center",
-          justifyContent: "center",
-        }}
-      >
-        <CircularProgress />
-      </Box>
+      <>
+        <DatePickerField value={formData.date} onChange={handleDateChange} />
+        <TextInputField
+          label="Description"
+          name="description"
+          value={formData.description}
+          onChange={handleFormDataChange}
+        />
+        {(!!incomeCategories.length || !!expenseCategories.length) && (
+          <SelectInputField
+            label="Category"
+            name="categoryId"
+            value={formData.categoryId.toString()}
+            onChange={handleFormSelectChange}
+          >
+            <ListSubheader>Income</ListSubheader>
+            {incomeCategories.map((c) => {
+              return (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name}
+                </MenuItem>
+              );
+            })}
+            <ListSubheader>Expense</ListSubheader>
+            {expenseCategories.map((c) => {
+              return (
+                <MenuItem key={c.id} value={c.id}>
+                  {c.name}
+                </MenuItem>
+              );
+            })}
+          </SelectInputField>
+        )}
+
+        <TextInputField
+          label="Amount"
+          name="amount"
+          value={formData.amount}
+          onChange={handleFormDataChange}
+          error={!!errors.amount}
+          helperText={errors.amount}
+        />
+
+        <TransactionPayeeField
+          label="Payee"
+          selectedValue={formData.payee}
+          onChange={handlePayeeChange}
+        />
+
+        <TransactionTagField
+          label="Tag"
+          selectedValue={formData.tags}
+          onChange={handleTagChange}
+        />
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={formData.isRefund}
+              onChange={handleSwitchChange}
+              name="isRefund"
+            />
+          }
+          label="Is it a refund?"
+          labelPlacement="start"
+        />
+      </>
     );
+  };
 
   return (
     <DialogContent>
       <Stack spacing={4} sx={{ height: "100%" }}>
         <Stack spacing={2} sx={{ flexGrow: 1 }}>
-          <DatePickerField value={formData.date} onChange={handleDateChange} />
-          <TextInputField
-            label="Description"
-            name="description"
-            value={formData.description}
-            onChange={handleFormDataChange}
-          />
-          {categories.length > 0 && (
-            <SelectInputField
-              label="Category"
-              name="categoryId"
-              value={formData.categoryId.toString()}
-              onChange={handleFormSelectChange}
-            >
-              <ListSubheader>Income</ListSubheader>
-              {incomeCategories.map((c) => {
-                return (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.name}
-                  </MenuItem>
-                );
-              })}
-              <ListSubheader>Expense</ListSubheader>
-              {expenseCategories.map((c) => {
-                return (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.name}
-                  </MenuItem>
-                );
-              })}
-            </SelectInputField>
-          )}
-
-          <TextInputField
-            label="Amount"
-            name="amount"
-            value={formData.amount}
-            onChange={handleFormDataChange}
-            error={!!errors.amount}
-            helperText={errors.amount}
-          />
-
-          <TransactionPayeeField
-            label="Payee"
-            selectedValue={formData.payee}
-            onChange={handlePayeeChange}
-          />
-
-          <TransactionTagField
-            label="Tag"
-            selectedValue={formData.tags}
-            onChange={handleTagChange}
-          />
-
-          <FormControlLabel
-            control={
-              <Switch
-                checked={formData.isRefund}
-                onChange={handleSwitchChange}
-                name="isRefund"
-              />
-            }
-            label="Is it a refund?"
-            labelPlacement="start"
-          />
+          {renderForm()}
         </Stack>
 
         <Divider />
