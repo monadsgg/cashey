@@ -1,8 +1,8 @@
+import { useState } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import StatCard from "./StatCard";
-import { useMemo, useState } from "react";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 import { getMonth } from "../../utils/date";
 import { addMonths, getYear, subMonths } from "date-fns";
@@ -22,10 +22,7 @@ function Dashboard() {
     currentYear
   );
 
-  const overView = useMemo(
-    () => mapStatsToOverview(stats, prevStats),
-    [stats, prevStats]
-  );
+  const overView = mapStatsToOverview(stats, prevStats);
 
   const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));

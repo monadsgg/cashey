@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
@@ -37,27 +37,18 @@ function Categories() {
   });
 
   const userId = getUserId();
-  const { categories } = useCategories();
+  const { incomeCategories, expenseCategories } = useCategories();
   const { userCategories } = useUserCategories(userId!);
   const deleteMutation = useDeleteCategory();
 
-  const { incomeCategories, expenseCategories } = useMemo(() => {
-    const incomeCategories: Category[] = [];
-    const expenseCategories: Category[] = [];
-
-    categories.forEach((category) => {
-      const isUserCategory = userCategories.some((u) => u.id === category.id);
-      if (isUserCategory) return;
-
-      if (category.type === CategoryType.INCOME) {
-        incomeCategories.push(category);
-      } else if (category.type === CategoryType.EXPENSE) {
-        expenseCategories.push(category);
-      }
-    });
-
-    return { incomeCategories, expenseCategories };
-  }, [categories, userCategories]);
+  // remove user categories from income and expense categories
+  const userCategoryIds = new Set(userCategories.map((c) => c.id));
+  const filteredIncomeCategories = incomeCategories.filter(
+    (c) => !userCategoryIds.has(c.id)
+  );
+  const filteredExpenseCategories = expenseCategories.filter(
+    (c) => !userCategoryIds.has(c.id)
+  );
 
   const handleOpenForm = () => {
     setOpenForm(true);
@@ -121,7 +112,7 @@ function Categories() {
             </Typography>
             <Typography variant="subtitle1">Income</Typography>
             <Box sx={boxSxProps}>
-              {incomeCategories.map((category) => (
+              {filteredIncomeCategories.map((category) => (
                 <ListItemBox
                   key={category.id}
                   item={category}
@@ -135,7 +126,7 @@ function Categories() {
           <Stack>
             <Typography variant="subtitle1">Expense</Typography>
             <Box sx={boxSxProps}>
-              {expenseCategories.map((category) => (
+              {filteredExpenseCategories.map((category) => (
                 <ListItemBox
                   key={category.id}
                   item={category}
