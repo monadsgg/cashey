@@ -15,11 +15,11 @@ import TableCell from "@mui/material/TableCell";
 import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import { importTransactions } from "../../services/transactions";
-import Toast from "../../components/Toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface UploadFileDialogProps {
   onClose: () => void;
+  onSuccessImportTransactions: (message: string) => void;
 }
 
 interface PreviewData {
@@ -32,17 +32,14 @@ interface PreviewData {
   __fileName?: string; // for tracking only
 }
 
-interface Toast {
-  message: string;
-  open: boolean;
-}
-
-function UploadFileDialog({ onClose }: UploadFileDialogProps) {
+function UploadFileDialog({
+  onClose,
+  onSuccessImportTransactions,
+}: UploadFileDialogProps) {
   const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewData[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [toast, setToast] = useState({ message: "", open: false });
   const [error, setError] = useState("");
   const queryClient = useQueryClient();
 
@@ -65,13 +62,17 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
           tags: tags,
         };
       });
+
       // endpoint here
       const result = await importTransactions(payload);
       console.log("imported tx", result);
 
       setIsProcessing(false);
       setIsCompleted(true);
-      setToast({ message: result.message, open: true });
+
+      setOpenPreviewDialog(false);
+      onClose();
+      onSuccessImportTransactions(result.message);
 
       queryClient.invalidateQueries({ queryKey: ["transaction"] });
       queryClient.invalidateQueries({ queryKey: ["all-transactions"] });
@@ -141,10 +142,6 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
     onClose();
     setOpenPreviewDialog(false);
     setIsCompleted(false);
-  };
-
-  const handleCloseToast = () => {
-    setToast({ message: "", open: false });
   };
 
   const renderPreviewTableHeader = () => {
@@ -254,11 +251,6 @@ function UploadFileDialog({ onClose }: UploadFileDialogProps) {
             </Stack>
           </Stack>
         </DialogContent>
-        <Toast
-          open={toast.open}
-          message={toast.message}
-          onClose={handleCloseToast}
-        />
       </FormDialog>
     </>
   );

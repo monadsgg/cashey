@@ -21,38 +21,82 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
 
 ## Key Features
 
-- **Transactions**
+### 🚧 Version 1 - Core Features
+
+- **Transaction Management**
 
   - Create, edit, and delete transactions
-  - Transfer funds between wallets
   - Paginated transaction list (10 per page)
   - Import transactions from CSV
   - Table settings to hide rarely used columns (e.g., payee, tags)
+  - Search feature and filter by field (e.g., payee, category, tag, amount)
+  - Refund handling
 
-- **Accounts**
+- **Transfer Funds Management**
+
+  - Transfer funds between wallets
+
+- **Accounts Management**
 
   - Manage personal savings and investment accounts
-  - Track contributions to TFSA, FHSA, and RRSP
+  - Track savings and contributions to TFSA, FHSA, and RRSP
 
-- **Budgets**
+- **Budget Management**
 
   - Set monthly budgets per category
   - Compare actual spending vs. planned budget
+  - Copy budget between months
 
 - **Categories / Tags / Payees**
+
   - Built-in global categories plus custom categories
   - Create tags and payees directly from the transaction form
   - Use categories, tags, and payees for filtering and analysis
+
+- **Dashboard**
+
+  - Spending by category chart and financial overview
+
+- **Data Import**
+
+  - CSV transaction import
+
+### 🚀 Version 2 - Recurring Transactions, Data Export and Unit Testing
+
+- **Recurring Transactions**
+
+  - Schedule recurring expenses and savings (e.g., rent, guilt-free funds)
+  - Customize frequency (monthly, bi-monthly, yearly)
+  - Automatically generate transactions based on recurrence rules
+  - Manage and pause recurring items when needed
+
+- **Data Export**
+
+  - Export transactions, and account summaries to CSV or Excel
+  - Filter and export specific date ranges or categories
+  - Include column preferences from table settings in export
+
+- **Unit Testing**
+  - Add unit testing for key components
+
+### 📊 Version 3 - Advanced Analytics
+
+- **Analytics Dashboard**
+
+  - Charts for spending trends and income distribution
+  - Track savings growth over time
+  - Monthly and yearly financial summaries
+
+- **Category and Tag Insights**
+
+  - Visualize top spending categories and payees
+  - Tag-based analysis for better tracking of lifestyle expenses
 
 ## Cashey File structure
 
 ```
 cashey/
 ├── client/                          # Frontend (React, TypeScript)
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── public/
-│   │   └── ...
 │   └── src/
 │       ├── index.tsx
 │       ├── App.tsx
@@ -61,7 +105,6 @@ cashey/
 │       │   └── ...
 │       ├── components/              # Reusable UI components
 │       │   ├── FormDialog.tsx
-│       │   ├── TextInputField.tsx
 │       │   ├── CSVFileUploader.tsx
 │       │   └── ...
 │       ├── constants/
@@ -69,7 +112,6 @@ cashey/
 │       ├── hooks/
 │       │   ├── transactions/
 │       │   │   ├── useTransactions.ts
-│       │   │   ├── useAddTransaction.ts
 │       │   │   └── ...
 │       │   ├── budgets/
 │       │   │   └── ...
@@ -77,13 +119,10 @@ cashey/
 │       ├── pages/
 │       │   ├── transactions/
 │       │   │   ├── TransactionPage.tsx
-│       │   │   ├── TransactionTable.tsx
-│       │   │   ├── TransactionForm.tsx
 │       │   │   └── ...
 │       │   └── ...
 │       ├── services/
 │       │   ├── api.ts
-│       │   ├── transactions.ts
 │       │   └── ...
 │       ├── styles/
 │       │   ├── Theme.tsx
@@ -93,8 +132,6 @@ cashey/
 │       │   └── ...
 │
 ├── server/                          # Backend (Node/Express, TypeScript + Prisma)
-│   ├── package.json
-│   ├── tsconfig.json
 │   ├── prisma/
 │   │   ├── schema.prisma
 │   │   └── ...

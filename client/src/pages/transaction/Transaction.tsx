@@ -35,6 +35,7 @@ import { useTransactions } from "../../hooks/transactions/useTransaction";
 import type { SelectChangeEvent } from "@mui/material";
 import type { TimeframeOption } from "../../utils/timeFrame";
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../../constants";
+import Toast from "../../components/Toast";
 
 export type DateRange = {
   startDate: string;
@@ -51,6 +52,11 @@ export interface FilterCriteria {
   type: string;
   rule: string;
   value: string;
+}
+
+interface Toast {
+  message: string;
+  open: boolean;
 }
 
 function hasAppliedFilters(filters: TransactionFilters | null) {
@@ -93,6 +99,7 @@ function Transaction() {
     useState<TransactionFilters | null>(null);
   const [filterTimeFrame, setFilterTimeFrame] =
     useState<TimeframeOption | null>(null);
+  const [toast, setToast] = useState({ message: "", open: false });
 
   const { transactions: paginatedData } = useTransactions(
     baseDateRange,
@@ -275,6 +282,14 @@ function Transaction() {
     setFilterTimeFrame(null);
   };
 
+  const handleCloseToast = () => {
+    setToast({ message: "", open: false });
+  };
+
+  const handleShowSuccessMessage = (message: string) => {
+    setToast({ message: message, open: true });
+  };
+
   const renderTable = () => {
     let data: TransactionItem[] | [] = paginatedData?.data ?? [];
 
@@ -387,7 +402,10 @@ function Transaction() {
         open={openUploadDialog}
         onClose={handleCloseUploadDialog}
       >
-        <UploadFileDialog onClose={handleCloseUploadDialog} />
+        <UploadFileDialog
+          onClose={handleCloseUploadDialog}
+          onSuccessImportTransactions={handleShowSuccessMessage}
+        />
       </FormDialog>
 
       <FormDialog
@@ -409,6 +427,12 @@ function Transaction() {
           selectedTimeFrame={filterTimeFrame}
         />
       </FormDialog>
+
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        onClose={handleCloseToast}
+      />
     </>
   );
 }
