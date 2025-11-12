@@ -27,7 +27,7 @@
       "features": [
         {
           "title": "User Authentication",
-          "description": "Secure login and registration system with JWT tokens",
+          "description": "Login and registration system with JWT tokens",
           "tags": ["Core"]
         },
         {
@@ -36,23 +36,28 @@
           "tags": ["Core"]
         },
         {
+          "title": "Transfer Funds Management",
+          "description": "Transfer system between main and saving wallets",
+          "tags": ["Utility"]
+        },
+        {
           "title": "Refund Handling",
           "description": "Proper refund transaction handling with expense reduction logic",
           "tags": ["Features"]
         },
         {
-          "title": "Dashboard & Analytics",
-          "description": "Visual charts, spending insights, and financial overview",
+          "title": "Dashboard",
+          "description": "Spending by category chart, and financial overview",
           "tags": ["Analytics"]
         },
         {
           "title": "Budget Management",
-          "description": "Monthly budget creation, tracking, and copying between months",
+          "description": "Monthly budget creation, tracking, and copying budget between months",
           "tags": ["Features"]
         },
         {
-          "title": "Wallet & Account Management",
-          "description": "Multiple wallet types and investment account support (TFSA, RRSP, FHSA)",
+          "title": "Account Management",
+          "description": "Savings account and investment account support (TFSA, RRSP, FHSA)",
           "tags": ["Core"]
         },
         {
@@ -61,8 +66,8 @@
           "tags": ["Core"]
         },
         {
-          "title": "Data Import/Export",
-          "description": "CSV transaction import and transfer system between wallets",
+          "title": "Data Import",
+          "description": "CSV transaction import",
           "tags": ["Utility"]
         }
       ]
