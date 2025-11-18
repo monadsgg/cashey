@@ -3,8 +3,8 @@ import Snackbar from "@mui/material/Snackbar";
 
 interface ToastProps {
   message: string;
-  open: boolean;
-  onClose: () => void;
+  open?: boolean;
+  onClose?: () => void;
   severity?: "success" | "error";
 }
 
