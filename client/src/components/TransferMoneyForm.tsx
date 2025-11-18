@@ -15,6 +15,7 @@ import type { Wallet } from "../services/wallet";
 import { TransferMoneyFormSchema } from "../schemas/transactionSchema";
 import { getZodIssueObj } from "../utils/validators";
 import z from "zod";
+import { AxiosError } from "axios";
 
 interface TransferMoneyFormProps {
   mainWallet: Wallet;
@@ -53,26 +54,38 @@ function TransferMoneyForm({
   const handleSubmit = () => {
     // validate data
     const result = TransferMoneyFormSchema.safeParse(formData);
-
-    if (result.success) {
-      const { description, fromWalletId, toWalletId, amount, date } =
-        result.data;
-      const payloadData = {
-        description,
-        amount: Number(amount),
-        date: formatDate(date),
-        fromWalletId,
-        toWalletId,
-      };
-      transferFundsMutation.mutate(payloadData);
-      setFormData({ ...formData, amount: "", description: "" });
-      onClose();
-    } else {
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
       result.error.issues.forEach((issue) => {
-        const newError = getZodIssueObj(issue);
-        setErrors({ ...errors, ...newError });
+        const errorObj = getZodIssueObj(issue);
+        Object.assign(newErrors, errorObj);
       });
+
+      setErrors(newErrors);
+      return;
     }
+
+    // prepare and submit data
+    const { description, fromWalletId, toWalletId, amount, date } = result.data;
+    const payloadData = {
+      description,
+      amount: Number(amount),
+      date: formatDate(date),
+      fromWalletId,
+      toWalletId,
+    };
+
+    transferFundsMutation.mutate(payloadData, {
+      onSuccess: () => {
+        setFormData({ ...formData, amount: "", description: "" });
+        onClose();
+      },
+      onError: (error) => {
+        if (error instanceof AxiosError) {
+          setErrors({ ...errors, amount: error.response?.data.message });
+        }
+      },
+    });
   };
 
   const handleDateChange = (value: Date) => {
