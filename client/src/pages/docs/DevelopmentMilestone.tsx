@@ -12,9 +12,9 @@ interface Version {
   version: string;
   milestoneType: "major" | "minor" | "patch";
   completionDate: string | null;
-  added: string[];
-  improved: string[];
-  fixed: string[];
+  added?: string[];
+  improved?: string[];
+  fixed?: string[];
 }
 
 interface MilestoneData {
