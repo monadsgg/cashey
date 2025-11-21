@@ -36,8 +36,8 @@ function TransferMoneyForm({
     description: "",
     date: new Date(),
     amount: "",
-    fromWalletId: isAccounts ? accountWallets[0].id : mainWallet.id,
-    toWalletId: isAccounts ? mainWallet.id : accountWallets[0].id,
+    fromWalletId: isAccounts ? accountWallets?.[0]?.id : mainWallet.id,
+    toWalletId: isAccounts ? mainWallet.id : accountWallets?.[0]?.id,
   };
   const [formData, setFormData] = useState<TransferMoneyData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -103,74 +103,83 @@ function TransferMoneyForm({
     setFormData({ ...formData, [name]: value });
   };
 
+  const renderFormFields = () => {
+    if (!accountWallets.length) {
+      return (
+        <Alert severity="error">
+          You need to add at least one account before you can transfer any
+          funds.
+        </Alert>
+      );
+    }
+
+    return (
+      <>
+        <DatePickerField
+          disabled
+          value={formData.date}
+          onChange={handleDateChange}
+        />
+
+        <TextInputField
+          label="Description"
+          name="description"
+          value={formData.description}
+          onChange={handleFormDataChange}
+        />
+
+        {formData.fromWalletId && (
+          <SelectInputField
+            label="From Account"
+            name="fromWalletId"
+            value={formData.fromWalletId?.toString()}
+            onChange={handleFormSelectChange}
+          >
+            {fromWalletOptions.map((item) => {
+              return (
+                <MenuItem key={item.id} value={item.id}>
+                  {item.name}
+                </MenuItem>
+              );
+            })}
+          </SelectInputField>
+        )}
+
+        {formData.toWalletId && (
+          <SelectInputField
+            label="To Account"
+            name="toWalletId"
+            value={formData.toWalletId?.toString()}
+            onChange={handleFormSelectChange}
+          >
+            {toWalletOptions.map((item) => {
+              return (
+                <MenuItem key={item.id} value={item.id}>
+                  {item.name}
+                </MenuItem>
+              );
+            })}
+          </SelectInputField>
+        )}
+
+        <TextInputField
+          label="Amount"
+          name="amount"
+          value={formData.amount}
+          onChange={handleFormDataChange}
+          error={!!errors.amount}
+          helperText={errors.amount}
+        />
+      </>
+    );
+  };
+
   return (
     <DialogContent>
       <Stack spacing={4} sx={{ height: "100%" }}>
         <Stack spacing={2} sx={{ flexGrow: 1 }}>
-          <DatePickerField
-            disabled
-            value={formData.date}
-            onChange={handleDateChange}
-          />
-          <TextInputField
-            label="Description"
-            name="description"
-            value={formData.description}
-            onChange={handleFormDataChange}
-          />
-
-          {formData.fromWalletId && (
-            <SelectInputField
-              label="From Account"
-              name="fromWalletId"
-              value={formData.fromWalletId?.toString()}
-              onChange={handleFormSelectChange}
-            >
-              {fromWalletOptions.map((item) => {
-                return (
-                  <MenuItem key={item.id} value={item.id}>
-                    {item.name}
-                  </MenuItem>
-                );
-              })}
-            </SelectInputField>
-          )}
-
-          {accountWallets.length > 0 && formData.toWalletId && (
-            <SelectInputField
-              label="To Account"
-              name="toWalletId"
-              value={formData.toWalletId?.toString()}
-              onChange={handleFormSelectChange}
-            >
-              {toWalletOptions.map((item) => {
-                return (
-                  <MenuItem key={item.id} value={item.id}>
-                    {item.name}
-                  </MenuItem>
-                );
-              })}
-            </SelectInputField>
-          )}
-
-          <TextInputField
-            label="Amount"
-            name="amount"
-            value={formData.amount}
-            onChange={handleFormDataChange}
-            error={!!errors.amount}
-            helperText={errors.amount}
-          />
+          {renderFormFields()}
         </Stack>
-
-        {accountWallets.length === 0 && (
-          <Stack>
-            <Alert severity="error">
-              You need to add at least one account before you can transfer any
-              funds.
-            </Alert>
-          </Stack>
-        )}
 
         <Divider />
 

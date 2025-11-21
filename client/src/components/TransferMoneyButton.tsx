@@ -36,7 +36,6 @@ function TransferMoneyButton({ isAccounts }: TransferMoneyButtonProps) {
             borderRadius: "6px",
             p: "0 10px",
           }}
-          disabled={accountWallets.length === 0}
           onClick={handleClick}
         >
           <CurrencyExchangeIcon />
