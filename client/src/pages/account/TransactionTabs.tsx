@@ -15,6 +15,7 @@ const TRANSACTION_TABS = [
 function TransactionTabs({ selectedTab, onClick }: TransactionTabsProps) {
   return TRANSACTION_TABS.map((t) => (
     <Chip
+      key={t.label}
       label={t.label}
       color="primary"
       variant={selectedTab === t.type ? "filled" : "outlined"}
