@@ -48,7 +48,7 @@ const TransactionSummary = memo(function TransactionSummary({
 
     // calculate all values
     transactions.forEach((transaction) => {
-      const { category } = transaction;
+      const { category, isRefund } = transaction;
       const amount = Number(transaction.amount);
 
       if (category.type === "income") {
@@ -58,16 +58,19 @@ const TransactionSummary = memo(function TransactionSummary({
       }
 
       if (category.type === "expense") {
+        let computedAmt = amount;
+        if (isRefund) computedAmt *= -1; // make the amount value negative if isRefund
+
         if (category.id === transferCategory.OUTGOING_TRANSFER) {
-          summary.savings += amount;
+          summary.savings += computedAmt;
         } else {
-          summary.expense += amount;
+          summary.expense += computedAmt;
 
           // build category breakdown for all expenses
           const categoryName = category.name;
           categoryMap.set(
             categoryName,
-            (categoryMap.get(categoryName) || 0) + amount
+            (categoryMap.get(categoryName) || 0) + computedAmt
           );
         }
       }
@@ -90,6 +93,10 @@ const TransactionSummary = memo(function TransactionSummary({
   const { income, expense, savings, fundsFromSavings, remainingFunds } =
     financialSummary;
 
+  // why add fundsFromSavings here?
+  // use-case scenario: for big/planned expenses (ie. TV)
+  // if we spend money for big expenses, remaining funds will be negative value
+  // fundsFromSavings will offset the value if we add it
   const overSpentAmount = remainingFunds + fundsFromSavings;
 
   return (
