@@ -26,12 +26,14 @@ function SpendingByCategoryWidget({
 
   const spendingData = useMemo(
     () =>
-      spendingByCategory.map((c: SpendingByCategoryResponse) => ({
-        id: c.category.id,
-        name: c.category.name,
-        amountSpent: c.total,
-        dotColor: c.category.color,
-      })),
+      spendingByCategory
+        .filter((c) => c.total > 0)
+        .map((c: SpendingByCategoryResponse) => ({
+          id: c.category.id,
+          name: c.category.name,
+          amountSpent: c.total,
+          dotColor: c.category.color,
+        })),
     [spendingByCategory]
   );
 
@@ -64,13 +66,13 @@ function SpendingByCategoryWidget({
               }}
             >
               <CategorySpendingChart
-                data={spendingByCategory.map(
-                  (c: SpendingByCategoryResponse) => ({
+                data={spendingByCategory
+                  .filter((c) => c.total > 0)
+                  .map((c: SpendingByCategoryResponse) => ({
                     name: c.category.name,
                     amount: c.total,
                     color: c.category.color,
-                  })
-                )}
+                  }))}
               />
             </Box>
           </Stack>

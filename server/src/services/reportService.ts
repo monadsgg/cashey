@@ -1,16 +1,8 @@
 import db from '../utils/db';
 import { CategoryType, SavingType, WalletType } from '../utils/enums';
-import {
-  IN_TRANSFER_CATEGORY_ID,
-  OUT_TRANSFER_CATEGORY_ID,
-  SALARY_CATEGORY_ID,
-} from '../constants';
+import { IN_TRANSFER_CATEGORY_ID, OUT_TRANSFER_CATEGORY_ID, SALARY_CATEGORY_ID } from '../constants';
 
-export async function getCategorySpending(
-  userId: number,
-  month: number,
-  year: number,
-) {
+export async function getCategorySpending(userId: number, month: number, year: number) {
   // handle monthly and yearly period
   let startDate = month ? new Date(year, month - 1, 1) : new Date(year, 0, 1);
   let endDate = month ? new Date(year, month, 0) : new Date(year, 11, 31);
@@ -28,27 +20,23 @@ export async function getCategorySpending(
     include: { category: { omit: { userId: true, type: true } } },
   });
 
-  const categorySpentMap = new Map<
-    number,
-    { category: { id: number; name: string; color: string }; total: number }
-  >();
+  const categorySpentMap = new Map<number, { category: { id: number; name: string; color: string }; total: number }>();
 
   for (const tx of transactions) {
+    let computedAmount = Number(tx.amount);
+    if (tx.isRefund) computedAmount *= -1; // make amount negative if item is refund
+
     if (!categorySpentMap.has(tx.categoryId)) {
       categorySpentMap.set(tx.categoryId, { category: tx.category, total: 0 });
     }
-    categorySpentMap.get(tx.categoryId)!.total += Number(tx.amount);
+    categorySpentMap.get(tx.categoryId)!.total += computedAmount;
   }
 
   const result = Array.from(categorySpentMap.values());
   return result;
 }
 
-export async function getStatsOverview(
-  userId: number,
-  month: number,
-  year: number,
-) {
+export async function getStatsOverview(userId: number, month: number, year: number) {
   const stats = {
     income: 0,
     expense: 0,
@@ -61,28 +49,26 @@ export async function getStatsOverview(
   let startDate = month ? new Date(year, month - 1, 1) : new Date(year, 0, 1);
   let endDate = month ? new Date(year, month, 0) : new Date(year, 11, 31);
 
-  const [groupedTransactions, cashBalance, networthBalance] = await Promise.all(
-    [
-      db.transaction.groupBy({
-        by: ['categoryId'],
-        where: {
-          userId,
-          date: { gte: startDate, lte: endDate },
-          wallet: { type: WalletType.MAIN },
-          category: { id: { notIn: [IN_TRANSFER_CATEGORY_ID] } },
-        },
-        _sum: { amount: true },
-      }),
-      db.wallet.aggregate({
-        _sum: { balance: true },
-        where: { userId, NOT: { type: { equals: SavingType.INVESTMENT } } },
-      }),
-      db.wallet.aggregate({
-        _sum: { balance: true },
-        where: { userId },
-      }),
-    ],
-  );
+  const [groupedTransactions, cashBalance, networthBalance] = await Promise.all([
+    db.transaction.groupBy({
+      by: ['categoryId'],
+      where: {
+        userId,
+        date: { gte: startDate, lte: endDate },
+        wallet: { type: WalletType.MAIN },
+        category: { id: { notIn: [IN_TRANSFER_CATEGORY_ID] } },
+      },
+      _sum: { amount: true },
+    }),
+    db.wallet.aggregate({
+      _sum: { balance: true },
+      where: { userId, NOT: { type: { equals: SavingType.INVESTMENT } } },
+    }),
+    db.wallet.aggregate({
+      _sum: { balance: true },
+      where: { userId },
+    }),
+  ]);
 
   if (!!groupedTransactions.length) {
     for (const tx of groupedTransactions) {
