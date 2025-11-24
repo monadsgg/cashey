@@ -167,7 +167,7 @@ function AccountForm({ onClose, selectedAccount }: AccountFormProps) {
               <TextInputField
                 label="Contribution Limit"
                 name="contributionLimit"
-                value={formData.contributionLimit ?? null}
+                value={formData.contributionLimit ?? ""}
                 onChange={handleFormDataChange}
               />
             </>
