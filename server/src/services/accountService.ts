@@ -6,7 +6,7 @@ interface accountInput {
   accountType: WalletType.SAVINGS | WalletType.INVESTMENT;
   balance: number;
   targetAmt?: number;
-  owner?: string;
+  owner: string;
   investmentType?: InvestmentAccountType.TFSA | InvestmentAccountType.RRSP | InvestmentAccountType.FHSA;
   contributionLimit?: number;
 }
@@ -61,7 +61,8 @@ export async function addAccount(data: accountInput, userId: number) {
 export async function editAccount(id: number, data: accountInput, userId: number) {
   const { name, balance, targetAmt, owner, accountType, investmentType, contributionLimit } = data;
 
-  if (!name || !balance) throw new Error('All fields are required');
+  if (!name) throw new Error('Name is required');
+  if (!owner) throw new Error('Owner is required');
 
   return db.wallet.update({
     where: { id, userId },
