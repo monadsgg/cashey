@@ -29,6 +29,7 @@ import {
   getDefaultRuleForType,
   getFilterLabel,
 } from "../../utils/filter";
+import { FilterRuleType } from "../../constants";
 
 interface TransactionFilterProps {
   filters: FilterCriteria[] | null;
@@ -201,7 +202,8 @@ function TransactionFilter({
                       </Select>
 
                       {/* Value input / select depending on rule */}
-                      {filter.rule === "is" || filter.rule === "isNot" ? (
+                      {filter.rule === FilterRuleType.is ||
+                      filter.rule === FilterRuleType.isNot ? (
                         <Select
                           value={filter.value || ""}
                           onChange={(e) =>
