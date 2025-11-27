@@ -25,21 +25,27 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
 
 - **Transaction Management**
 
-  - Create, edit, and delete transactions
-  - Paginated transaction list (10 per page)
-  - Import transactions from CSV
-  - Table settings to hide rarely used columns (e.g., payee, tags)
-  - Search feature and filter by field (e.g., payee, category, tag, amount)
-  - Refund handling
+  - ✅ Create, edit, and delete transactions
+  - ✅ Paginated transaction list (10 per page)
+  - ✅ Import transactions from CSV
+  - ✅ Table settings to hide rarely used columns (e.g., payee, tags)
+  - ✅ Search feature and filter by field (e.g., payee, category, tag, amount)
+  - ✅ Refund handling
 
 - **Transfer Funds Management**
 
-  - Transfer funds between wallets
+  - ✅ Transfer funds between wallets
+
+- **Data Import**
+
+  - ✅ CSV transaction import
 
 - **Accounts Management**
 
-  - Manage personal savings and investment accounts
-  - Track savings and contributions to TFSA, FHSA, and RRSP
+  - ✅ Manage personal savings and investment accounts
+    - ✅ Create, edit, and delete accounts
+  - ✅ Track savings and contributions to TFSA, FHSA, and RRSP
+  - ✅ Account monthly transactions list
 
 - **Budget Management**
 
@@ -56,10 +62,6 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
 - **Dashboard**
 
   - Spending by category chart and financial overview
-
-- **Data Import**
-
-  - CSV transaction import
 
 ### 🚀 Version 2 - Recurring Transactions, Data Export and Unit Testing
 
