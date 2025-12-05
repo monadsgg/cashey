@@ -15,6 +15,9 @@ export function useUpdatePayee() {
       queryClient.invalidateQueries({
         queryKey: ["payees"],
       });
+      queryClient.removeQueries({
+        queryKey: ["transaction"],
+      });
     },
   });
 }

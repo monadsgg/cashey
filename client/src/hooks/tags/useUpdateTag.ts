@@ -15,6 +15,9 @@ export function useUpdateTag() {
       queryClient.invalidateQueries({
         queryKey: ["tags"],
       });
+      queryClient.removeQueries({
+        queryKey: ["transaction"],
+      });
     },
   });
 }
