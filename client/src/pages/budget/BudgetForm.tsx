@@ -50,12 +50,14 @@ function BudgetForm({
   const handleSubmit = () => {
     // validate data
     const result = BudgetFormSchema.safeParse(formData);
+    const isNotEditingCategory =
+      selectedItem?.categoryId !== formData.categoryId;
 
     if (result.success) {
       const { categoryId, amountLimit, month, year } = result.data;
 
       // check if the selected category is already existed
-      if (existingBudgets.includes(categoryId)) {
+      if (isNotEditingCategory && existingBudgets.includes(categoryId)) {
         setErrors({ categoryId: "Category already exists" });
         return;
       }
