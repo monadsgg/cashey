@@ -49,15 +49,15 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
 
 - **Budget Management**
 
-  - Set monthly budgets per category
-  - Compare actual spending vs. planned budget
-  - Copy budget between months
+  ✅ Set monthly budgets per category
+  ✅ Compare actual spending vs. planned budget
+  ✅ Copy budget between months
 
 - **Categories / Tags / Payees**
 
-  - Built-in global categories plus custom categories
-  - Create tags and payees directly from the transaction form
-  - Use categories, tags, and payees for filtering and analysis
+  - ✅ Built-in global categories plus custom categories
+  - ✅ Create tags and payees directly from the transaction form (Autocomplete text input feature)
+  - ✅ Use categories, tags, and payees for filtering and analysis
 
 - **Dashboard**
 
