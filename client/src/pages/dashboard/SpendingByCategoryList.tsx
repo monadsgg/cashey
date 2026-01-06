@@ -4,8 +4,8 @@ import SummaryExpenseCategoryItem from "../../components/SummaryExpenseCategoryI
 export type CategoryExpenseItem = {
   id: number;
   name: string;
-  amountSpent: number;
-  dotColor: string;
+  amount: number;
+  color: string;
 };
 
 interface SpendingByCategoryListProps {
@@ -20,9 +20,9 @@ function SpendingByCategoryList({ data }: SpendingByCategoryListProps) {
           <SummaryExpenseCategoryItem
             key={item.id}
             title={item.name}
-            amount={item.amountSpent}
+            amount={item.amount}
             isInBudget
-            dotColor={item.dotColor}
+            dotColor={item.color}
           />
         );
       })}
