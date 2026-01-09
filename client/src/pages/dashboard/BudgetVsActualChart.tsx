@@ -33,19 +33,8 @@ interface SpendingByCategoryWidgetProps {
   }[];
 }
 
-export const options = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: "top" as const,
-    },
-    // title: {
-    //   display: true,
-    //   text: "Budget vs Actual Spending",
-    // },
-  },
-};
+const MIN_MAX = 1800;
+const STEP = 100;
 
 function BudgetVsActualChart({
   currentMonth,
@@ -54,26 +43,57 @@ function BudgetVsActualChart({
 }: SpendingByCategoryWidgetProps) {
   const { budgets } = useBudgets(currentMonth, currentYear);
 
-  const testData = spendingData
-    .filter((c) => budgets.some((b) => b.category.id === c.id))
+  const budgetMap = new Map(budgets.map((b) => [b.category.id, b.amountLimit]));
+
+  const budgetAndActualData = spendingData
+    .filter((c) => budgetMap.has(c.id))
     .map((c) => ({
       name: c.name,
       amount: c.amount,
       color: c.color,
-      amountLimit: budgets.find((b) => b.category.id === c.id)?.amountLimit,
+      amountLimit: budgetMap.get(c.id) ?? 0,
     }));
 
+  const budgetData = budgetAndActualData.map((d) => d.amountLimit);
+  const actualData = budgetAndActualData.map((d) => d.amount);
+
+  // Find highest value across all datasets
+  const maxValue = Math.max(...budgetData, ...actualData);
+
+  // Compute dynamic max (only grows above MIN_MAX)
+  const yMax =
+    maxValue <= MIN_MAX ? MIN_MAX : Math.ceil(maxValue / STEP) * STEP;
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+    },
+    scales: {
+      y: {
+        min: 0,
+        max: yMax,
+        ticks: {
+          stepSize: STEP,
+          callback: (value: string | number) => `$${value}`,
+        },
+      },
+    },
+  };
+
   const chartData = {
-    labels: testData.map((d) => d.name),
+    labels: budgetAndActualData.map((d) => d.name),
     datasets: [
       {
         label: "Budget",
-        data: testData.map((d) => d.amountLimit),
+        data: budgetData,
         backgroundColor: "rgba(53, 162, 235, 0.5)",
       },
       {
         label: "Actual",
-        data: testData.map((d) => d.amount),
+        data: actualData,
         backgroundColor: "rgba(255, 99, 132, 0.5)",
       },
     ],
