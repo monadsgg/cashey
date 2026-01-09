@@ -34,7 +34,7 @@ interface SpendingByCategoryWidgetProps {
 }
 
 const MIN_MAX = 1800;
-const STEP = 100;
+const STEP = 200;
 
 function BudgetVsActualChart({
   currentMonth,
@@ -66,6 +66,7 @@ function BudgetVsActualChart({
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: "top" as const,
@@ -89,18 +90,18 @@ function BudgetVsActualChart({
       {
         label: "Budget",
         data: budgetData,
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
+        backgroundColor: "#578FCA",
       },
       {
         label: "Actual",
         data: actualData,
-        backgroundColor: "rgba(255, 99, 132, 0.5)",
+        backgroundColor: "#FF8282",
       },
     ],
   };
 
   return (
-    <Paper sx={{ p: 4, width: "50%" }}>
+    <Paper elevation={1} sx={{ p: 4, width: "50%" }}>
       <Typography sx={{ textAlign: "center", fontWeight: 600 }}>
         Budget vs Actual Spending
       </Typography>
@@ -108,8 +109,8 @@ function BudgetVsActualChart({
         Monthly comparison of budgeted vs actual spending by category
       </Typography>
 
-      <Box p={5} width="650px" height="500px">
-        <Bar options={options} data={chartData} width={800} height={400} />
+      <Box p={5} width="100%" height="500px">
+        <Bar options={options} data={chartData} />
       </Box>
     </Paper>
   );
