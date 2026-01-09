@@ -126,7 +126,7 @@ function Dashboard() {
         ))}
       </Box>
 
-      <Stack spacing={2} gap={2} flexDirection="row" justifyContent="center">
+      <Stack gap={2} flexDirection="row" justifyContent="center">
         {renderCharts()}
       </Stack>
     </Stack>
