@@ -1,4 +1,4 @@
-import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
 import SummaryExpenseCategoryItem from "../../components/SummaryExpenseCategoryItem";
 
 export type CategoryExpenseItem = {
@@ -14,7 +14,16 @@ interface SpendingByCategoryListProps {
 
 function SpendingByCategoryList({ data }: SpendingByCategoryListProps) {
   return (
-    <Stack sx={{ width: "50%" }}>
+    <Box
+      sx={{
+        width: "100%",
+        display: "grid",
+        gridTemplateColumns: `${
+          data.length > 5 ? "repeat(2, 1fr)" : "repeat(1, 1fr)"
+        }`,
+        gap: 1,
+      }}
+    >
       {data.map((item) => {
         return (
           <SummaryExpenseCategoryItem
@@ -26,7 +35,7 @@ function SpendingByCategoryList({ data }: SpendingByCategoryListProps) {
           />
         );
       })}
-    </Stack>
+    </Box>
   );
 }
 
