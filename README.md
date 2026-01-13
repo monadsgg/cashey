@@ -61,7 +61,7 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
 
 - **Dashboard**
 
-  - Spending by category chart and financial overview
+  - ✅ Spending by category chart and financial overview
 
 ### 🚀 Version 2 - Recurring Transactions, Data Export and Unit Testing
 
