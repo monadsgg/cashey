@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import CircularProgress from "@mui/material/CircularProgress";
 import StatCard from "./StatCard";
 import MonthNavigationHeader from "../../components/MonthNavigationHeader";
 import { getMonth } from "../../utils/date";
@@ -10,6 +11,11 @@ import { getUserName } from "../../utils/auth";
 import { useStatsOverview } from "../../hooks/reports/useOverview";
 import { mapStatsToOverview } from "../../utils/mapStatsToOverview";
 import SpendingByCategoryWidget from "./SpendingByCategoryWidget";
+import BudgetVsActualChart from "./BudgetVsActualChart";
+import { useSpendingByCategory } from "../../hooks/reports/useSpendingByCategory";
+import type { SpendingByCategoryResponse } from "../../services/reports";
+import NoDataContent from "./NoDataContent";
+import "./Dashboard.css";
 
 function Dashboard() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -27,12 +33,51 @@ function Dashboard() {
   const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
+  const { spendingByCategory, isLoading } = useSpendingByCategory(
+    currentMonth,
+    currentYear
+  );
+
+  const spendingData = useMemo(
+    () =>
+      spendingByCategory
+        .filter((c) => c.total > 0)
+        .map((c: SpendingByCategoryResponse) => ({
+          id: c.category.id,
+          name: c.category.name,
+          amount: c.total,
+          color: c.category.color,
+        })),
+    [spendingByCategory]
+  );
+
+  console.log({ spendingByCategory });
+  console.log({ spendingData });
+
+  const renderCharts = () => {
+    if (isLoading) return <CircularProgress />;
+
+    if (!spendingData.length) return <NoDataContent />;
+
+    return (
+      <>
+        <SpendingByCategoryWidget data={spendingData} />
+        <BudgetVsActualChart
+          currentMonth={currentMonth}
+          currentYear={currentYear}
+          spendingData={spendingData}
+        />
+      </>
+    );
+  };
+
   return (
     <Stack
       spacing={4}
       sx={(theme) => ({
         height: `calc(100vh - ${theme.spacing(6)} * 2)`,
       })}
+      className={`${spendingData.length > 5 ? "styled-scrollbar" : ""} `}
     >
       <Stack
         flexDirection="row"
@@ -83,11 +128,8 @@ function Dashboard() {
         ))}
       </Box>
 
-      <Stack spacing={2}>
-        <SpendingByCategoryWidget
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-        />
+      <Stack gap={2} flexDirection="row" justifyContent="center">
+        {renderCharts()}
       </Stack>
     </Stack>
   );

@@ -4,6 +4,7 @@ import { Doughnut } from "react-chartjs-2";
 ChartJS.register(ArcElement, Tooltip);
 
 type CategorySpending = {
+  id: number;
   name: string;
   amount: number;
   color: string;

@@ -1,0 +1,21 @@
+.styled-scrollbar {
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding-bottom: 10px;
+  padding-right: 12px;
+}
+
+.styled-scrollbar::-webkit-scrollbar {
+  width: 0;
+  border-radius: 20px;
+}
+
+.styled-scrollbar:hover::-webkit-scrollbar {
+  width: 0.3em;
+  background-color: #f4f4f4;
+}
+
+.styled-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e6e6e6ff;
+  border-radius: 20px;
+}
