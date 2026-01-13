@@ -15,6 +15,7 @@ import BudgetVsActualChart from "./BudgetVsActualChart";
 import { useSpendingByCategory } from "../../hooks/reports/useSpendingByCategory";
 import type { SpendingByCategoryResponse } from "../../services/reports";
 import NoDataContent from "./NoDataContent";
+import "./Dashboard.css";
 
 function Dashboard() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -76,6 +77,7 @@ function Dashboard() {
       sx={(theme) => ({
         height: `calc(100vh - ${theme.spacing(6)} * 2)`,
       })}
+      className={`${spendingData.length > 5 ? "styled-scrollbar" : ""} `}
     >
       <Stack
         flexDirection="row"
