@@ -21,7 +21,7 @@ function SpendingByCategoryList({ data }: SpendingByCategoryListProps) {
         gridTemplateColumns: `${
           data.length > 5 ? "repeat(2, 1fr)" : "repeat(1, 1fr)"
         }`,
-        gap: 1,
+        gap: 1.5,
       }}
     >
       {data.map((item) => {
