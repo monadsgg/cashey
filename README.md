@@ -4,13 +4,13 @@ Cashey is a **full-stack personal finance web application** that helps track inc
 
 ## Why I Built It
 
-I’ve been tracking our finances in spreadsheets for years, but I wanted a tool that could automate entries, provide real-time analytics, and help answer questions like:
+I’ve been tracking our finances in spreadsheets for years, so I wanted a tool that could automate entries, provide real-time analytics, and help answer questions like:
 
 - _How much did we save this month?_
 - _Can we afford a steak for dinner?_
 - _How much more can we contribute to our TFSA, FHSA, or RRSP?_
 
-Cashey combines my passion for personal finance with my skills in full-stack development, turning raw data into actionable insights.
+Cashey combines my strong interest in personal finance with my desire to improve my full-stack development skills and apply new technologies I’m eager to learn.
 
 ## Tech Stack
 
@@ -24,7 +24,6 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
 ### 🚧 Version 1 - Core Features
 
 - **Transaction Management**
-
   - ✅ Create, edit, and delete transactions
   - ✅ Paginated transaction list (10 per page)
   - ✅ Import transactions from CSV
@@ -33,47 +32,41 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
   - ✅ Refund handling
 
 - **Transfer Funds Management**
-
   - ✅ Transfer funds between wallets
 
 - **Data Import**
-
   - ✅ CSV transaction import
 
 - **Accounts Management**
-
   - ✅ Manage personal savings and investment accounts
     - ✅ Create, edit, and delete accounts
   - ✅ Track savings and contributions to TFSA, FHSA, and RRSP
   - ✅ Account monthly transactions list
 
 - **Budget Management**
-
-  ✅ Set monthly budgets per category
-  ✅ Compare actual spending vs. planned budget
-  ✅ Copy budget between months
+  - ✅ Set monthly budgets per category
+  - ✅ Compare actual spending vs. planned budget
+  - ✅ Copy budget between months
 
 - **Categories / Tags / Payees**
-
   - ✅ Built-in global categories plus custom categories
   - ✅ Create tags and payees directly from the transaction form (Autocomplete text input feature)
   - ✅ Use categories, tags, and payees for filtering and analysis
 
 - **Dashboard**
-
-  - ✅ Spending by category chart and financial overview
+  - ✅ Financial overview
+  - ✅ Spending by category chart
+  - ✅ Budget vs actual spend chart
 
 ### 🚀 Version 2 - Recurring Transactions, Data Export and Unit Testing
 
 - **Recurring Transactions**
-
   - Schedule recurring expenses and savings (e.g., rent, guilt-free funds)
   - Customize frequency (monthly, bi-monthly, yearly)
   - Automatically generate transactions based on recurrence rules
   - Manage and pause recurring items when needed
 
 - **Data Export**
-
   - Export transactions, and account summaries to CSV or Excel
   - Filter and export specific date ranges or categories
   - Include column preferences from table settings in export
@@ -84,13 +77,11 @@ Cashey combines my passion for personal finance with my skills in full-stack dev
 ### 📊 Version 3 - Advanced Analytics
 
 - **Analytics Dashboard**
-
   - Charts for spending trends and income distribution
   - Track savings growth over time
   - Monthly and yearly financial summaries
 
 - **Category and Tag Insights**
-
   - Visualize top spending categories and payees
   - Tag-based analysis for better tracking of lifestyle expenses
 
