@@ -21,7 +21,7 @@ Cashey combines my strong interest in personal finance with my desire to improve
 
 ## Key Features
 
-### 🚧 Version 1 - Core Features
+### Version 1 - Core Features
 
 - **Transaction Management**
   - ✅ Create, edit, and delete transactions
@@ -57,6 +57,8 @@ Cashey combines my strong interest in personal finance with my desire to improve
   - ✅ Financial overview
   - ✅ Spending by category chart
   - ✅ Budget vs actual spend chart
+
+## Future Enhancements
 
 ### 🚀 Version 2 - Recurring Transactions, Data Export and Unit Testing
 
